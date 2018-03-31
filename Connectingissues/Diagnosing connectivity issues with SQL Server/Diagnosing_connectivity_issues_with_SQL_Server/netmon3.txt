@@ -1,0 +1,63 @@
+Please see the steps below in order to configure Network Monitor:
+
+1a. Turn off TCP Chimney if any of the machines are Windows 2003
+	Option 1) Bring up a command prompt and execute the following:
+	Netsh int ip set chimney DISABLED
+	Option 2) Apply the Scalable Networking Patch - http://support.microsoft.com/default.aspx?scid=kb;EN-US;936594
+
+1b. Confirm that TCP Chimney is turned off if any of the machines are Windows 2008 (see http://support.microsoft.com/default.aspx/kb/951037 for more details)
+	a) bring up a command prompt and execute the following:
+	netsh int tcp show global
+	b) if it turns out TCP Chimney is on disable it
+	netsh int tcp set global chimney=disabled
+
+2.  Turn of TCP Offloading/Receive Side-Scaling/TCP Large Send Offload at the NIC driver level
+
+3.  Retry your application.  Don't laugh - many, many problems are resolved by the above changes.
+
+4.  Download Network Monitor 
+	(http://www.microsoft.com/downloads/details.aspx?displaylang=en&FamilyID=983b941d-06cb-4658-b7f6-3088333d062f)
+
+5. Install Network Monitor on both the client and server experiencing the problem.  If you are not able to install it on the server you can install it on another machine that is connected to the same hub as the server or to the admin port of the switch that the server is on.  If you go this route you must synchronize the time between the client, server, and this third machine.
+
+6.  Synchronize the clocks on the Client and SQL machines
+	a)  At one of the machines bring up a command prompt and execute the following:
+	Net time <\\machinenamewewanttosynchwith> /set /yes
+
+7. Using the NMCap command-line utility, start the chained trace (chained = create a new capture file after reaching the “Temporary capture file size” rather than overwriting the current capture)
+	a) For Netmon 3.3 - [Netmon 3 installation folder]\NMCap /network * /capture /file test.chn:25M  (creates 25 MB chained files)
+	b) For Netmon 3.4 - [Netmon 3 installation folder]\NMCap /network * /capture /captureprocesses /file test.chn:25M  (creates 25 MB chained files)
+	c) NOTE:  YOU MUST USE THE .CHN EXTENSION TO CAPTURE CHAINED TRACES
+	d) NOTE:  The target folder must exist for NMCap to create the trace file
+
+8. Flush DNS
+	a) ipconfig /flushdns
+
+
+9) If dealing with an authentication failure, you will now want to purge the Kerberos tickets
+	a) klist tickets tgt purge
+
+	
+More information can be found at:
+
+http://blogs.technet.com/netmon/archive/2006/10/24/nmcap-the-easy-way-to-automate-capturing.aspx
+
+OR
+
+by running the command-line switch /examples
+
+OR
+
+by running the command-line switch /?
+
+10. Get the IP addresses of the client and the server
+	a)  ipconfig /all on the client > client.txt
+	b)  ipconfig /all on the server > server.txt
+
+11. Reproduce the problem, please note the exact time the problem reproduces.  Also, please note the exact error message.
+
+12. Stop the trace by hitting Ctrl-c in the command-line window
+
+13. Once you have the capture please ZIP the file using your case number as the name. 
+
+IMPORTANT: Please remember to let me know the IP addresses of the server and client as well as the time that the problem occurred. 
