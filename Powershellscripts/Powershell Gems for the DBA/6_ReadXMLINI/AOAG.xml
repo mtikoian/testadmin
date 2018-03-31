@@ -1,0 +1,42 @@
+﻿<AvailabilityGroups>
+<!-- Availability Group Configuration -->
+    <Group name="AG_TEST_1" backupDirectory="\\Shared\Backup\Directory" HADREndpointName="HadrEndPoint" HADREndpointPort="5022">
+       <Primary name="PrimaryServer_1_Site_1\Instance"/>
+        <Secondaries>
+            <Server secondary="SecondaryServer_2_Site_1\Instance" replicationMode="SynchronousCommit" failoverMode="Automatic"/>
+            <Server secondary="SecondaryServer_1_Site_2\Instance" replicationMode="AsynchronousCommit" failoverMode="Manual"/>
+            <Server secondary="SecondaryServer_2_Site_2\Instance" replicationMode="AsynchronousCommit" failoverMode="Manual"/>
+            <Server secondary="SecondaryServer_1_Site_3\Instance" replicationMode="AsynchronousCommit" failoverMode="Manual"/>
+        </Secondaries>
+        <SqlAgDatabases> 
+           <DB name="AG_TEST_1_DB"/>
+           <DB name="AG_TEST_2_DB"/>
+           <DB name="AG_TEST_3_DB"/>
+        </SqlAgDatabases>
+        <AGListener name="AG_Test_1_Listener" port="1433">
+		<!-- The Listener requires 1 IP Address per Subnet -->
+			<!-- Site 1 IP Address -->
+            <IpAddress ipaddress="10.10.1.xxx" subnetmask="255.255.255.0" />
+            <!-- Site 2 IP Address -->
+			<IpAddress ipaddress="10.10.2.xxx" subnetmask="255.255.255.0" />
+			<!-- Site 3 IP Address -->
+            <IpAddress ipaddress="10.10.3.xxx" subnetmask="255.255.255.0" />
+        </AGListener>
+    </Group> 
+   <Group name="AG_TEST_2" backupDirectory="\\Shared\Backup\Directory" HADREndpointName="HadrEndPoint" HADREndpointPort="5022">
+       <Primary name="PrimaryServer_2_Site_1\Instance"/>
+        <Secondaries>
+            <Server secondary="SecondaryServer1Site1\Instance" replicationMode="SynchronousCommit" failoverMode="Automatic"/>
+            <Server secondary="SecondaryServer1Site2\Instance" replicationMode="AsynchronousCommit" failoverMode="Manual"/>
+        </Secondaries>
+        <SqlAgDatabases> 
+           <DB name="AG_TEST_1_DB"/>
+           <DB name="AG_TEST_2_DB"/>
+           <DB name="AG_TEST_3_DB"/>
+        </SqlAgDatabases>
+        <AGListener name="AG_Test_2_Listener" port="1434">
+            <IpAddress ipaddress="10.10.1.xxx" subnetmask="255.255.255.0" />
+            <IpAddress ipaddress="10.10.2.xxx" subnetmask="255.255.255.0" />
+        </AGListener>
+    </Group>
+</AvailabilityGroups>

@@ -1,0 +1,327 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
+	<xs:simpleType name="requiredString">
+		<xs:restriction base="xs:string">
+			<xs:pattern value=".+"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="configuration">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="package">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="directories">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="directory" maxOccurs="unbounded" minOccurs="0">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute type="requiredString" name="name" use="required"/>
+														<xs:attribute type="requiredString" name="pathRelativeToScript" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="assembly" minOccurs="1" maxOccurs="1">
+								<xs:complexType>
+									<xs:simpleContent>
+										<xs:extension base="xs:string">
+											<xs:attribute type="requiredString" name="name" use="required"/>
+											<xs:attribute type="requiredString" name="pathRelativeToScript" use="required"/>
+										</xs:extension>
+									</xs:simpleContent>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="reconfigTemplates">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="template" maxOccurs="unbounded" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>
+										If reconfigAttribute is not present, text of the xpath will be replaced
+									</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="keys">
+											<xs:complexType>
+												<xs:choice maxOccurs="unbounded" minOccurs="1">
+													<xs:element name="xpath">
+														<xs:complexType>
+															<xs:simpleContent>
+																<xs:extension base="xs:string">
+																	<xs:attribute type="requiredString" name="name" use="required"/>
+																	<xs:attribute type="requiredString" name="value" use="required"/>
+																	<xs:attribute type="requiredString" name="reconfigAttribute" use="optional"/>
+																</xs:extension>
+															</xs:simpleContent>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="regex">
+														<xs:complexType>
+															<xs:simpleContent>
+																<xs:extension base="xs:string">
+																	<xs:attribute type="requiredString" name="name" use="required"/>
+																	<xs:attribute type="requiredString" name="value" use="required"/>
+																</xs:extension>
+															</xs:simpleContent>
+														</xs:complexType>
+													</xs:element>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute type="requiredString" name="name" use="required"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="environments">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="environment" maxOccurs="unbounded" minOccurs="1">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="components">
+											<xs:complexType>
+												<xs:choice maxOccurs="unbounded" minOccurs="1">
+													<xs:element name="databaseServer">
+														<xs:annotation>
+															<xs:documentation>
+																For databaseServer instanceName should be specified in name attribute For databaseServer instanceName should be specified in name attribute
+															</xs:documentation>
+														</xs:annotation>
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="databases">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="database" maxOccurs="unbounded" minOccurs="0">
+																				<xs:complexType>
+																					<xs:simpleContent>
+																						<xs:extension base="xs:string">
+																							<xs:attribute type="requiredString" name="name" use="required"/>
+																							<xs:attribute type="xs:boolean" name="isPrimary" use="required"/>
+																						</xs:extension>
+																					</xs:simpleContent>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute type="xs:string" name="name" use="required"/>
+															<xs:attribute type="requiredString" name="server" use="required"/>
+															<xs:attribute type="requiredString" name="backupDirPath" use="required"/>
+															<xs:attribute type="xs:string" name="deployDirPath" use="optional"/>
+															<xs:attribute type="requiredString" name="packageDirName" use="required"/>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="winService">
+														<xs:annotation>
+															<xs:documentation>S4000CE-D-AS01</xs:documentation>
+														</xs:annotation>
+														<xs:complexType mixed="true">
+															<xs:sequence>
+																<xs:element name="reconfigure" maxOccurs="unbounded" minOccurs="0">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="values">
+																				<xs:complexType>
+																					<xs:sequence>
+																						<xs:element name="value" maxOccurs="unbounded" minOccurs="1">
+																							<xs:complexType>
+																								<xs:simpleContent>
+																									<xs:extension base="requiredString">
+																										<xs:attribute type="requiredString" name="keyName" use="required"/>
+																									</xs:extension>
+																								</xs:simpleContent>
+																							</xs:complexType>
+																						</xs:element>
+																					</xs:sequence>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																		<xs:attribute type="requiredString" name="templateName" use="required"/>
+																		<xs:attribute type="requiredString" name="filePathRelToComponent" use="required"/>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute type="requiredString" name="name" use="required"/>
+															<xs:attribute type="requiredString" name="server" use="required"/>
+															<xs:attribute type="requiredString" name="deployDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="backupDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="packageDirName" use="required"/>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="executable">
+														<xs:annotation>
+															<xs:documentation>S4000CE-D-AS02</xs:documentation>
+														</xs:annotation>
+														<xs:complexType mixed="true">
+															<xs:sequence>
+																<xs:element name="reconfigure" minOccurs="0" maxOccurs="unbounded">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="values">
+																				<xs:complexType>
+																					<xs:sequence>
+																						<xs:element name="value" maxOccurs="unbounded" minOccurs="1">
+																							<xs:complexType>
+																								<xs:simpleContent>																									
+																									<xs:extension base="requiredString">
+																										<xs:attribute type="requiredString" name="keyName" use="required"/>
+																									</xs:extension>
+																								</xs:simpleContent>
+																							</xs:complexType>
+																						</xs:element>
+																					</xs:sequence>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																		<xs:attribute type="requiredString" name="templateName" use="required"/>
+																		<xs:attribute type="requiredString" name="filePathRelToComponent" use="required"/>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute type="requiredString" name="name" use="required"/>
+															<xs:attribute type="requiredString" name="server" use="required"/>
+															<xs:attribute type="requiredString" name="deployDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="backupDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="packageDirName" use="required"/>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="website">
+														<xs:annotation>
+															<xs:documentation>Web</xs:documentation>
+														</xs:annotation>
+														<xs:complexType mixed="true">
+															<xs:sequence>
+																<xs:element name="reconfigure" minOccurs="0" maxOccurs="unbounded">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="values">
+																				<xs:complexType>
+																					<xs:sequence>
+																						<xs:element name="value" maxOccurs="unbounded" minOccurs="1">
+																							<xs:complexType>
+																								<xs:simpleContent>
+																									<xs:extension base="requiredString">
+																										<xs:attribute type="requiredString" name="keyName" use="required"/>
+																									</xs:extension>
+																								</xs:simpleContent>
+																							</xs:complexType>
+																						</xs:element>
+																					</xs:sequence>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																		<xs:attribute type="requiredString" name="templateName" use="required"/>
+																		<xs:attribute type="requiredString" name="filePathRelToComponent" use="required"/>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute type="requiredString" name="name" use="required"/>
+															<xs:attribute type="requiredString" name="server" use="required"/>
+															<xs:attribute type="requiredString" name="deployDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="backupDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="packageDirName" use="required"/>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="webService">
+														<xs:annotation>
+															<xs:documentation>Web</xs:documentation>
+														</xs:annotation>
+														<xs:complexType mixed="true">
+															<xs:sequence>
+																<xs:element name="reconfigure" minOccurs="0" maxOccurs="unbounded">
+																	<xs:complexType>
+																		<xs:sequence>
+																			<xs:element name="values">
+																				<xs:complexType>
+																					<xs:sequence>
+																						<xs:element name="value" maxOccurs="unbounded" minOccurs="1">
+																							<xs:complexType>
+																								<xs:simpleContent>
+																									<xs:extension base="requiredString">
+																										<xs:attribute type="requiredString" name="keyName" use="required"/>
+																									</xs:extension>
+																								</xs:simpleContent>
+																							</xs:complexType>
+																						</xs:element>
+																					</xs:sequence>
+																				</xs:complexType>
+																			</xs:element>
+																		</xs:sequence>
+																		<xs:attribute type="requiredString" name="templateName" use="required"/>
+																		<xs:attribute type="requiredString" name="filePathRelToComponent" use="required"/>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+															<xs:attribute type="requiredString" name="name" use="required"/>
+															<xs:attribute type="requiredString" name="server" use="required"/>
+															<xs:attribute type="requiredString" name="deployDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="backupDirPath" use="required"/>
+															<xs:attribute type="requiredString" name="packageDirName" use="required"/>
+														</xs:complexType>
+													</xs:element>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="log">
+											<xs:complexType>
+												<xs:simpleContent>
+													<xs:extension base="xs:string">
+														<xs:attribute type="requiredString" name="dirPath" use="required"/>
+													</xs:extension>
+												</xs:simpleContent>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="notify" minOccurs="0">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="activeDirGroup" minOccurs="0" maxOccurs="unbounded">
+														<xs:complexType>
+															<xs:simpleContent>
+																<xs:extension base="xs:string">
+																	<xs:attribute type="requiredString" name="value" use="required"/>
+																	<xs:attribute type="xs:boolean" name="includeTechDetails" use="required"/>
+																</xs:extension>
+															</xs:simpleContent>
+														</xs:complexType>
+													</xs:element>
+													<xs:element name="email" minOccurs="0" maxOccurs="unbounded">
+														<xs:complexType>
+															<xs:simpleContent>
+																<xs:extension base="xs:string">
+																	<xs:attribute type="requiredString" name="value" use="required"/>
+																	<xs:attribute type="xs:boolean" name="includeTechDetails" use="required"/>
+																</xs:extension>
+															</xs:simpleContent>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<xs:attribute type="requiredString" name="name" use="required"/>
+									<xs:attribute type="xs:integer" name="deploymentWaitTimeInSeconds" use="required"/>									
+									<xs:attribute type="requiredString" name="msDeployDirPath" use="required"/>									
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute type="requiredString" name="productName" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

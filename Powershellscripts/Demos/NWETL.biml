@@ -1,0 +1,608 @@
+<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+	<Connections>
+		<Connection Name="NorthWind" ConnectionString="Data Source=WS12SQL;Initial Catalog=NorthWind;Provider=SQLNCLI11.1;Integrated Security=SSPI;" />
+		<Connection Name="NorthWindDW" ConnectionString="Data Source=WS12SQL;Initial Catalog=NorthWindDW;Provider=SQLNCLI11.1;Integrated Security=SSPI;" />
+	</Connections>
+	<Packages>
+		<Package Name="NorthWind_Categories" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Categories" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Categories]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Categories">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Categories.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Categories Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Categories]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Categories Source.Output" />
+							<DirectInput>SELECT CategoryID, CategoryName, CategoryDescription FROM [Reference].[Categories]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="CategoryID" TargetColumn="CategoryID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="CategoryName" TargetColumn="Dest_CategoryName" />
+								<Column SourceColumn="CategoryDescription" TargetColumn="Dest_CategoryDescription" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Categories Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Categories" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(CategoryName != Dest_CategoryName) || (CategoryDescription != Dest_CategoryDescription)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Categories" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Categories.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.CategoryName = s.CategoryName
+, d.CategoryDescription = s.CategoryDescription
+FROM Reference.Categories d
+INNER JOIN Staging.Categories s ON d.CategoryID = s.CategoryID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Customers" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Customers" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Customers]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Customers">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Customers.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Customers Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Customers]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Customers Source.Output" />
+							<DirectInput>SELECT CustomerID, CompanyName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, Phone, Fax FROM [Reference].[Customers]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="CustomerID" TargetColumn="CustomerID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="CompanyName" TargetColumn="Dest_CompanyName" />
+								<Column SourceColumn="ContactName" TargetColumn="Dest_ContactName" />
+								<Column SourceColumn="ContactTitle" TargetColumn="Dest_ContactTitle" />
+								<Column SourceColumn="Address" TargetColumn="Dest_Address" />
+								<Column SourceColumn="City" TargetColumn="Dest_City" />
+								<Column SourceColumn="Region" TargetColumn="Dest_Region" />
+								<Column SourceColumn="PostalCode" TargetColumn="Dest_PostalCode" />
+								<Column SourceColumn="Country" TargetColumn="Dest_Country" />
+								<Column SourceColumn="Phone" TargetColumn="Dest_Phone" />
+								<Column SourceColumn="Fax" TargetColumn="Dest_Fax" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Customers Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Customers" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(CompanyName != Dest_CompanyName) || (ContactName != Dest_ContactName) || (ContactTitle != Dest_ContactTitle) || (Address != Dest_Address) || (City != Dest_City) || (Region != Dest_Region) || (PostalCode != Dest_PostalCode) || (Country != Dest_Country) || (Phone != Dest_Phone) || (Fax != Dest_Fax)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Customers" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Customers.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.CompanyName = s.CompanyName
+, d.ContactName = s.ContactName
+, d.ContactTitle = s.ContactTitle
+, d.Address = s.Address
+, d.City = s.City
+, d.Region = s.Region
+, d.PostalCode = s.PostalCode
+, d.Country = s.Country
+, d.Phone = s.Phone
+, d.Fax = s.Fax
+FROM Reference.Customers d
+INNER JOIN Staging.Customers s ON d.CustomerID = s.CustomerID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Employees" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Employees" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Employees]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Employees">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Employees.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Employees Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Employees]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Employees Source.Output" />
+							<DirectInput>SELECT EmployeeID, LastName, FirstName, Title, TitleOfCourtesy, BirthDate, HireDate, Address, City, Region, PostalCode, Country, HomePhone, Extension FROM [Reference].[Employees]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="EmployeeID" TargetColumn="EmployeeID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="LastName" TargetColumn="Dest_LastName" />
+								<Column SourceColumn="FirstName" TargetColumn="Dest_FirstName" />
+								<Column SourceColumn="Title" TargetColumn="Dest_Title" />
+								<Column SourceColumn="TitleOfCourtesy" TargetColumn="Dest_TitleOfCourtesy" />
+								<Column SourceColumn="BirthDate" TargetColumn="Dest_BirthDate" />
+								<Column SourceColumn="HireDate" TargetColumn="Dest_HireDate" />
+								<Column SourceColumn="Address" TargetColumn="Dest_Address" />
+								<Column SourceColumn="City" TargetColumn="Dest_City" />
+								<Column SourceColumn="Region" TargetColumn="Dest_Region" />
+								<Column SourceColumn="PostalCode" TargetColumn="Dest_PostalCode" />
+								<Column SourceColumn="Country" TargetColumn="Dest_Country" />
+								<Column SourceColumn="HomePhone" TargetColumn="Dest_HomePhone" />
+								<Column SourceColumn="Extension" TargetColumn="Dest_Extension" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Employees Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Employees" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(LastName != Dest_LastName) || (FirstName != Dest_FirstName) || (Title != Dest_Title) || (TitleOfCourtesy != Dest_TitleOfCourtesy) || (BirthDate != Dest_BirthDate) || (HireDate != Dest_HireDate) || (Address != Dest_Address) || (City != Dest_City) || (Region != Dest_Region) || (PostalCode != Dest_PostalCode) || (Country != Dest_Country) || (HomePhone != Dest_HomePhone) || (Extension != Dest_Extension)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Employees" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Employees.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.LastName = s.LastName
+, d.FirstName = s.FirstName
+, d.Title = s.Title
+, d.TitleOfCourtesy = s.TitleOfCourtesy
+, d.BirthDate = s.BirthDate
+, d.HireDate = s.HireDate
+, d.Address = s.Address
+, d.City = s.City
+, d.Region = s.Region
+, d.PostalCode = s.PostalCode
+, d.Country = s.Country
+, d.HomePhone = s.HomePhone
+, d.Extension = s.Extension
+FROM Reference.Employees d
+INNER JOIN Staging.Employees s ON d.EmployeeID = s.EmployeeID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_OrderDetails" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_OrderDetails" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[OrderDetails]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load OrderDetails">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_OrderDetails.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="OrderDetails Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[OrderDetails]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="OrderDetails Source.Output" />
+							<DirectInput>SELECT OrderDetailID, OrderID, ProductID, UnitPrice, Quantity, Discount FROM [Reference].[OrderDetails]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="OrderDetailID" TargetColumn="OrderDetailID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="OrderID" TargetColumn="Dest_OrderID" />
+								<Column SourceColumn="ProductID" TargetColumn="Dest_ProductID" />
+								<Column SourceColumn="UnitPrice" TargetColumn="Dest_UnitPrice" />
+								<Column SourceColumn="Quantity" TargetColumn="Dest_Quantity" />
+								<Column SourceColumn="Discount" TargetColumn="Dest_Discount" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="OrderDetails Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.OrderDetails" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(OrderID != Dest_OrderID) || (ProductID != Dest_ProductID) || (UnitPrice != Dest_UnitPrice) || (Quantity != Dest_Quantity) || (Discount != Dest_Discount)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.OrderDetails" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load OrderDetails.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.OrderID = s.OrderID
+, d.ProductID = s.ProductID
+, d.UnitPrice = s.UnitPrice
+, d.Quantity = s.Quantity
+, d.Discount = s.Discount
+FROM Reference.OrderDetails d
+INNER JOIN Staging.OrderDetails s ON d.OrderDetailID = s.OrderDetailID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Orders" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Orders" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Orders]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Orders">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Orders.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Orders Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Orders]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Orders Source.Output" />
+							<DirectInput>SELECT OrderID, CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, ShipVia, Freight, ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry FROM [Reference].[Orders]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="OrderID" TargetColumn="OrderID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="CustomerID" TargetColumn="Dest_CustomerID" />
+								<Column SourceColumn="EmployeeID" TargetColumn="Dest_EmployeeID" />
+								<Column SourceColumn="OrderDate" TargetColumn="Dest_OrderDate" />
+								<Column SourceColumn="RequiredDate" TargetColumn="Dest_RequiredDate" />
+								<Column SourceColumn="ShippedDate" TargetColumn="Dest_ShippedDate" />
+								<Column SourceColumn="ShipVia" TargetColumn="Dest_ShipVia" />
+								<Column SourceColumn="Freight" TargetColumn="Dest_Freight" />
+								<Column SourceColumn="ShipName" TargetColumn="Dest_ShipName" />
+								<Column SourceColumn="ShipAddress" TargetColumn="Dest_ShipAddress" />
+								<Column SourceColumn="ShipCity" TargetColumn="Dest_ShipCity" />
+								<Column SourceColumn="ShipRegion" TargetColumn="Dest_ShipRegion" />
+								<Column SourceColumn="ShipPostalCode" TargetColumn="Dest_ShipPostalCode" />
+								<Column SourceColumn="ShipCountry" TargetColumn="Dest_ShipCountry" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Orders Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Orders" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(CustomerID != Dest_CustomerID) || (EmployeeID != Dest_EmployeeID) || (OrderDate != Dest_OrderDate) || (RequiredDate != Dest_RequiredDate) || (ShippedDate != Dest_ShippedDate) || (ShipVia != Dest_ShipVia) || (Freight != Dest_Freight) || (ShipName != Dest_ShipName) || (ShipAddress != Dest_ShipAddress) || (ShipCity != Dest_ShipCity) || (ShipRegion != Dest_ShipRegion) || (ShipPostalCode != Dest_ShipPostalCode) || (ShipCountry != Dest_ShipCountry)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Orders" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Orders.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.CustomerID = s.CustomerID
+, d.EmployeeID = s.EmployeeID
+, d.OrderDate = s.OrderDate
+, d.RequiredDate = s.RequiredDate
+, d.ShippedDate = s.ShippedDate
+, d.ShipVia = s.ShipVia
+, d.Freight = s.Freight
+, d.ShipName = s.ShipName
+, d.ShipAddress = s.ShipAddress
+, d.ShipCity = s.ShipCity
+, d.ShipRegion = s.ShipRegion
+, d.ShipPostalCode = s.ShipPostalCode
+, d.ShipCountry = s.ShipCountry
+FROM Reference.Orders d
+INNER JOIN Staging.Orders s ON d.OrderID = s.OrderID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Products" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Products" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Products]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Products">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Products.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Products Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Products]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Products Source.Output" />
+							<DirectInput>SELECT ProductID, ProductName, SupplierID, CategoryID, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued FROM [Reference].[Products]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="ProductID" TargetColumn="ProductID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="ProductName" TargetColumn="Dest_ProductName" />
+								<Column SourceColumn="SupplierID" TargetColumn="Dest_SupplierID" />
+								<Column SourceColumn="CategoryID" TargetColumn="Dest_CategoryID" />
+								<Column SourceColumn="QuantityPerUnit" TargetColumn="Dest_QuantityPerUnit" />
+								<Column SourceColumn="UnitPrice" TargetColumn="Dest_UnitPrice" />
+								<Column SourceColumn="UnitsInStock" TargetColumn="Dest_UnitsInStock" />
+								<Column SourceColumn="UnitsOnOrder" TargetColumn="Dest_UnitsOnOrder" />
+								<Column SourceColumn="ReorderLevel" TargetColumn="Dest_ReorderLevel" />
+								<Column SourceColumn="Discontinued" TargetColumn="Dest_Discontinued" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Products Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Products" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(ProductName != Dest_ProductName) || (SupplierID != Dest_SupplierID) || (CategoryID != Dest_CategoryID) || (QuantityPerUnit != Dest_QuantityPerUnit) || (UnitPrice != Dest_UnitPrice) || (UnitsInStock != Dest_UnitsInStock) || (UnitsOnOrder != Dest_UnitsOnOrder) || (ReorderLevel != Dest_ReorderLevel) || (Discontinued != Dest_Discontinued)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Products" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Products.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.ProductName = s.ProductName
+, d.SupplierID = s.SupplierID
+, d.CategoryID = s.CategoryID
+, d.QuantityPerUnit = s.QuantityPerUnit
+, d.UnitPrice = s.UnitPrice
+, d.UnitsInStock = s.UnitsInStock
+, d.UnitsOnOrder = s.UnitsOnOrder
+, d.ReorderLevel = s.ReorderLevel
+, d.Discontinued = s.Discontinued
+FROM Reference.Products d
+INNER JOIN Staging.Products s ON d.ProductID = s.ProductID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Shippers" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Shippers" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Shippers]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Shippers">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Shippers.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Shippers Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Shippers]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Shippers Source.Output" />
+							<DirectInput>SELECT ShipperID, CompanyName, Phone FROM [Reference].[Shippers]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="ShipperID" TargetColumn="ShipperID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="CompanyName" TargetColumn="Dest_CompanyName" />
+								<Column SourceColumn="Phone" TargetColumn="Dest_Phone" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Shippers Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Shippers" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(CompanyName != Dest_CompanyName) || (Phone != Dest_Phone)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Shippers" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Shippers.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.CompanyName = s.CompanyName
+, d.Phone = s.Phone
+FROM Reference.Shippers d
+INNER JOIN Staging.Shippers s ON d.ShipperID = s.ShipperID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Suppliers" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<ExecuteSQL Name="Truncate Staging_Suppliers" ConnectionName="NorthWindDW">
+					<DirectInput>TRUNCATE TABLE [Staging].[Suppliers]</DirectInput>
+				</ExecuteSQL>
+				<Dataflow Name="Load Suppliers">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Truncate Staging_Suppliers.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<Transformations>
+						<OleDbSource Name="Suppliers Source" ConnectionName="NorthWind">
+							<ExternalTableInput Table="[dbo].[Suppliers]" />
+						</OleDbSource>
+						<Lookup Name="Correlate" OleDbConnectionName="NorthWindDW" NoMatchBehavior="RedirectRowsToNoMatchOutput">
+							<InputPath OutputPathName="Suppliers Source.Output" />
+							<DirectInput>SELECT SupplierID, SupplierCompanyName, SupplierContactName, SupplierContactTitle, SupplierAddress, SupplierCity, SupplierRegion, SupplierPostalCode, SupplierCountry, Phone, Fax FROM [Reference].[Suppliers]</DirectInput>
+							<Inputs>
+								<Column SourceColumn="SupplierID" TargetColumn="SupplierID" />
+							</Inputs>
+							<Outputs>
+								<Column SourceColumn="SupplierCompanyName" TargetColumn="Dest_SupplierCompanyName" />
+								<Column SourceColumn="SupplierContactName" TargetColumn="Dest_SupplierContactName" />
+								<Column SourceColumn="SupplierContactTitle" TargetColumn="Dest_SupplierContactTitle" />
+								<Column SourceColumn="SupplierAddress" TargetColumn="Dest_SupplierAddress" />
+								<Column SourceColumn="SupplierCity" TargetColumn="Dest_SupplierCity" />
+								<Column SourceColumn="SupplierRegion" TargetColumn="Dest_SupplierRegion" />
+								<Column SourceColumn="SupplierPostalCode" TargetColumn="Dest_SupplierPostalCode" />
+								<Column SourceColumn="SupplierCountry" TargetColumn="Dest_SupplierCountry" />
+								<Column SourceColumn="Phone" TargetColumn="Dest_Phone" />
+								<Column SourceColumn="Fax" TargetColumn="Dest_Fax" />
+							</Outputs>
+						</Lookup>
+						<OleDbDestination Name="Suppliers Destination" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Correlate.NoMatch" />
+							<ExternalTableOutput Table="Reference.Suppliers" />
+						</OleDbDestination>
+						<ConditionalSplit Name="Filter">
+							<InputPath OutputPathName="Correlate.Match" />
+							<OutputPaths>
+								<OutputPath Name="Changed Rows">
+									<Expression>(SupplierCompanyName != Dest_SupplierCompanyName) || (SupplierContactName != Dest_SupplierContactName) || (SupplierContactTitle != Dest_SupplierContactTitle) || (SupplierAddress != Dest_SupplierAddress) || (SupplierCity != Dest_SupplierCity) || (SupplierRegion != Dest_SupplierRegion) || (SupplierPostalCode != Dest_SupplierPostalCode) || (SupplierCountry != Dest_SupplierCountry) || (Phone != Dest_Phone) || (Fax != Dest_Fax)</Expression>
+								</OutputPath>
+							</OutputPaths>
+						</ConditionalSplit>
+						<OleDbDestination Name="Staging Updates" ConnectionName="NorthWindDW">
+							<InputPath OutputPathName="Filter.Changed Rows" />
+							<ExternalTableOutput Table="Staging.Suppliers" />
+						</OleDbDestination>
+					</Transformations>
+				</Dataflow>
+				<ExecuteSQL Name="Apply Staging Updates" ConnectionName="NorthWindDW">
+					<PrecedenceConstraints>
+						<Inputs>
+							<Input OutputPathName="Load Suppliers.Output" />
+						</Inputs>
+					</PrecedenceConstraints>
+					<DirectInput>UPDATE d SET 
+d.SupplierCompanyName = s.SupplierCompanyName
+, d.SupplierContactName = s.SupplierContactName
+, d.SupplierContactTitle = s.SupplierContactTitle
+, d.SupplierAddress = s.SupplierAddress
+, d.SupplierCity = s.SupplierCity
+, d.SupplierRegion = s.SupplierRegion
+, d.SupplierPostalCode = s.SupplierPostalCode
+, d.SupplierCountry = s.SupplierCountry
+, d.Phone = s.Phone
+, d.Fax = s.Fax
+FROM Reference.Suppliers d
+INNER JOIN Staging.Suppliers s ON d.SupplierID = s.SupplierID
+</DirectInput>
+				</ExecuteSQL>
+			</Tasks>
+		</Package>
+		<Package Name="NorthWind_Master" ConstraintMode="Parallel" ProtectionLevel="EncryptSensitiveWithUserKey">
+			<Tasks>
+				<Container Name="NorthWind_ETL" ConstraintMode="Parallel">
+					<Tasks>
+						<ExecutePackage Name="Categories">
+							<ExternalProjectPackage Package="NorthWind_Categories.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="Customers">
+							<ExternalProjectPackage Package="NorthWind_Customers.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="Employees">
+							<ExternalProjectPackage Package="NorthWind_Employees.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="OrderDetails">
+							<ExternalProjectPackage Package="NorthWind_OrderDetails.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="Orders">
+							<ExternalProjectPackage Package="NorthWind_Orders.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="Products">
+							<ExternalProjectPackage Package="NorthWind_Products.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="Shippers">
+							<ExternalProjectPackage Package="NorthWind_Shippers.dtsx" />
+						</ExecutePackage>
+						<ExecutePackage Name="Suppliers">
+							<ExternalProjectPackage Package="NorthWind_Suppliers.dtsx" />
+						</ExecutePackage>
+					</Tasks>
+				</Container>
+			</Tasks>
+		</Package>
+	</Packages>
+</Biml>

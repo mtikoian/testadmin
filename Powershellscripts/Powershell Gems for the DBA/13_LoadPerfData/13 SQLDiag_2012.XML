@@ -1,0 +1,406 @@
+<?xml version="1.0" standalone="yes"?>
+<dsConfig  
+		  xmlns:pssd="http://tempuri.org" 
+		  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		  xsi:noNamespaceSchemaLocation="SQLDiag_Schema.Xsd">
+    <Collection setupver="3.0.1.7" casenumber="SRX000000000000">
+        <Machines>
+            <Machine name=".">
+                <MachineCollectors>
+                    <EventlogCollector enabled="false" startup="false" shutdown="true" />
+                    <PerfmonCollector enabled="true" pollinginterval="120" maxfilesize="512">
+						<PerfmonCounters>
+
+							<PerfmonObject name="\MSSQL$%s:Buffer Manager" enabled="true">
+								
+								<PerfmonCounter name="\Buffer cache hit ratio" enabled="true" />
+								<PerfmonCounter name="\Page lookups/sec" enabled="true" />
+								<PerfmonCounter name="\Free list stalls/sec" enabled="true" />
+								<PerfmonCounter name="\Free pages" enabled="true" />
+								<PerfmonCounter name="\Total pages" enabled="true" />
+								<PerfmonCounter name="\Target pages" enabled="true" />
+								<PerfmonCounter name="\Database pages" enabled="true" />
+								<PerfmonCounter name="\Reserved pages" enabled="true" />
+								<PerfmonCounter name="\Stolen pages" enabled="true" />
+								<PerfmonCounter name="\Lazy writes/sec" enabled="true" />
+								<PerfmonCounter name="\Readahead pages/sec" enabled="true" />
+								<PerfmonCounter name="\Page reads/sec" enabled="true" />
+								<PerfmonCounter name="\Page writes/sec" enabled="true" />
+								<PerfmonCounter name="\Checkpoint pages/sec" enabled="true" />
+								<PerfmonCounter name="\Page life expectancy" enabled="true" />
+							</PerfmonObject>
+
+							<PerfmonObject name="\MSSQL$%s:General Statistics" enabled="true">
+								
+								<PerfmonCounter name="\User Connections" enabled="true" />
+								<PerfmonCounter name="\Processes blocked" enabled="true" />
+							</PerfmonObject>
+							
+							<PerfmonObject name="\MSSQL$%s:Databases(*)" enabled="true">
+								
+								<PerfmonCounter name="\Transactions/sec" enabled="true" />
+								<PerfmonCounter name="\Log Flushes/sec" enabled="true" />
+								<PerfmonCounter name="\Log Bytes Flushed/sec" enabled="true" />
+								<PerfmonCounter name="\Log Flush Waits/sec" enabled="true" />
+								<PerfmonCounter name="\Log Flush Wait Time" enabled="true" />
+								<PerfmonCounter name="\Log Growths" enabled="true" />
+								<PerfmonCounter name="\Log Shrinks" enabled="true" />
+							</PerfmonObject>
+
+
+							<PerfmonObject name="\MSSQL$%s:Access Methods" enabled="true">
+								
+								<PerfmonCounter name="\Full Scans/sec" enabled="true" />
+								<PerfmonCounter name="\Index Searches/sec" enabled="true" />
+								<PerfmonCounter name="\Page Splits/sec" enabled="true" />
+		
+							</PerfmonObject>
+
+							<PerfmonObject name="\MSSQL$%s:SQL Statistics" enabled="true">
+								
+								<PerfmonCounter name="\Batch Requests/sec" enabled="true" />
+								<PerfmonCounter name="\SQL Compilations/sec" enabled="true" />
+								<PerfmonCounter name="\SQL Re-Compilations/sec" enabled="true" />
+
+							</PerfmonObject>
+
+
+							<PerfmonObject name="\MSSQL$%s:Memory Manager" enabled="true">
+								
+								<PerfmonCounter name="\Memory Grants Pending" enabled="true" />
+
+							</PerfmonObject>
+
+							
+							
+							<PerfmonObject name="\PhysicalDisk(*)" enabled="true">
+								
+								<PerfmonCounter name="\Avg. Disk Queue Length" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk Read Queue Length" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk Write Queue Length" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk sec/Transfer" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk sec/Read" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk sec/Write" enabled="true" />
+								<PerfmonCounter name="\Disk Transfers/sec" enabled="true" />
+								<PerfmonCounter name="\Disk Reads/sec" enabled="true" />
+								<PerfmonCounter name="\Disk Writes/sec" enabled="true" />
+								<PerfmonCounter name="\Disk Bytes/sec" enabled="true" />
+								<PerfmonCounter name="\Disk Read Bytes/sec" enabled="true" />
+								<PerfmonCounter name="\Disk Write Bytes/sec" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk Bytes/Transfer" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk Bytes/Read" enabled="true" />
+								<PerfmonCounter name="\Avg. Disk Bytes/Write" enabled="true" />
+							</PerfmonObject>
+
+							
+							<PerfmonObject name="\Processor(*)" enabled="true">
+								<PerfmonCounter name="\*" enabled="true" />
+								<PerfmonCounter name="\% Processor Time" enabled="true" />
+								<PerfmonCounter name="\% User Time" enabled="true" />
+								<PerfmonCounter name="\% Privileged Time" enabled="true" />
+								<PerfmonCounter name="\Interrupts/sec" enabled="true" />
+							</PerfmonObject>
+
+							<PerfmonObject name="\Memory" enabled="true">
+							
+								<PerfmonCounter name="\Committed Bytes" enabled="true" />
+								<PerfmonCounter name="\Pages/sec" enabled="true" />
+								<PerfmonCounter name="\Pages Input/sec" enabled="true" />
+								<PerfmonCounter name="\Page Reads/sec" enabled="true" />
+								<PerfmonCounter name="\Pages Output/sec" enabled="true" />
+								<PerfmonCounter name="\Available MBytes" enabled="true" />
+							</PerfmonObject>
+
+							<PerfmonObject name="\Paging File(*)" enabled="True">
+								
+								<PerfmonCounter name="\% Usage" enabled="false" />
+								<PerfmonCounter name="\% Usage Peak" enabled="false" />
+							</PerfmonObject>
+							<PerfmonObject name="\System" enabled="true">
+								
+								<PerfmonCounter name="\Context Switches/sec" enabled="true" />
+								<PerfmonCounter name="\Processor Queue Length" enabled="true" />
+							</PerfmonObject>
+							<PerfmonObject name="\Process(*)" enabled="true">
+								
+								<PerfmonCounter name="\% Processor Time" enabled="true" />
+								<PerfmonCounter name="\% User Time" enabled="true" />
+								<PerfmonCounter name="\% Privileged Time" enabled="true" />
+								<PerfmonCounter name="\Virtual Bytes Peak" enabled="true" />
+								<PerfmonCounter name="\Virtual Bytes" enabled="true" />
+								<PerfmonCounter name="\Page Faults/sec" enabled="true" />
+								<PerfmonCounter name="\Working Set Peak" enabled="true" />
+								<PerfmonCounter name="\Working Set" enabled="true" />
+								<PerfmonCounter name="\Page File Bytes Peak" enabled="true" />
+								<PerfmonCounter name="\Page File Bytes" enabled="true" />
+								<PerfmonCounter name="\Private Bytes" enabled="true" />
+								<PerfmonCounter name="\Handle Count" enabled="true" />
+								<PerfmonCounter name="\IO Data Operations/sec" enabled="true" />
+
+							</PerfmonObject>
+
+							<PerfmonObject name="\Network Interface(*)" enabled="true">
+								
+								<PerfmonCounter name="\Bytes Total/sec" enabled="true" />
+								<PerfmonCounter name="\Packets/sec" enabled="true" />
+								<PerfmonCounter name="\Packets Received/sec" enabled="true" />
+								<PerfmonCounter name="\Packets Sent/sec" enabled="true" />
+								<PerfmonCounter name="\Bytes Received/sec" enabled="true" />
+								<PerfmonCounter name="\Bytes Sent/sec" enabled="true" />
+                                                        </PerfmonObject>
+
+						</PerfmonCounters>
+                    </PerfmonCollector>
+                </MachineCollectors>
+                <Instances>
+                    <Instance name="*" windowsauth="true" ssver="11" user="">
+                        <Collectors>
+                            <SqldiagCollector enabled="false" startup="false" shutdown="true" />
+                            <BlockingCollector enabled="false" pollinginterval="5" maxfilesize="350"/>
+                            <ProfilerCollector enabled="false" template="_GeneralPerformance90.xml" pollinginterval="5" maxfilesize="350">
+								<Events>
+									<EventType name="Broker">
+										<Event id="124" name="Broker:Conversation"  enabled="false" description="Reports the progress of a Service Broker conversation." />
+										<Event id="136" name="Broker:Conversation Group"  enabled="false" description="Occurs when Service Broker creates a new conversation group or drops an existing conversation group." />
+										<Event id="138" name="Broker:Connection"  enabled="false" description="Reports the status of a transport connection managed by Service Broker." />
+										<Event id="139" name="Broker:Forwarded Message Sent"  enabled="false" description="Occurs when Service Broker forwards a message." />
+										<Event id="140" name="Broker:Forwarded Message Dropped"  enabled="false" description="Occurs when Service Broker drops a message that was intended to be forwarded." />
+										<Event id="141" name="Broker:Message Classify"  enabled="false" description="Occurs when Service Broker determines the routing for a message." />
+										<Event id="142" name="Broker:Transmission"  enabled="false" description="Indicates that errors have occurred in the Service Broker transport layer. The error number and state values indicate the source of the error." />
+										<Event id="143" name="Broker:Queue Disabled"  enabled="false" description="Indicates a poison message was detected because there were five consecutive transaction rollbacks on a Service Broker queue. The event contains the database ID and queue ID of the queue that contains the poison message." />
+										<Event id="160" name="Broker:Message Undeliverable"  enabled="false" description="Occurs when Service Broker is unable to retain a received message that should have been delivered to a service." />
+										<Event id="161" name="Broker:Corrupted Message"  enabled="true" description="Occurs when Service Broker receives a corrupted message." />
+										<Event id="163" name="Broker:Activation"  enabled="false" description="Occurs when a queue monitor starts an activation stored procedure, sends a QUEUE_ACTIVATION notification, or when an activation stored procedure started by a queue monitor exits." />
+										<Event id="149" name="Broker:Remote Message Acknowledgement"  enabled="false" description="Occurs when Service Broker sends or receives a message acknowledgement." />
+									</EventType>
+									<EventType name="CLR" enabled="true" >
+										<Event id="196" name="Assembly Load"  enabled="true" description="Occurs when a request to load a CLR assembly occurs." />
+									</EventType>
+									<EventType name="Cursors">
+										<Event id="53" name="CursorOpen"  enabled="false" description="Indicates when a cursor is opened on a Transact-SQL statement by ODBC, OLE DB, or DB-Library." />
+										<Event id="74" name="CursorExecute"  enabled="false" description="A cursor previously prepared on a Transact-SQL statement by ODBC, OLE DB, or DB-Library is executed." />
+										<Event id="75" name="CursorRecompile"  enabled="false" description="A cursor opened on a Transact-SQL statement by ODBC or DB-Library has been recompiled either directly or due to a schema change.  Triggered for ANSI and non-ANSI cursors."/>
+										<Event id="76" name="CursorImplicitConversion"  enabled="false" description="A cursor on a Transact-SQL statement is converted by SQL Server from one type to another.  Triggered for ANSI and non-ANSI cursors."/>
+										<Event id="77" name="CursorUnprepare"  enabled="false" description="A prepared cursor on a Transact-SQL statement is unprepared (deleted) by ODBC, OLE DB, or DB-Library." />
+										<Event id="78" name="CursorClose"  enabled="false" description="A cursor previously opened on a Transact-SQL statement by ODBC, OLE DB, or DB-Library is closed." />
+										<Event id="70" name="CursorPrepare"  enabled="false" description="Indicates when a cursor on a Transact-SQL statement is prepared for use by ODBC, OLE DB, or DB-Library." />
+									</EventType>
+									<EventType name="Database" enabled="true">
+										<Event id="92" name="Data File Auto Grow"  enabled="true" description="Indicates that a data file was extended automatically by the server." />
+										<Event id="94" name="Data File Auto Shrink"  enabled="true" description="Indicates that a data file was shrunk automatically by the server." />
+										<Event id="167" name="Database Mirroring State Change"  enabled="true" description="Occurs when the state of a mirrored database changes." />
+										<Event id="93" name="Log File Auto Grow"  enabled="true" description="Indicates that a data file was extended automatically by the server." />
+										<Event id="95" name="Log File Auto Shrink"  enabled="true" description="Indicates that a log file was shrunk automatically by the server." />
+									</EventType>
+									<EventType name="Deprecation" enabled="false">
+										<Event id="125" name="Deprecation Announcement"  enabled="false" description="Occurs when you use a feature that will be removed from a future version of SQL Server." />
+										<Event id="126" name="Deprecation Final Support"  enabled="false" description="Occurs when you use a feature that will be removed from the next major release of SQL Server." />
+									</EventType>
+									<EventType name="Errors and Warnings">
+										<Event id="16" name="Attention"  enabled="true" description="Occurs when attention events, such as client-interrupt requests or broken client connections, happen." />
+										<Event id="193" name="Background Job Error"  enabled="true" description="Occurs when a background job terminates abnormally." />
+										<Event id="137" name="Blocked Process Report"  enabled="true" description="Occurs when a process has been blocked for more than a specified amount of time. Does not include system processes or processes that are waiting on non deadlock-detectable resources. Use sp_configure to configure the threshold and frequency at which reports are generated." />
+										<Event id="22" name="ErrorLog"  enabled="false" description="Indicates that error events have been logged in the SQL Server error log." />
+										<Event id="21" name="EventLog"  enabled="true" description="Indicates that events have been logged in the Microsoft Windows application log." />
+										<Event id="33" name="Exception"  enabled="true" description="Indicates that an exception has occurred in SQL Server. " />
+										<Event id="127" name="Exchange Spill Event"  enabled="true" description="Occurs when communication buffers in a parallel query plan have been temporarily written to the tempdb database." />
+										<Event id="67" name="Execution Warnings"  enabled="true" description="Indicates any warnings that occurred during the execution of a SQL Server statement or stored procedure." />
+										<Event id="55" name="Hash Warning"  enabled="true" description="Indicates that a hashing operation (for example, hash join, hash aggregate, hash union, and hash distinct) that is not processing on a buffer partition has reverted to an alternate plan. This can occur because of recursion depth, data skew, trace flags, or bit counting." />
+										<Event id="79" name="Missing Column Statistics"  enabled="true" description="Column statistics that could have been useful for the optimizer are not available." />
+										<Event id="80" name="Missing Join Predicate"  enabled="true" description="Query that has no join predicate is being executed. This could result in a long-running query." />
+										<Event id="69" name="Sort Warnings"  enabled="true" description="Indicates sort operations that do not fit into memory. Does not include sort operations involving the creating of indexes; only sort operations within a query (such as an ORDER BY clause used in a SELECT statement)." />
+										<Event id="162" name="User Error Message"  enabled="true" description="Displays error messages that users see in the case of an error or exception." />
+									</EventType>
+									<EventType name="Locks">
+										<Event id="148" name="Deadlock Graph"  enabled="true" description="Occurs when an attempt to acquire a lock is canceled because the attempt was part of a deadlock and was chosen as the deadlock victim. Provides an XML description of a deadlock." />
+										<Event id="24" name="Lock:Acquired"  enabled="false" description="Indicates acquisition of a lock on a resource, such as a data page." />
+										<Event id="23" name="Lock:Released"  enabled="false" description="Indicates that a lock on a resource, such as a page, has been released." />
+										<Event id="26" name="Lock:Cancel"  enabled="false" description="Indicates that the acquisition of a lock on a resource has been canceled (for example, due to a deadlock)." />
+										<Event id="25" name="Lock:Deadlock"  enabled="false" description="Indicates that two concurrent transactions have deadlocked each other by trying to obtain incompatible locks on resources the other transaction owns. " />
+										<Event id="59" name="Lock:Deadlock Chain"  enabled="false" description="Produced for each of the events leading up to the deadlock." />
+										<Event id="60" name="Lock:Escalation"  enabled="true" description="Indicates that a finer-grained lock has been converted to a coarser-grained lock (for example, a page lock escalated or converted to a table lock)." />
+										<Event id="27" name="Lock:Timeout"  enabled="false" description="Indicates that a request for a lock on a resource, such as a page, has timed out due to another transaction holding a blocking lock on the required resource. Time-out is determined by the @@LOCK_TIMEOUT function, and can be set with the SET LOCK_TIMEOUT statement. " />
+										<Event id="189" name="Lock:Timeout (timeout &gt; 0)"  enabled="true" description="Occurs when a request for a lock on a resource, such as a page, times out." />
+									</EventType>
+									<EventType name="OLEDB">
+										<Event id="119" name="OLEDB Call Event"  enabled="false" description="Occurs when OLE DB provider calls are made for distributed queries and remote stored procedures." />
+										<Event id="121" name="OLEDB DataRead Event"  enabled="false" description="Occurs when a data request call is made to the OLE DB provider." />
+										<Event id="61" name="OLEDB Errors"  enabled="true" description="Indicates that an OLE DB error has occurred." />
+										<Event id="194" name="OLEDB Provider Information"  enabled="false" description="Occurs when a distributed query runs and collects information corresponding to the provider connection." />
+										<Event id="120" name="OLEDB QueryInterface Event"  enabled="false" description="Occurs when OLE DB QueryInterface calls are made for distributed queries and remote stored procedures." />
+									</EventType>
+									<EventType name="Objects" enabled="false">
+										<Event id="46" name="Object:Created"  enabled="false" description="Indicates that an object has been created, such as for CREATE INDEX, CREATE TABLE, and CREATE DATABASE statements." />
+										<Event id="47" name="Object:Deleted"  enabled="false" description="Indicates that an object has been deleted, such as in DROP INDEX and DROP TABLE statements." />
+										<Event id="164" name="Object:Altered"  enabled="false" description="Occurs when a database object is altered." />
+									</EventType>
+									<EventType name="Full text">
+										<Event id="155" name="FT:Crawl Started"  enabled="false" description="Occurs when a full-text crawl (population) starts. Use to check if a crawl request is picked up by worker tasks." />
+										<Event id="156" name="FT:Crawl Stopped"  enabled="false" description="Occurs when a full-text crawl (population) stops. Stops occur when a crawl completes successfully or when a fatal error occurs." />
+										<Event id="157" name="FT:Crawl Aborted"  enabled="true" description="Occurs when an exception is encountered during a full-text crawl. Usually causes the full-text crawl to stop." />
+									</EventType>
+									<EventType name="Performance">
+										<Event id="58" name="Auto Stats"  enabled="false" description="Indicates an automatic updating of index statistics has occurred." />
+										<Event id="28" name="Degree of Parallelism Event (7.0 Insert)"  enabled="false" description="Occurs before a SELECT, INSERT, or UPDATE statement is executed. " />
+										<Event id="165" name="Performance statistics"  enabled="false" description="Occurs when a compiled query plan has been cached for the first time, recompiled, or removed from the plan cache." />
+										<Event id="123" name="SQL:FullTextQuery"  enabled="false" description="Occurs when a full text query executes." />
+										<Event id="97" name="Showplan All"  enabled="false" description="Displays the query plan with full compile-time details of the SQL statement executed. Note that the TextData column does not contain the Showplan for this event." />
+										<Event id="169" name="Showplan All For Query Compile"  enabled="false" description="Occurs when an SQL statement compiles. Displays complete, compile-time data. Use to identify Showplan operators." />
+										<Event id="98" name="Showplan Statistics Profile"  enabled="false" description="Displays the query plan with full run-time details of the SQL statement executed. Note that the TextData column does not contain the Showplan for this event." />
+										<Event id="96" name="Showplan Text"  enabled="false" description="Displays the query plan tree of the SQL statement from the query optimizer. Note that the TextData column does not contain the Showplan for this event." />
+										<Event id="68" name="Showplan Text (Unencoded)"  enabled="false" description="Displays the plan tree of the Transact-SQL statement executed." />
+										<Event id="122" name="Showplan XML"  enabled="false" description="Occurs when an SQL statement executes. Include this event to identify Showplan operators. Each event is stored in a well-formed XML document. Note that the Binary column for this event contains the encoded Showplan. Use SQL Server Profiler to open the trace and view the Showplan." />
+										<Event id="168" name="Showplan XML For Query Compile"  enabled="false" description="Occurs when an SQL statement executes. Displays the complete, compile-time data. Note that the Binary column for this event contains the encoded Showplan. Use SQL Server Profiler to open the trace and view the Showplan." />
+										<Event id="146" name="Showplan XML Statistics Profile"  enabled="false" description="Occurs when an SQL statement executes. Identifies the Showplan operators and displays complete, compile-time data. Note that the Binary column for this event contains the encoded Showplan. Use SQL Server Profiler to open the trace and view the Showplan." />
+									</EventType>
+									<EventType name="Progress Report" enabled="true">
+										<Event id="190" name="Progress Report: Online Index Operation"  enabled="true" description="Reports the progress of an online index build operation while the build process is running." />
+									</EventType>
+									<EventType name="Query Notifications" enabled="false">
+										<Event id="199" name="QN: subscription"  enabled="false" description="Occurs when a query registration cannot be subscribed. The TextData column contains information about the event." />
+										<Event id="200" name="QN: parameter table"  enabled="false" description="Information about active subscriptions is stored in internal parameter tables. This event class occurs when a parameter table is created or deleted. Typically, these tables are created or deleted when the database is restarted. The TextData column contains information about the event." />
+										<Event id="201" name="QN: template"  enabled="false" description="A query template represents a class of subscription queries. Typically, queries in the same class are identical except for their parameter values. This event class occurs when a new subscription request falls into an already existing class of (Match), a new class (Create), or a Drop class, which indicates cleanup of templates for query classes without active subscriptions. The TextData column contains information about the event." />
+										<Event id="202" name="QN: dynamics"  enabled="false" description="Tracks internal activities of query notifications. The TextData column contains information about the event." />
+									</EventType>
+									<EventType name="Scans" enabled="false">
+										<Event id="51" name="Scan:Started"  enabled="false" description="Indicates when a table or index scan has started." />
+										<Event id="52" name="Scan:Stopped"  enabled="false" description="Indicates when a table or index scan has stopped." />
+									</EventType>
+									<EventType name="Security Audit">
+										<Event id="14" name="Audit Login"  enabled="true" description="Occurs when a user successfully logs in to Microsoft SQL Server." />
+										<Event id="20" name="Audit Login Failed"  enabled="true" description="Indicates that a login attempt to SQL Server from a client failed." />
+										<Event id="15" name="Audit Logout"  enabled="true" description="Occurs when a user logs out of SQL Server." />
+										<Event id="18" name="Audit Server Starts and Stops"  enabled="true" description="Occurs when the SQL Server service state is modified." />
+										<Event id="102" name="Audit Statement GDR Event"  enabled="false" description="Occurs every time a GRANT, DENY, REVOKE for a statement permission is issued by any user in SQL Server." />
+										<Event id="103" name="Audit Object GDR Event"  enabled="false" description="Occurs every time a GRANT, DENY, REVOKE for an object permission is issued by any user in SQL Server." />
+										<Event id="104" name="Audit AddLogin Event"  enabled="false" description="Occurs when a SQL Server login is added or removed; for sp_addlogin and sp_droplogin." />
+										<Event id="105" name="Audit Login GDR Event"  enabled="false" description="Occurs when a Windows login right is added or removed; for sp_grantlogin, sp_revokelogin, and sp_denylogin." />
+										<Event id="106" name="Audit Login Change Property Event"  enabled="false" description="Occurs when a property of a login, except passwords, is modified; for sp_defaultdb and sp_defaultlanguage." />
+										<Event id="107" name="Audit Login Change Password Event"  enabled="false" description="Occurs when a SQL Server login password is changed.  Passwords are not recorded." />
+										<Event id="108" name="Audit Add Login to Server Role Event"  enabled="false" description="Occurs when a login is added or removed from a fixed server role; for sp_addsrvrolemember, and sp_dropsrvrolemember." />
+										<Event id="109" name="Audit Add DB User Event"  enabled="false" description="Occurs when a login is added or removed as a database user (Windows or SQL Server) to a database; for sp_grantdbaccess, sp_revokedbaccess, sp_adduser, and sp_dropuser." />
+										<Event id="110" name="Audit Add Member to DB Role Event"  enabled="false" description="Occurs when a login is added or removed as a database user (fixed or user-defined) to a database; for sp_addrolemember, sp_droprolemember, and sp_changegroup." />
+										<Event id="111" name="Audit Add Role Event"  enabled="false" description="Occurs when a login is added or removed as a database user to a database; for sp_addrole and sp_droprole." />
+										<Event id="112" name="Audit App Role Change Password Event"  enabled="false" description="Occurs when a password of an application role is changed." />
+										<Event id="113" name="Audit Statement Permission Event"  enabled="false" description="Occurs when a statement permission (such as CREATE TABLE) is used." />
+										<Event id="114" name="Audit Schema Object Access Event"  enabled="false" description="Occurs when an object permission (such as SELECT) is used, both successfully or unsuccessfully." />
+										<Event id="115" name="Audit Backup/Restore Event"  enabled="true" description="Occurs when a BACKUP or RESTORE command is issued." />
+										<Event id="116" name="Audit DBCC Event"  enabled="true" description="Occurs when DBCC commands are issued." />
+										<Event id="117" name="Audit Change Audit Event"  enabled="false" description="Occurs when audit trace modifications are made." />
+										<Event id="118" name="Audit Object Derived Permission Event"  enabled="false" description="Occurs when a CREATE, ALTER, and DROP object commands are issued." />
+										<Event id="128" name="Audit Database Management Event"  enabled="false" description="Occurs when a database is created, altered, or dropped." />
+										<Event id="129" name="Audit Database Object Management Event"  enabled="false" description="Occurs when a CREATE, ALTER, or DROP statement executes on database objects, such as schemas." />
+										<Event id="130" name="Audit Database Principal Management Event"  enabled="false" description="Occurs when principals, such as users, are created, altered, or dropped from a database." />
+										<Event id="131" name="Audit Schema Object Management Event"  enabled="false" description="Occurs when server objects are created, altered, or dropped." />
+										<Event id="132" name="Audit Server Principal Impersonation Event"  enabled="false" description="Occurs when there is an impersonation within server scope, such as EXECUTE AS LOGIN." />
+										<Event id="133" name="Audit Database Principal Impersonation Event"  enabled="false" description="Occurs when an impersonation occurs within the database scope, such as EXECUTE AS USER or SETUSER." />
+										<Event id="134" name="Audit Server Object Take Ownership Event"  enabled="false" description="Occurs when the owner is changed for objects in server scope." />
+										<Event id="135" name="Audit Database Object Take Ownership Event"  enabled="false" description="Occurs when a change of owner for objects within database scope occurs." />
+										<Event id="152" name="Audit Change Database Owner"  enabled="false" description="Occurs when ALTER AUTHORIZATION is used to change the owner of a database and permissions are checked to do that." />
+										<Event id="153" name="Audit Schema Object Take Ownership Event"  enabled="false" description="Occurs when ALTER AUTHORIZATION is used to assign an owner to an object and permissions are checked to do that. " />
+										<Event id="158" name="Audit Broker Conversation"  enabled="false" description="Reports audit messages related to Service Broker dialog security." />
+										<Event id="159" name="Audit Broker Login"  enabled="false" description="Reports audit messages related to Service Broker transport security." />
+										<Event id="170" name="Audit Server Scope GDR Event"  enabled="false" description="Indicates that a grant, deny, or revoke event for permissions in server scope occurred, such as creating a login." />
+										<Event id="171" name="Audit Server Object GDR Event"  enabled="false" description="Indicates that a grant, deny, or revoke event for a schema object, such as a table or function, occurred." />
+										<Event id="172" name="Audit Database Object GDR Event"  enabled="false" description="Indicates that a grant, deny, or revoke event for database objects, such as assemblies and schemas, occurred." />
+										<Event id="173" name="Audit Server Operation Event"  enabled="false" description="Occurs when Security Audit operations such as altering settings, resources, external access, or authorization are used." />
+										<Event id="175" name="Audit Server Alter Trace Event"  enabled="false" description="Occurs when a statement checks for the ALTER TRACE permission." />
+										<Event id="176" name="Audit Server Object Management Event"  enabled="false" description="Occurs when server objects are created, altered, or dropped." />
+										<Event id="177" name="Audit Server Principal Management Event"  enabled="false" description="Occurs when server principals are created, altered, or dropped." />
+										<Event id="178" name="Audit Database Operation Event"  enabled="false" description="Occurs when database operations occur, such as checkpoint or subscribe query notification." />
+										<Event id="180" name="Audit Database Object Access Event"  enabled="false" description="Occurs when database objects, such as schemas, are accessed." />
+									</EventType>
+									<EventType name="Server" enabled="true">
+										<Event id="195" name="Mount Tape"  enabled="true" description="Occurs when a tape mount request is received." />
+										<Event id="81" name="Server Memory Change"  enabled="true" description="SQL Server memory usage has increased or decreased by either 1 megabyte (MB) or 5 percent of the maximum server memory, whichever is greater." />
+										<Event id="150" name="Trace File Close"  enabled="true" description="Occurs when a trace file closes during rollback." />
+									</EventType>
+									<EventType name="Sessions" enabled="true">
+										<Event id="17" name="ExistingConnection"  enabled="true" description="Detects all activity by users connected to SQL Server before the trace started." />
+									</EventType>
+									<EventType name="Stored Procedures">
+										<Event id="100" name="RPC Output Parameter"  enabled="false" description="Produces output values of the parameters for every RPC." />
+										<Event id="10" name="RPC:Completed"  enabled="false" description="Occurs when a remote procedure call (RPC) has completed." />
+										<Event id="11" name="RPC:Starting"  enabled="false" description="Occurs when an RPC has started." />
+										<Event id="38" name="SP:CacheHit"  enabled="false" description="Indicates when a stored procedure is found in the procedure cache." />
+										<Event id="35" name="SP:CacheInsert"  enabled="false" description="Indicates when an item is inserted into the procedure cache." />
+										<Event id="34" name="SP:CacheMiss"  enabled="false" description="Indicates when a stored procedure is not found in the procedure cache." />
+										<Event id="36" name="SP:CacheRemove"  enabled="false" description="Indicates when an item is removed from the procedure cache." />
+										<Event id="37" name="SP:Recompile"  enabled="false" description="Indicates that a stored procedure was recompiled." />
+										<Event id="43" name="SP:Completed"  enabled="false" description="Indicates when the stored procedure has completed." />
+										<Event id="42" name="SP:Starting"  enabled="false" description="Indicates when the stored procedure has started." />
+										<Event id="45" name="SP:StmtCompleted"  enabled="false" description="Indicates that a Transact-SQL statement within a stored procedure has finished executing." />
+										<Event id="44" name="SP:StmtStarting"  enabled="false" description="Indicates that a Transact-SQL statement within a stored procedure has started executing." />
+									</EventType>
+									<EventType name="TSQL">
+										<Event id="12" name="SQL:BatchCompleted"  enabled="false" description="Occurs when a Transact-SQL batch has completed." />
+										<Event id="13" name="SQL:BatchStarting"  enabled="false" description="Occurs when a Transact-SQL batch has started." />
+										<Event id="40" name="SQL:StmtStarting"  enabled="false" description="Occurs when the Transact-SQL statement has started." />
+										<Event id="41" name="SQL:StmtCompleted"  enabled="false" description="Occurs when the Transact-SQL statement has completed." />
+										<Event id="71" name="Prepare SQL"  enabled="false" description="ODBC, OLE DB, or DB-Library has prepared a Transact-SQL statement or statements for use." />
+										<Event id="72" name="Exec Prepared SQL"  enabled="false" description="ODBC, OLE DB, or DB-Library has executed a prepared Transact-SQL statement or statements." />
+										<Event id="73" name="Unprepare SQL"  enabled="false" description="ODBC, OLE DB, or DB-Library has unprepared (deleted) a prepared Transact-SQL statement or statements." />
+										<Event id="166" name="SQL:StmtRecompile"  enabled="false" description="Occurs when a statement-level recompilation occurs." />
+										<Event id="198" name="XQuery Static Type"  enabled="false" description="Occurs when an XQuery expression is executed. This event class provides the static type of the XQuery expression." />
+									</EventType>
+									<EventType name="Transactions">
+										<Event id="19" name="DTCTransaction"  enabled="false" description="Tracks Microsoft Distributed Transaction Coordinator (MS DTC) coordinated transactions between two or more databases." />
+										<Event id="50" name="SQL Transaction"  enabled="false" description="Tracks Transact-SQL BEGIN, COMMIT, SAVE, and ROLLBACK TRANSACTION statements." />
+										<Event id="181" name="TM: Begin Tran starting"  enabled="false" description="Occurs when a BEGIN TRANSACTION request starts." />
+										<Event id="182" name="TM: Begin Tran completed"  enabled="false" description="Occurs when a BEGIN TRANSACTION request completes." />
+										<Event id="183" name="TM: Promote Tran starting"  enabled="false" description="Occurs when a PROMOTE TRANSACTION request starts." />
+										<Event id="184" name="TM: Promote Tran completed"  enabled="false" description="Occurs when a PROMOTE TRANSACTION request completes." />
+										<Event id="185" name="TM: Commit Tran starting"  enabled="false" description="Occurs when a COMMIT TRANSACTION request starts." />
+										<Event id="186" name="TM: Commit Tran completed"  enabled="false" description="Occurs when a COMMIT TRANSACTION request completes." />
+										<Event id="187" name="TM: Rollback Tran starting"  enabled="false" description="Occurs when a ROLLBACK TRANSACTION request starts." />
+										<Event id="188" name="TM: Rollback Tran completed"  enabled="false" description="Occurs when a ROLLBACK TRANSACTION request completes." />
+										<Event id="191" name="TM: Save Tran starting"  enabled="false" description="Occurs when a SAVE TRANSACTION request starts." />
+										<Event id="192" name="TM: Save Tran completed"  enabled="false" description="Occurs when a SAVE TRANSACTION request completes." />
+										<Event id="54" name="TransactionLog"  enabled="false" description="Tracks when transactions are written to the transaction log." />
+									</EventType>
+									<EventType name="User Configurable" enabled="false">
+										<Event id="82" name="User Configurable 0"  enabled="false" description="Event data defined by the user." />
+										<Event id="83" name="User Configurable 1"  enabled="false" description="Event data defined by the user." />
+										<Event id="84" name="User Configurable 2"  enabled="false" description="Event data defined by the user." />
+										<Event id="85" name="User Configurable 3"  enabled="false" description="Event data defined by the user." />
+										<Event id="86" name="User Configurable 4"  enabled="false" description="Event data defined by the user." />
+										<Event id="87" name="User Configurable 5"  enabled="false" description="Event data defined by the user." />
+										<Event id="88" name="User Configurable 6"  enabled="false" description="Event data defined by the user." />
+										<Event id="89" name="User Configurable 7"  enabled="false" description="Event data defined by the user." />
+										<Event id="90" name="User Configurable 8"  enabled="false" description="Event data defined by the user." />
+										<Event id="91" name="User Configurable 9"  enabled="false" description="Event data defined by the user." />
+									</EventType>
+								</Events>
+							</ProfilerCollector>
+                            <CustomDiagnostics>
+                                <CustomGroup name="msinfo" enabled="true" />
+                                <CustomTask enabled="false" groupname="MsInfo" taskname="Get MSINFO32" type="Utility" point="Startup" wait="OnlyOnShutdown" cmd="start /B /WAIT MSInfo32.exe /computer %server% /report &quot;%output_path%%server%_MSINFO32.TXT&quot; /categories +SystemSummary+ResourcesConflicts+ResourcesIRQS+ComponentsNetwork+ComponentsStorage+ComponentsProblemDevices+SWEnvEnvVars+SWEnvNetConn+SWEnvServices+SWEnvProgramGroup+SWEnvStartupPrograms" />
+                                <CustomTask enabled="false" groupname="MsInfo" taskname="Get default traces" type="Copy_File" point="Startup" wait="OnlyOnShutdown" cmd="&quot;%sspath%log\log*.trc&quot; &quot;%output_path%&quot;" />
+                                <CustomTask enabled="false" groupname="MsInfo" taskname="Get SQLDumper log" type="Copy_File" point="Startup" wait="OnlyOnShutdown" cmd="&quot;%sspath%log\SQLDUMPER_ERRORLOG.log&quot; &quot;%output_path%%server%_%instance%_SQLDUMPER_ERRORLOG.log&quot;" />
+                            </CustomDiagnostics>
+                        </Collectors>
+                    </Instance>
+                </Instances>
+            </Machine>
+        </Machines>
+    </Collection>
+    <Analysis>
+        <Producers>
+            <Producer name="System Info Loader" assembly="BCPLoader.dll" selected="false" />
+            <Producer name="Blocker Loader" assembly="TextRowsetLoader.dll" selected="false" />
+            <Producer name="Event Log Loader" assembly="BCPLoader.dll" selected="false" />
+            <Producer name="SQLDiag Loader" assembly="TextRowsetLoader.dll" selected="false" />
+        </Producers>
+        <Analyzers>
+            <Analyzer name="SQLDiag Analyzer" assembly="BaseAnalyzer.dll" selected="true" />
+            <Analyzer name="Waitstats Analyzer" assembly="BaseAnalyzer.dll" selected="true" />
+            <Analyzer name="Corruption Root Cause Analyzer" assembly="HardwareAnalyzer.dll" selected="true" />
+            <Analyzer name="Blocker Analyzer" assembly="BlockerAnalyzer.dll" selected="true" />
+            <Analyzer name="Perfmon Analyzer" assembly="BaseAnalyzer.dll" selected="false" />
+        </Analyzers>
+        <ViewItems>
+        </ViewItems>
+        <Trends>
+        </Trends>
+    </Analysis>
+</dsConfig>

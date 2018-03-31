@@ -1,0 +1,5 @@
+<Biml xmlns="http://schemas.varigence.com/biml.xsd">
+	<Packages>
+		<Package Name="BimlBeginner" ConstraintMode="Parallel" />
+	</Packages>
+</Biml>

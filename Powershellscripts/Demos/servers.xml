@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Servers>
+    <Name>SQLTBWS</Name>
+    <Server>SQLTBWS</Server>
+    <Integrated>true</Integrated>
+  </Servers>
+  <Servers>
+    <Name>SQLTBWS\INST01</Name>
+    <Server>SQLTBWS</Server>
+    <Instance>INST01</Instance>
+    <Integrated>true</Integrated>
+  </Servers>
+  <Servers>
+    <Name>SQLTBWS\INST02</Name>
+    <Server>SQLTBWS</Server>
+    <Instance>INST02</Instance>
+    <Integrated>true</Integrated>
+  </Servers>
+</NewDataSet>

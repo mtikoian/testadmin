@@ -1,0 +1,9 @@
+get-counter -Counter "\Processor(_Total)\% Processor Time" -SampleInterval 2 -MaxSamples 3
+$ppt = New-Object System.Diagnostics.PerformanceCounter
+$ppt.CategoryName = 'Processor'
+$ppt.CounterName = '% Processor Time'
+$ppt.InstanceName = '_Total'
+$ppt.NextValue()
+$ppt.NextValue()
+$ppt.NextValue()
+$ppt.NextValue()

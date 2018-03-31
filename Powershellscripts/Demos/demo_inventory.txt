@@ -1,0 +1,46 @@
+$cs = Get-CimInstance -Query 'select * from Win32_ComputerSystem'
+$cs
+$cs | Get-Member
+$cs.PowerState
+$cs.status
+$cs.TotalPhysicalMemory
+
+$os = Get-CimInstance -Query 'select * from Win32_OperatingSystem'
+$os
+$os | Get-Member
+$os.Description
+
+$pm = Get-CimInstance -Query 'select * from Win32_PhysicalMemory'
+$pm
+$pm | Get-Member
+
+$ld = Get-CimInstance -Query 'select * from Win32_LogicalDisk where DriveType = 3'
+$ld
+
+cd C:\Demos
+.\Initialize-SqlpsEnvironment.ps1
+
+$s = New-Object 'Microsoft.SqlServer.Management.Smo.Server' 'SQLTBWS\INST01'
+$s.Configuration
+$s
+$s.Name
+$s.Information
+$s.Settings
+
+$db | select Name, Collation, CompatibilityLevel, Autoshrink, RecoveryModel, Size, SpaceAvailable
+
+$db = $s.Databases['AdventureWorks']
+$db.Name
+foreach ($fg in $db.FileGroups) { foreach ($file in $fg.Files) { $file | select Name, FileName, Size, MaxSize, Growth, GrowthType } }
+
+$q = @'
+SELECT name, value, value_in_use, [description] 
+FROM sys.configurations WITH (NOLOCK)
+ORDER BY name OPTION (RECOMPILE);
+'@
+$cfg = Invoke-Sqlcmd -ServerInstance SQLTBWS\INST01 -Database master -Query $q 
+$cfg | Get-Member
+$cfg
+
+$mc = new-object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer SQLTBWS
+$mc.Services | select Name, ServiceState, DisplayName, ServiceAccount

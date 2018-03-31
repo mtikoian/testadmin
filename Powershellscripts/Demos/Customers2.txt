@@ -1,0 +1,12 @@
+TORTU|Tortuga Restaurante|Miguel Angel Paolino|Owner|Avda. Azteca 123|MÇxico D.F.||05033|Mexico|(5) 555-2933|
+TRADH|Tradiáao Hipermercados|Anabela Domingues|Sales Representative|Av. Inàs de Castro, 414|Sao Paulo|SP|05634-030|Brazil|(11) 555-2167|(11) 555-2168
+TRAIH|Trail's Head Gourmet Provisioners|Helvetius Nagy|Sales Associate|722 DaVinci Blvd.|Kirkland|WA|98034|USA|(206) 555-8257|(206) 555-2174
+VAFFE|Vaffeljernet|Palle Ibsen|Sales Manager|Smagsloget 45|èrhus||8200|Denmark|86 21 32 43|86 22 33 44
+VICTE|Victuailles en stock|Mary Saveley|Sales Agent|2, rue du Commerce|Lyon||69004|France|78.32.54.86|78.32.54.87
+VINET|Vins et alcools Chevalier|Paul Henriot|Accounting Manager|59 rue de l'Abbaye|Reims||51100|France|26.47.15.10|26.47.15.11
+WANDK|Die Wandernde Kuh|Rita MÅller|Sales Representative|Adenauerallee 900|Stuttgart||70563|Germany|0711-020361|0711-035428
+WARTH|Wartian Herkku|Pirkko Koskitalo|Accounting Manager|Torikatu 38|Oulu||90110|Finland|981-443655|981-443655
+WELLI|Wellington Importadora|Paula Parente|Sales Manager|Rua do Mercado, 12|Resende|SP|08737-363|Brazil|(14) 555-8122|
+WHITC|White Clover Markets|Karl Jablonski|Owner|305 - 14th Ave. S. Suite 3B|Seattle|WA|98128|USA|(206) 555-4112|(206) 555-4115
+WILMK|Wilman Kala|Matti Karttunen|Owner/Marketing Assistant|Keskuskatu 45|Helsinki||21240|Finland|90-224 8858|90-224 8858
+WOLZA|Wolski  Zajazd|Zbyszek Piestrzeniewicz|Owner|ul. Filtrowa 68|Warszawa||01-012|Poland|(26) 642-7012|(26) 642-7012

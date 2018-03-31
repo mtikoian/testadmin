@@ -1,0 +1,13 @@
+([xml](svn log -v --xml)).log.logentry | % {
+  $entry = $_;
+  $_.paths.path | foreach {
+    $obj = 1 | select -Property Revision,Author,Date,Message,Action,FilePath;
+    $obj.Revision = [int]$entry.Revision;
+    $obj.Author = $entry.Author;
+    $obj.Date = Get-Date $entry.Date;
+    $obj.Message = $entry.msg;
+    $obj.Action = $_.action;
+    $obj.FilePath = $_.InnerText;
+    return $obj;
+  }
+}

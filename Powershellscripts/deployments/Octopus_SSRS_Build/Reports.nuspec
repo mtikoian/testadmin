@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Reports</id>
+    <title>Report PAckage</title>
+    <version>1.0.0</version>
+    <authors>Ajilon</authors>
+    <owners>Ajilon</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Contains all SQL Server Reporting Services reports and scripts required to create a fully functional environment</description>
+  </metadata>
+  <files>
+    <file src="*.rdl" target="Reports" />
+    <file src="..\sql\*.sql" target="Sql" />
+    <file src="..\sql\Scripts\*.sql" target="Sql\Scripts" />
+    <file src="..\sql\Scripts\Dependencies\*.sql" target="Sql\Scripts\Dependencies" />
+    <file src="*.ps1" target="" />
+    <file src="..\*.ps1" target="" />
+  </files>
+</package>

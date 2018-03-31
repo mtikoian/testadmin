@@ -1,0 +1,2 @@
+8|Callahan|Laura|Inside Sales Coordinator|Ms.|1958-01-09 00:00:00.000|1994-03-05 00:00:00.000|4726 - 11th Ave. N.E.|Seattle|WA|98105|USA|(206) 555-1189|2344
+9|Dodsworth|Anne|Sales Representative|Ms.|1966-01-27 00:00:00.000|1994-11-15 00:00:00.000|7 Houndstooth Rd.|London||WG2 7LT|UK|(71) 555-4444|452

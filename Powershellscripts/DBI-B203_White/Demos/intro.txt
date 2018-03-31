@@ -1,0 +1,51 @@
+# Module 1 Demo 1
+Get-Process
+Get-Process -name sqlservr
+Stop-Service 'MSSQL$INST01' -WhatIf
+Get-Command
+Get-Childitem
+dir
+ls
+Get-Process
+ps
+get-process | sort workingset -desc | select -first 10
+$i = 7
+$i | get-member
+
+# Module 1 Demo 2
+$s = 'Cleveland Rocks!'
+$s | Get-Member
+$s.Length
+$m = 1,4,6,8,9
+$m[2]
+$n = 1..5
+$n
+$instance = 'SQLTBWS\INST01'
+$database = 'ServerAnalysis'
+$cstrng = "Data Source=$instance;Integrated Security=SSPI;Initial Catalog=$database"
+$cstrng
+Stop-Service 'MSSQL$INST01' -WhatIf
+Stop-Service "MSSQL$INST01" -WhatIf
+./showstrings.ps1
+
+# Module 1 Demo 3
+get-service | where-object {$_.Status -eq "Running"}
+get-service | select-object Name, Status, CanStop
+3 -eq 3
+3 -ne 3
+if (4 -gt 2) {write-host "It's Twue!!"}
+if (4 -le 2) {write-host "Really?"}
+if ((1 -ge 1) -and (2 -ge 1)) {write-host "We can do anything in PowerShell"}
+if ((1 -ge 1) -and (2 -le 1)) {write-host "But only when we need to"}
+
+# Module 1 Demo 4
+./showfunctions.ps1
+
+# Module 1 Demo 5
+get-psdrive
+cd env:
+dir
+hkcu:
+hklm:
+cd hklm:
+dir 'software\microsoft\Microsoft SQL Server\Instance Names'

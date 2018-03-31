@@ -1,0 +1,36 @@
+# Step 1
+
+Configure Powershell credential for dbdom\SQLBackup windows account 
+from the local from the local dbinsight01\SQLBackupAdmin account 
+
+  - dbdom\SQLBackup used to access the mapped drive from source SQL Server dbinsight01
+  - PS dbdom\SQLBackup credential object is only accessible from dbinsight01\SQLBackupAdmin context.
+
+## password is BigDog66
+# On Dbinsight01, invoke command prompt
+
+runas /user:dbinsight01\SQLBackupAdmin cmd.exe
+
+# Set up credential for remote account dbdom\SQLBackup
+$credential = Get-Credential 
+
+# Get encrypted password to text file - to be used when mapping drive
+$credential.Password | ConvertFrom-SecureString | set-content c:\temp\sqlagentjob.txt
+
+# in SQLBackupAdmin command shell - test out mapping drive.
+Powershell
+cd "C:\APresentation\SQLSat382PowershellGems\1_SQLAgentEncryptCred"
+.\CreateMapDriveEncryptedCred.ps1
+
+# check drive is mapped
+net use
+
+
+# Step 2 Set up Credentials in SQL Server for local window user SQLBackupAdmin
+
+# Step 3 - Create Proxy Account for job type Powershell
+
+# Step 4 - Create SQL Agent job to map drive and run a copy backup script 
+         - set job step to run under dbinsight01\SQLBackupAdmin context - new Proxy Account
+
+# Step 5 - run SQL Agent job.  ## before running may have to reset snapshot date.

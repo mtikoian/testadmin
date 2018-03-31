@@ -1,0 +1,61 @@
+###
+# Start MS-SQL Services
+#
+# By default I've stopped the MS-SQL servers for performance reasons, if you're
+# not going to use it, don't run it. If you do. Run the script first :)
+#
+
+###
+# Needs to run as administrator
+# code from: http://blogs.msdn.com/b/virtual_pc_guy/archive/2010/09/23/a-self-elevating-powershell-script.aspx
+#
+# Get the ID and security principal of the current user account
+ $myWindowsID=[System.Security.Principal.WindowsIdentity]::GetCurrent()
+ $myWindowsPrincipal=new-object System.Security.Principal.WindowsPrincipal($myWindowsID)
+  
+ # Get the security principal for the Administrator role
+ $adminRole=[System.Security.Principal.WindowsBuiltInRole]::Administrator
+  
+ # Check to see if we are currently running "as Administrator"
+ if ($myWindowsPrincipal.IsInRole($adminRole))
+    {
+    # We are running "as Administrator" - so change the title and background color to indicate this
+    $Host.UI.RawUI.WindowTitle = $myInvocation.MyCommand.Definition + "(Elevated)"
+    $Host.UI.RawUI.BackgroundColor = "DarkBlue"
+    clear-host
+    }
+ else
+    {
+    # We are not running "as Administrator" - so relaunch as administrator
+    
+    # Create a new process object that starts PowerShell
+    $newProcess = new-object System.Diagnostics.ProcessStartInfo "PowerShell";
+    
+    # Specify the current script path and name as a parameter
+    $newProcess.Arguments = $myInvocation.MyCommand.Definition;
+    
+    # Indicate that the process should be elevated
+    $newProcess.Verb = "runas";
+    
+    # Start the new process
+    [System.Diagnostics.Process]::Start($newProcess);
+    
+    # Exit from the current, unelevated, process
+    exit
+    }
+
+
+# Database engine
+Start-Service MSSQLSERVER
+Start-Service SQLWriter
+Start-Service SQLSERVERAGENT
+Start-Service MSSQLFDLauncher
+
+# Analysis engine
+Start-Service MSSQLServerOLAPService
+
+# Integration engine
+Start-Service MsDtsServer110
+
+# Reporting engine
+Start-Service ReportServer
