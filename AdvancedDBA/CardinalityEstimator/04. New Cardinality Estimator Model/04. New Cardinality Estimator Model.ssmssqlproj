@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="04. New Cardinality Estimator Model">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="DESKTOP-S3PQSE3\SQL2014:SLDBAWIN8VM\Admin">
+          <Created>2016-10-15T17:05:40.3232798-06:00</Created>
+          <Type>SQL</Type>
+          <Server>DESKTOP-S3PQSE3\SQL2014</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>AdventureWorksDW2012</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="SLDBAWIN8VM:SLDBAWIN8VM\Admin">
+          <Created>2016-11-15T09:05:50.6535691-07:00</Created>
+          <Type>SQL</Type>
+          <Server>SLDBAWIN8VM</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>AdventureWorks2012</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="01. Estimates.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-S3PQSE3\SQL2014:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-S3PQSE3\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>01. Estimates.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02. New_CE_model.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-S3PQSE3\SQL2014:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-S3PQSE3\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02. New_CE_model.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03. Plan_Changes_CE.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SLDBAWIN8VM:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SLDBAWIN8VM</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>03. Plan_Changes_CE.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

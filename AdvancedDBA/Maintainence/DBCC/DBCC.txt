@@ -1,0 +1,90 @@
+DBCC CHECKDB
+DBCC initially stood for “Database Consistency Checker”
+Now (since SQL 2000)  stands for Database Console Commands
+Many command statements available for performing database maintenance, getting information and performing validation
+
+
+Checks the logical and physical integrity of all the objects in the specified database by performing the following operations
+
+While this command can be used to repair corrupt databases, 
+Microsoft recommends this only be used as a last resort.
+To repair errors, the recommended course of action is restoring from the last clean backup. 
+
+Checks page allocation within the database 
+(DBCC CHECKALLOC)
+Checks the structural integrity of all tables and indexed views
+(DBCC CHECKTABLE)
+Calculates a checksum for every data and index page to compare against the stored checksum
+Validates the contents of every indexed view
+Checks the database catalog
+(DBCC CHECKCATALOG)
+Validates Service Broker data within the database
+Can be used to repair corrupt databases
+
+
+DBCC IND
+List the pages for an index
+
+DBCC PAGE
+View the contents of a database page
+
+DBCC DBINFO
+Display contents of the boot page
+
+DBCC LOGINFO
+Displays information about the VLFs in a transaction log
+
+
+DBCC CHECKIDENT
+Checks the current value for an identity column, can be used to reseed the value
+
+DBCC CHECKCONSTRAINTS
+Checks either a single constraint, all of them for a table, or all in the database (e.g. foreign keys, check)
+
+DBCC SHRINKDATABASE
+Removes free space from the database
+
+DBCC SHRINKFILE
+Removes free space from a specific file
+DBCC DROPCLEANBUFFERS
+Removes all clean pages from the buffer pool
+
+DBCC FREEPROCCACHE
+Removes all entries from the plan cache, removes a specific plan, or removes all cache for a resource pool
+
+DBCC FLUSHPROCINDB*
+Removes all entries from the plan cache for a specific database
+
+DBCC SQLPERF
+Lists transaction log usage or can be used to reset wait and latch statistics
+
+DBCC SHOW_STATISTICS
+Displays the statistics object for an index, column or statistic
+
+
+DBCC HELP
+Provides the syntax for a specific command, or lists all DBCC commands
+
+DBCC TRACEON
+Enables a trace flag either for the session or globally
+
+DBCC TRACEOFF
+Disables a trace flag either for the session or globally
+
+DBCC TRACESTATUS
+Provides the status of a single flag or all, either for the session or globally
+
+
+
+
+
+
+
+DBCC CheckDB Arguments
+
+No_infomsgs – if not specified, DBCC CHECKDB will print all messages, both error messages and information messages
+In a database with very many objects, it can be difficult to find errors in
+
+Repair_rebuild – will attempt to repair errors found, based on the type of error; it will only attempt “safe” repairs, i.e. where data loss is not possible
+
+Repair_allow_data_loss – attempts to repair all errors found, regardless of the potential for data loss
