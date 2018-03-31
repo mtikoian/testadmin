@@ -1,0 +1,1470 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="master">
+      <rd:DataSourceID>45a1c3b2-093e-475e-bebf-193b9941003c</rd:DataSourceID>
+      <DataSourceReference>master</DataSourceReference>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="p_tsql_stack">
+      <DataType>String</DataType>
+      <Prompt>p_tsql_stack</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="p_EndTime">
+      <DataType>String</DataType>
+      <Prompt>p_EndTime</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="p_StartTime">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>p_StartTime</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>2.5cm</RightMargin>
+  <LeftMargin>2.5cm</LeftMargin>
+  <BottomMargin>2.5cm</BottomMargin>
+  <rd:ReportID>0be73ada-bec2-4a25-8c41-20bbe8931b1c</rd:ReportID>
+  <PageWidth>21cm</PageWidth>
+  <DataSets>
+    <DataSet Name="SQLinfo">
+      <Fields>
+        <Field Name="timestamp_start">
+          <DataField>timestamp_start</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="timestamp_end">
+          <DataField>timestamp_end</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="session_id">
+          <DataField>session_id</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="tsql_stack">
+          <DataField>tsql_stack</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>master</DataSourceName>
+        <CommandText>;WITH SQLinfo_CTE(timestamp_start, timestamp_end, duration, session_id, tsql_stack) AS 
+(
+			SELECT	DATEADD(ms, -(target_data.value('(event/data/value)[5]', 'int')/1000), target_data.value('(event/@timestamp)[1]', 'datetime2')),
+					target_data.value('(event/@timestamp)[1]', 'datetime2'),
+					target_data.value('(event/data/value)[5]', 'int'), 
+					target_data.value('(event/action/value)[1]', 'varchar(max)'),
+					target_data.value('(event/action/value)[4]', 'varchar(max)')
+				FROM dbo.XEtable
+				WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sql_statement_completed'
+		UNION 
+						SELECT	DATEADD(ms, -(target_data.value('(event/data/value)[5]', 'int')/1000), target_data.value('(event/@timestamp)[1]', 'datetime2')),
+					target_data.value('(event/@timestamp)[1]', 'datetime2'),
+					target_data.value('(event/data/value)[5]', 'int'), 
+					target_data.value('(event/action/value)[1]', 'varchar(max)'),
+					target_data.value('(event/action/value)[4]', 'varchar(max)')
+				FROM dbo.XEtable
+				WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sp_statement_completed'
+)
+SELECT timestamp_start, timestamp_end, duration, session_id, tsql_stack  FROM SQLinfo_CTE
+WHERE 	timestamp_end = @p_EndTime
+AND         tsql_stack = @p_tsql_stack</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_tsql_stack">
+            <Value>=Parameters!p_tsql_stack.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="SQLdetails">
+      <Fields>
+        <Field Name="timestamp_begin">
+          <DataField>timestamp_begin</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="timestamp_end">
+          <DataField>timestamp_end</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="source_db_name">
+          <DataField>source_db_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="cpu">
+          <DataField>cpu</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="waiting">
+          <DataField>waiting</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="other">
+          <DataField>other</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="reads">
+          <DataField>reads</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="writes">
+          <DataField>writes</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="sql_text">
+          <DataField>sql_text</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="plan_handle">
+          <DataField>plan_handle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="tsql_stack">
+          <DataField>tsql_stack</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>master</DataSourceName>
+        <CommandText>;WITH SQLdetails_CTE(timestamp_begin, timestamp_end, source_database_id, cpu, duration, waiting, reads, writes, sql_text, plan_handle, tsql_stack) AS 
+(
+	SELECT	DATEADD(ms, -(target_data.value('(event/data/value)[5]', 'int')/1000), target_data.value('(event/@timestamp)[1]', 'datetime2')),
+			target_data.value('(event/@timestamp)[1]', 'datetime2'),
+			target_data.value('(event/data/value)[1]', 'int'),
+			target_data.value('(event/data/value)[4]', 'int'), 
+			target_data.value('(event/data/value)[5]', 'int'), 
+			(target_data.value('(event/data/value)[5]', 'int')/1000) - (target_data.value('(event/data/value)[4]', 'int')),
+			target_data.value('(event/data/value)[6]', 'int'), 
+			target_data.value('(event/data/value)[7]', 'int'), 
+			target_data.value('(event/action/value)[2]', 'varchar(max)'),
+			target_data.value('(event/action/value)[3]', 'varchar(max)'),
+			target_data.value('(event/action/value)[4]', 'varchar(max)')
+			FROM dbo.XEtable 
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sql_statement_completed'
+	UNION ALL
+	SELECT	DATEADD(ms, -(target_data.value('(event/data/value)[5]', 'int')/1000), target_data.value('(event/@timestamp)[1]', 'datetime2')),
+			target_data.value('(event/@timestamp)[1]', 'varchar(30)'),
+			target_data.value('(event/data/value)[1]', 'int'),
+			target_data.value('(event/data/value)[4]', 'int'), 
+			target_data.value('(event/data/value)[5]', 'int'), 
+			(target_data.value('(event/data/value)[5]', 'int')/1000) - (target_data.value('(event/data/value)[4]', 'int')),
+			target_data.value('(event/data/value)[6]', 'int'), 
+			target_data.value('(event/data/value)[7]', 'int'), 
+			target_data.value('(event/action/value)[2]', 'varchar(max)'),
+			target_data.value('(event/action/value)[3]', 'varchar(max)'),
+			target_data.value('(event/action/value)[4]', 'varchar(max)')
+			FROM dbo.XEtable 
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sp_statement_completed'
+)
+SELECT  timestamp_begin, timestamp_end, db_name(source_database_id) source_db_name, cpu, duration, b.waiting, (duration/1000-(cpu+b.waiting)) other, reads, writes, sql_text, plan_handle, tsql_stack  
+FROM SQLdetails_CTE a
+CROSS APPLY dbo.fn_GetWaitsSummed(@p_StartTime, @p_EndTime) as b
+WHERE 	timestamp_end = @p_EndTime
+AND         tsql_stack = @p_tsql_stack</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_StartTime">
+            <Value>=Parameters!p_StartTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_tsql_stack">
+            <Value>=Parameters!p_tsql_stack.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="PhysicalIO_counter">
+      <Fields>
+        <Field Name="physical_reads">
+          <DataField>physical_reads</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>master</DataSourceName>
+        <CommandText>;WITH Phy_reads_CTE(timestamp, physical_reads) AS 
+(  
+SELECT  target_data.value('(event/@timestamp)[1]', 'varchar(30)'),
+		target_data.value('(event/data/value)[1]', 'int') 
+    FROM dbo.XEtable
+	WHERE target_data.value('(event/data/value)[1]', 'int') = 66
+)
+SELECT count(physical_reads) as physical_reads
+FROM Phy_reads_CTE
+WHERE 	timestamp between @p_StartTime and @p_EndTime</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_StartTime">
+            <Value>=Parameters!p_StartTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Width>40.75cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Line Name="line2">
+        <Top>11.5cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>12</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Textbox Name="textbox4">
+        <Top>10.75cm</Top>
+        <Width>10.5cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>11</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Statement execution profile</Value>
+      </Textbox>
+      <Line Name="line3">
+        <Top>6.25cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>10</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Rectangle Name="rectangle1">
+        <Left>0.5cm</Left>
+        <ZIndex>9</ZIndex>
+        <ReportItems>
+          <Textbox Name="textbox13">
+            <Top>0.25cm</Top>
+            <Action>
+              <Drillthrough>
+                <ReportName>SessMon_SQL_waits_Async</ReportName>
+                <Parameters>
+                  <Parameter Name="p_EndTime">
+                    <Value>=Format(first(Fields!timestamp_end.Value, "SQLinfo"),"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                  </Parameter>
+                  <Parameter Name="p_StartTime">
+                    <Value>=Format(first(Fields!timestamp_start.Value, "SQLinfo"),"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                  </Parameter>
+                  <Parameter Name="p_tsql_stack">
+                    <Value>=First(Fields!tsql_stack.Value, "SQLinfo")</Value>
+                  </Parameter>
+                </Parameters>
+              </Drillthrough>
+            </Action>
+            <Width>3.25cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>IndianRed</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>5</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.75cm</Left>
+            <Height>0.75cm</Height>
+            <Value> Wait time (W)</Value>
+          </Textbox>
+          <Textbox Name="textbox2">
+            <Top>0.25cm</Top>
+            <Action>
+              <Drillthrough>
+                <ReportName>SessMon_SQL_cpu_Async</ReportName>
+                <Parameters>
+                  <Parameter Name="p_EndTime">
+                    <Value>=Format(first(Fields!timestamp_end.Value, "SQLinfo"),"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                  </Parameter>
+                  <Parameter Name="p_tsql_stack">
+                    <Value>=First(Fields!tsql_stack.Value, "SQLinfo")</Value>
+                  </Parameter>
+                </Parameters>
+              </Drillthrough>
+            </Action>
+            <Width>2.75cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>SteelBlue</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <TextAlign>Left</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>4</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>3cm</Left>
+            <Height>0.75cm</Height>
+            <Value> CPU (S)</Value>
+          </Textbox>
+          <Textbox Name="textbox3">
+            <Top>0.25cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>3</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.75cm</Height>
+            <Value> Duration (R)</Value>
+          </Textbox>
+          <Textbox Name="duration_3">
+            <rd:DefaultName>duration_3</rd:DefaultName>
+            <Top>1cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontWeight>700</FontWeight>
+              <TextAlign>Left</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+              <Direction>RTL</Direction>
+            </Style>
+            <ZIndex>2</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.75cm</Height>
+            <Value>=int(Sum(Fields!duration.Value, "SQLdetails")/1000)</Value>
+          </Textbox>
+          <Textbox Name="waiting_2">
+            <rd:DefaultName>waiting_2</rd:DefaultName>
+            <Top>1cm</Top>
+            <Action>
+              <Drillthrough>
+                <ReportName>SessMon_SQL_waits_Async</ReportName>
+                <Parameters>
+                  <Parameter Name="p_StartTime">
+                    <Value>=Format(first(Fields!timestamp_start.Value, "SQLinfo"),"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                  </Parameter>
+                  <Parameter Name="p_EndTime">
+                    <Value>=Format(first(Fields!timestamp_end.Value, "SQLinfo"),"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                  </Parameter>
+                  <Parameter Name="p_tsql_stack">
+                    <Value>=First(Fields!tsql_stack.Value, "SQLinfo")</Value>
+                  </Parameter>
+                </Parameters>
+              </Drillthrough>
+            </Action>
+            <Width>3.25cm</Width>
+            <Style>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <TextAlign>Left</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+              <Direction>RTL</Direction>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.75cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!waiting.Value, "SQLdetails")</Value>
+          </Textbox>
+          <Textbox Name="cpu_2">
+            <rd:DefaultName>cpu_2</rd:DefaultName>
+            <Top>1cm</Top>
+            <Action>
+              <Drillthrough>
+                <ReportName>SessMon_SQL_cpu_Async</ReportName>
+                <Parameters>
+                  <Parameter Name="p_EndTime">
+                    <Value>=Format(first(Fields!timestamp_end.Value, "SQLinfo"),"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                  </Parameter>
+                  <Parameter Name="p_tsql_stack">
+                    <Value>=First(Fields!tsql_stack.Value, "SQLinfo")</Value>
+                  </Parameter>
+                </Parameters>
+              </Drillthrough>
+            </Action>
+            <Width>2.75cm</Width>
+            <Style>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <TextAlign>Left</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+              <Direction>RTL</Direction>
+            </Style>
+            <CanGrow>true</CanGrow>
+            <Left>3cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!cpu.Value, "SQLdetails")</Value>
+          </Textbox>
+        </ReportItems>
+        <Top>6.25cm</Top>
+        <Width>11.5cm</Width>
+        <Height>3.25cm</Height>
+      </Rectangle>
+      <Chart Name="chart1">
+        <Legend>
+          <Visible>true</Visible>
+          <Style>
+            <BackgroundGradientType>Center</BackgroundGradientType>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+          </Style>
+          <Position>LeftTop</Position>
+        </Legend>
+        <CategoryAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+          </Axis>
+        </CategoryAxis>
+        <ZIndex>8</ZIndex>
+        <DataSetName>SQLdetails</DataSetName>
+        <PlotArea>
+          <Style>
+            <BackgroundColor>White</BackgroundColor>
+          </Style>
+        </PlotArea>
+        <ThreeDProperties>
+          <Enabled>true</Enabled>
+          <Rotation>30</Rotation>
+          <Inclination>30</Inclination>
+          <Shading>Simple</Shading>
+          <WallThickness>50</WallThickness>
+        </ThreeDProperties>
+        <PointWidth>0</PointWidth>
+        <SeriesGroupings>
+          <SeriesGrouping>
+            <StaticSeries>
+              <StaticMember>
+                <Label>Working</Label>
+              </StaticMember>
+              <StaticMember>
+                <Label>Waiting</Label>
+              </StaticMember>
+            </StaticSeries>
+          </SeriesGrouping>
+        </SeriesGroupings>
+        <Top>6.5cm</Top>
+        <Subtype>Plain</Subtype>
+        <ValueAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <ShowGridLines>true</ShowGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Margin>true</Margin>
+            <Visible>true</Visible>
+            <Scalar>true</Scalar>
+          </Axis>
+        </ValueAxis>
+        <Type>Pie</Type>
+        <Width>10.75cm</Width>
+        <Palette>Default</Palette>
+        <ChartData>
+          <ChartSeries>
+            <DataPoints>
+              <DataPoint>
+                <DataValues>
+                  <DataValue>
+                    <Value>=sum(Fields!cpu.Value)</Value>
+                  </DataValue>
+                </DataValues>
+                <DataLabel>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                  </Style>
+                  <Value>=round((sum(Fields!cpu.Value))/sum(Fields!waiting.Value+Fields!cpu.Value)*100) &amp; " %"</Value>
+                  <Visible>true</Visible>
+                </DataLabel>
+                <Action>
+                  <Drillthrough>
+                    <ReportName>SessMon_SQL_cpu_Async</ReportName>
+                    <Parameters>
+                      <Parameter Name="p_EndTime">
+                        <Value>=Format(Fields!timestamp_end.Value,"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                      </Parameter>
+                      <Parameter Name="p_tsql_stack">
+                        <Value>=Fields!tsql_stack.Value</Value>
+                      </Parameter>
+                    </Parameters>
+                  </Drillthrough>
+                </Action>
+                <Style>
+                  <BackgroundColor>SteelBlue</BackgroundColor>
+                  <BorderColor>
+                    <Default>Black</Default>
+                  </BorderColor>
+                </Style>
+                <Marker>
+                  <Type>Diamond</Type>
+                  <Size>6pt</Size>
+                </Marker>
+              </DataPoint>
+            </DataPoints>
+          </ChartSeries>
+          <ChartSeries>
+            <DataPoints>
+              <DataPoint>
+                <DataValues>
+                  <DataValue>
+                    <Value>=Sum(Fields!waiting.Value)</Value>
+                  </DataValue>
+                </DataValues>
+                <DataLabel>
+                  <Style>
+                    <FontWeight>700</FontWeight>
+                  </Style>
+                  <Value>=round((sum(Fields!waiting.Value))/sum(Fields!waiting.Value+Fields!cpu.Value)*100) &amp; " %"</Value>
+                  <Visible>true</Visible>
+                </DataLabel>
+                <Action>
+                  <Drillthrough>
+                    <ReportName>SessMon_SQL_waits_Async</ReportName>
+                    <Parameters>
+                      <Parameter Name="p_EndTime">
+                        <Value>=Format(Fields!timestamp_end.Value,"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                      </Parameter>
+                      <Parameter Name="p_tsql_stack">
+                        <Value>=Fields!tsql_stack.Value</Value>
+                      </Parameter>
+                      <Parameter Name="p_StartTime">
+                        <Value>=Format(Fields!timestamp_begin.Value,"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                      </Parameter>
+                    </Parameters>
+                  </Drillthrough>
+                </Action>
+                <Style>
+                  <BackgroundColor>IndianRed</BackgroundColor>
+                  <BorderColor>
+                    <Default>Black</Default>
+                  </BorderColor>
+                </Style>
+                <Marker>
+                  <Type>Auto</Type>
+                  <Size>6pt</Size>
+                </Marker>
+              </DataPoint>
+            </DataPoints>
+          </ChartSeries>
+        </ChartData>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+          <BackgroundGradientEndColor>White</BackgroundGradientEndColor>
+          <BackgroundGradientType>TopBottom</BackgroundGradientType>
+        </Style>
+        <Title>
+          <Style>
+            <FontFamily>Tahoma</FontFamily>
+            <FontSize>14pt</FontSize>
+            <FontWeight>800</FontWeight>
+          </Style>
+        </Title>
+        <Height>4.5cm</Height>
+        <Left>11.5cm</Left>
+      </Chart>
+      <Textbox Name="textbox28">
+        <rd:DefaultName>textbox28</rd:DefaultName>
+        <Top>5.5cm</Top>
+        <Width>9.75cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>7</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Statement response time</Value>
+      </Textbox>
+      <Line Name="line1">
+        <Top>1.75cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>6</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Textbox Name="textbox22">
+        <Top>1cm</Top>
+        <Width>14cm</Width>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>5</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Level 2: Statement Level Response Time</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Width>15cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>20pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>4</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Height>0.91429cm</Height>
+        <Value>Extended Events: Time Based Tuning</Value>
+      </Textbox>
+      <Table Name="table2">
+        <ZIndex>3</ZIndex>
+        <DataSetName>SQLdetails</DataSetName>
+        <Top>15.5cm</Top>
+        <Width>22cm</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox8">
+                      <Style>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!sql_text.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.53333cm</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox11">
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>sql text</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.55873cm</Height>
+            </TableRow>
+          </TableRows>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>22cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>1.09206cm</Height>
+        <Left>0.5cm</Left>
+      </Table>
+      <Table Name="table1">
+        <ZIndex>2</ZIndex>
+        <DataSetName>SQLdetails</DataSetName>
+        <Top>11.75cm</Top>
+        <Width>18cm</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox17">
+                      <rd:DefaultName>textbox17</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>4</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Sum(Fields!reads.Value+Fields!writes.Value)</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="reads">
+                      <rd:DefaultName>reads</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>3</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!reads.Value-Sum(Fields!physical_reads.Value, "PhysicalIO_counter")</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="physical_reads">
+                      <rd:DefaultName>physical_reads</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Sum(Fields!physical_reads.Value, "PhysicalIO_counter")</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="writes">
+                      <rd:DefaultName>writes</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!writes.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="source_db_name">
+                      <rd:DefaultName>source_db_name</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!source_db_name.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.53333cm</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox14">
+                      <rd:DefaultName>textbox14</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>9</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>Total I/O</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox7">
+                      <rd:DefaultName>textbox7</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>8</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>Logical reads</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox5">
+                      <rd:DefaultName>textbox5</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>7</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>Physical reads</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox10">
+                      <rd:DefaultName>textbox10</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>6</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>Writes</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox6">
+                      <rd:DefaultName>textbox6</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>5</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>Source db name</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.55873cm</Height>
+            </TableRow>
+          </TableRows>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>3.5cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.5cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.5cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.75cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.75cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>1.09206cm</Height>
+        <Left>0.5cm</Left>
+      </Table>
+      <Rectangle Name="rectangle2">
+        <Left>0.5cm</Left>
+        <ZIndex>1</ZIndex>
+        <ReportItems>
+          <Textbox Name="textbox12">
+            <Top>3.25cm</Top>
+            <Width>1cm</Width>
+            <Style>
+              <FontSize>8pt</FontSize>
+              <TextDecoration>Underline</TextDecoration>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>8</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Value />
+          </Textbox>
+          <Textbox Name="session_id_1">
+            <rd:DefaultName>session_id_1</rd:DefaultName>
+            <Top>1cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>7</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=First(Fields!session_id.Value, "SQLinfo")</Value>
+          </Textbox>
+          <Textbox Name="textbox16">
+            <Top>1cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>6</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>14cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=int(Sum(Fields!duration.Value, "SQLinfo") / 1000)</Value>
+          </Textbox>
+          <Textbox Name="textbox26">
+            <Top>2.5cm</Top>
+            <Width>5cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>5</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Statement stop time</Value>
+          </Textbox>
+          <Textbox Name="textbox25">
+            <Top>2.5cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>4</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=(First(Format(Fields!timestamp_end.Value,"yyyy.MM.dd HH:mm:ss.fff"), "SQLinfo"))</Value>
+          </Textbox>
+          <Textbox Name="textbox24">
+            <Top>1.75cm</Top>
+            <Width>5cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>3</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Statement start time</Value>
+          </Textbox>
+          <Textbox Name="textbox23">
+            <Top>1.75cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>2</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=(First(Format(Fields!timestamp_start.Value,"yyyy.MM.dd HH:mm:ss.fff"), "SQLinfo"))</Value>
+          </Textbox>
+          <Textbox Name="textbox19">
+            <rd:DefaultName>textbox19</rd:DefaultName>
+            <Top>1cm</Top>
+            <Width>5cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Session id</Value>
+          </Textbox>
+          <Textbox Name="textbox15">
+            <Top>1cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <CanGrow>true</CanGrow>
+            <Left>11cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Time frame</Value>
+          </Textbox>
+        </ReportItems>
+        <Top>1cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BackgroundColor>Gainsboro</BackgroundColor>
+          <BorderColor>
+            <Default>Silver</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <Height>3.75cm</Height>
+      </Rectangle>
+      <Table Name="table3">
+        <DataSetName>SQLdetails</DataSetName>
+        <Top>13.5cm</Top>
+        <Width>14.5cm</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="plan_handle_1">
+                      <rd:DefaultName>plan_handle_1</rd:DefaultName>
+                      <Style>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!plan_handle.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.58642cm</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox18">
+                      <rd:DefaultName>textbox18</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>DarkGray</BackgroundColor>
+                        <BorderColor>
+                          <Default>DimGray</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>11pt</FontSize>
+                        <FontWeight>700</FontWeight>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>plan handle</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.58642cm</Height>
+            </TableRow>
+          </TableRows>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>14.5cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>1.75cm</Height>
+        <Footer>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox31">
+                      <rd:DefaultName>textbox31</rd:DefaultName>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.57716cm</Height>
+            </TableRow>
+          </TableRows>
+        </Footer>
+        <Left>0.5cm</Left>
+      </Table>
+    </ReportItems>
+    <Height>17.09206cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>2.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

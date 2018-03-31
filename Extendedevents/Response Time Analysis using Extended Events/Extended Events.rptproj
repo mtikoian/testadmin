@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <State>$base64$PFNvdXJjZUNvbnRyb2xJbmZvIHhtbG5zOnhzZD0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zOmR3ZD0iaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS9EYXRhV2FyZWhvdXNlL0Rlc2lnbmVyLzEuMCI+DQogIDxFbmFibGVkPmZhbHNlPC9FbmFibGVkPg0KICA8UHJvamVjdE5hbWU+PC9Qcm9qZWN0TmFtZT4NCiAgPEF1eFBhdGg+PC9BdXhQYXRoPg0KICA8TG9jYWxQYXRoPjwvTG9jYWxQYXRoPg0KICA8UHJvdmlkZXI+PC9Qcm92aWRlcj4NCjwvU291cmNlQ29udHJvbEluZm8+</State>
+  <DataSources>
+    <ProjectItem>
+      <Name>master.rds</Name>
+      <FullPath>master.rds</FullPath>
+    </ProjectItem>
+  </DataSources>
+  <Reports>
+    <ProjectItem>
+      <Name>SessMon_Base_CPU_Async.rdl</Name>
+      <FullPath>SessMon_Base_CPU_Async.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SessMon_Base_Details_Async.rdl</Name>
+      <FullPath>SessMon_Base_Details_Async.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SessMon_Base_Waits_Async.rdl</Name>
+      <FullPath>SessMon_Base_Waits_Async.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SessMon_BaseReport_Async.rdl</Name>
+      <FullPath>SessMon_BaseReport_Async.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SessMon_SQL_cpu_Async.rdl</Name>
+      <FullPath>SessMon_SQL_cpu_Async.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SessMon_SQL_waits_Async.rdl</Name>
+      <FullPath>SessMon_SQL_waits_Async.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SessMon_SQLRerport_Async.rdl</Name>
+      <FullPath>SessMon_SQLRerport_Async.rdl</FullPath>
+    </ProjectItem>
+  </Reports>
+  <Configurations>
+    <Configuration>
+      <Name>Debug</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetServerURL>http://localhost/ReportServer</TargetServerURL>
+        <TargetFolder>Extended Events</TargetFolder>
+        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
+        <StartItem>SessMon_BaseReport.rdl</StartItem>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>DebugLocal</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>Extended Events</TargetFolder>
+        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>Production</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>Extended Events</TargetFolder>
+        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
+      </Options>
+    </Configuration>
+  </Configurations>
+</Project>

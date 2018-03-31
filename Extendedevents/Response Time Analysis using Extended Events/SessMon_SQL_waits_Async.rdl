@@ -1,0 +1,1540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="SQLdetails">
+      <rd:DataSourceID>2d1850dd-35f2-41d2-8412-4a15c849891d</rd:DataSourceID>
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString>Data Source=W2003EE-SS2008;Initial Catalog=Xevent</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
+      </ConnectionProperties>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>29.7cm</InteractiveHeight>
+  <ReportParameters>
+    <ReportParameter Name="p_tsql_stack">
+      <DataType>String</DataType>
+      <Prompt>p_tsql_stack</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="p_EndTime">
+      <DataType>String</DataType>
+      <Prompt>p_EndTime</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="p_StartTime">
+      <DataType>String</DataType>
+      <Prompt>p_StartTime</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>21cm</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>2.5cm</RightMargin>
+  <LeftMargin>2.5cm</LeftMargin>
+  <BottomMargin>2.5cm</BottomMargin>
+  <rd:ReportID>b4e7bb6e-9b69-40b3-bb36-9588d554b057</rd:ReportID>
+  <PageWidth>21cm</PageWidth>
+  <DataSets>
+    <DataSet Name="SQLdetails">
+      <Fields>
+        <Field Name="event_name">
+          <DataField>event_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="timestamp">
+          <DataField>timestamp</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="source_database_id">
+          <DataField>source_database_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="object_id">
+          <DataField>object_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="object_type">
+          <DataField>object_type</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="cpu">
+          <DataField>cpu</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="waiting">
+          <DataField>waiting</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="reads">
+          <DataField>reads</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="writes">
+          <DataField>writes</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="session_id">
+          <DataField>session_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="sql_text">
+          <DataField>sql_text</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="plan_handle">
+          <DataField>plan_handle</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="tsql_stack">
+          <DataField>tsql_stack</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>SQLdetails</DataSourceName>
+        <CommandText>;WITH SQLdetails_CTE(event_name, timestamp, source_database_id, object_id, object_type, cpu, duration, waiting, reads, writes, session_id, sql_text, plan_handle, tsql_stack) AS 
+(
+	SELECT	target_data.value('(event/@name)[1]', 'varchar(30)'),
+			target_data.value('(event/@timestamp)[1]', 'varchar(30)'),
+			target_data.value('(event/data/value)[1]', 'int'),
+			target_data.value('(event/data/value)[2]', 'int'),
+			target_data.value('(event/data/value)[3]', 'int'),
+			target_data.value('(event/data/value)[4]', 'int'), 
+			target_data.value('(event/data/value)[5]', 'int'), 
+			(target_data.value('(event/data/value)[5]', 'int')/1000) - (target_data.value('(event/data/value)[4]', 'int')),
+			target_data.value('(event/data/value)[6]', 'int'), 
+			target_data.value('(event/data/value)[7]', 'int'), 
+			target_data.value('(event/action/value)[1]', 'int'),
+			target_data.value('(event/action/value)[2]', 'varchar(max)'),
+			target_data.value('(event/action/value)[3]', 'varchar(max)'),
+			target_data.value('(event/action/value)[4]', 'varchar(max)')
+			FROM dbo.XEtable 
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sql_statement_completed'
+	UNION ALL
+			SELECT	target_data.value('(event/@name)[1]', 'varchar(30)'),
+			target_data.value('(event/@timestamp)[1]', 'varchar(30)'),
+			target_data.value('(event/data/value)[1]', 'int'),
+			target_data.value('(event/data/value)[2]', 'int'),
+			target_data.value('(event/data/value)[3]', 'int'),
+			target_data.value('(event/data/value)[4]', 'int'), 
+			target_data.value('(event/data/value)[5]', 'int'), 
+			(target_data.value('(event/data/value)[5]', 'int')/1000 - target_data.value('(event/data/value)[4]', 'int')) ,
+			target_data.value('(event/data/value)[6]', 'int'), 
+			target_data.value('(event/data/value)[7]', 'int'), 
+			target_data.value('(event/action/value)[1]', 'int'),
+			target_data.value('(event/action/value)[2]', 'varchar(max)'),
+			target_data.value('(event/action/value)[3]', 'varchar(max)'),
+			target_data.value('(event/action/value)[4]', 'varchar(max)')
+			FROM dbo.XEtable 
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sp_statement_completed'
+)
+SELECT * FROM SQLdetails_CTE
+WHERE 	timestamp = @p_EndTime
+AND         tsql_stack = @p_tsql_stack</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_tsql_stack">
+            <Value>=Parameters!p_tsql_stack.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="SQLinfo">
+      <Fields>
+        <Field Name="timestamp_start">
+          <DataField>timestamp_start</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="timestamp_end">
+          <DataField>timestamp_end</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="session_id">
+          <DataField>session_id</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="tsql_stack">
+          <DataField>tsql_stack</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>SQLdetails</DataSourceName>
+        <CommandText>;WITH SQLinfo_CTE(timestamp_start, timestamp_end, duration, session_id, tsql_stack) AS 
+(
+			SELECT	DATEADD(ms, -(target_data.value('(event/data/value)[5]', 'int')/1000), target_data.value('(event/@timestamp)[1]', 'datetime2')),
+					target_data.value('(event/@timestamp)[1]', 'datetime'),
+					target_data.value('(event/data/value)[5]', 'int'), 
+					target_data.value('(event/action/value)[1]', 'varchar(max)'),
+					target_data.value('(event/action/value)[4]', 'varchar(max)')
+				FROM dbo.XEtable
+				WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sql_statement_completed'
+		UNION 
+						SELECT	DATEADD(ms, -(target_data.value('(event/data/value)[5]', 'int')/1000), target_data.value('(event/@timestamp)[1]', 'datetime2')),
+					target_data.value('(event/@timestamp)[1]', 'datetime'),
+					target_data.value('(event/data/value)[5]', 'int'), 
+					target_data.value('(event/action/value)[1]', 'varchar(max)'),
+					target_data.value('(event/action/value)[4]', 'varchar(max)')
+				FROM dbo.XEtable
+				WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sp_statement_completed'
+)
+SELECT * FROM SQLinfo_CTE
+WHERE 	timestamp_end = @p_EndTime
+AND         tsql_stack = @p_tsql_stack</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_tsql_stack">
+            <Value>=Parameters!p_tsql_stack.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="SQL_Top5waits">
+      <Fields>
+        <Field Name="wait_type">
+          <DataField>wait_type</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="signal_duration">
+          <DataField>signal_duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="itirations">
+          <DataField>itirations</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>SQLdetails</DataSourceName>
+        <CommandText>;WITH wait_info_CTE(wait_type, timestamp, duration, signal_duration) AS 
+(
+   SELECT 	(select map_value from sys.dm_xe_map_values where name = 'wait_types'  and map_key = target_data.value('(event/data/value)[1]', 'int') ),
+			target_data.value('(event/@timestamp)[1]', 'datetime2'), 
+			target_data.value('(event/data/value)[3]', 'int'),
+			target_data.value('(event/data/value)[6]', 'int')
+	FROM dbo.XEtable
+	WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'wait_info'
+	AND target_data.value('(event/data/value)[2]', 'int') = '1'
+)
+SELECT wait_type, sum(duration) duration, sum(signal_duration) signal_duration, COUNT(wait_type) itirations FROM wait_info_CTE
+where timestamp between @p_StartTime and @p_EndTime
+group by wait_type
+HAVING (sum(duration)+sum(signal_duration)) != 0
+order by duration</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_StartTime">
+            <Value>=Parameters!p_StartTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="SQL_WaitTimeDetails">
+      <Fields>
+        <Field Name="timestamp">
+          <DataField>timestamp</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="wait_type">
+          <DataField>wait_type</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="signal_duration">
+          <DataField>signal_duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="completed_count">
+          <DataField>completed_count</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>SQLdetails</DataSourceName>
+        <CommandText>;WITH wait_info_CTE(timestamp, wait_type, duration, signal_duration, completed_count) AS 
+(
+   SELECT  	target_data.value('(event/@timestamp)[1]', 'datetime2'),
+			(select map_value from sys.dm_xe_map_values where name = 'wait_types'  and map_key = target_data.value('(event/data/value)[1]', 'int') ), 
+			target_data.value('(event/data/value)[3]', 'int'),
+			target_data.value('(event/data/value)[6]', 'int'),
+			target_data.value('(event/data/value)[7]', 'int')
+	FROM dbo.XEtable
+	WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'wait_info'
+)
+SELECT *  FROM wait_info_CTE
+where timestamp between @p_StartTime and @p_EndTime
+order by timestamp</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@p_StartTime">
+            <Value>=Parameters!p_StartTime.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@p_EndTime">
+            <Value>=Parameters!p_EndTime.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Width>34.03968cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Chart Name="chart1">
+        <Legend>
+          <Visible>true</Visible>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+          </Style>
+          <Position>TopCenter</Position>
+        </Legend>
+        <CategoryAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Visible>true</Visible>
+          </Axis>
+        </CategoryAxis>
+        <ZIndex>10</ZIndex>
+        <DataSetName>SQL_Top5waits</DataSetName>
+        <PlotArea>
+          <Style>
+            <BackgroundColor>White</BackgroundColor>
+          </Style>
+        </PlotArea>
+        <ThreeDProperties>
+          <Enabled>true</Enabled>
+          <Rotation>35</Rotation>
+          <Inclination>25</Inclination>
+          <Shading>Simple</Shading>
+        </ThreeDProperties>
+        <PointWidth>0</PointWidth>
+        <SeriesGroupings>
+          <SeriesGrouping>
+            <DynamicSeries>
+              <Grouping Name="chart1_SeriesGroup1">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!wait_type.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Label>=Fields!wait_type.Value</Label>
+            </DynamicSeries>
+          </SeriesGrouping>
+        </SeriesGroupings>
+        <Top>6cm</Top>
+        <Subtype>Plain</Subtype>
+        <ValueAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <ShowGridLines>true</ShowGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Margin>true</Margin>
+            <Visible>true</Visible>
+            <Scalar>true</Scalar>
+          </Axis>
+        </ValueAxis>
+        <Type>Pie</Type>
+        <Width>9.25cm</Width>
+        <Palette>Light</Palette>
+        <ChartData>
+          <ChartSeries>
+            <DataPoints>
+              <DataPoint>
+                <DataValues>
+                  <DataValue>
+                    <Value>=Sum(Fields!duration.Value)</Value>
+                  </DataValue>
+                </DataValues>
+                <DataLabel>
+                  <Value>=round((Fields!duration.Value+Fields!signal_duration.Value)/(Sum(Fields!duration.Value, "SQL_Top5waits")+Sum(Fields!signal_duration.Value, "SQL_Top5waits"))*100) &amp; " %"</Value>
+                  <Visible>true</Visible>
+                </DataLabel>
+                <Style>
+                  <BackgroundGradientEndColor>White</BackgroundGradientEndColor>
+                  <BackgroundGradientType>DiagonalLeft</BackgroundGradientType>
+                </Style>
+                <Marker>
+                  <Size>6pt</Size>
+                </Marker>
+              </DataPoint>
+            </DataPoints>
+          </ChartSeries>
+        </ChartData>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+          <BackgroundGradientEndColor>White</BackgroundGradientEndColor>
+        </Style>
+        <Title />
+        <Height>5.5cm</Height>
+        <Left>13cm</Left>
+      </Chart>
+      <Table Name="table1">
+        <ZIndex>9</ZIndex>
+        <DataSetName>SQL_WaitTimeDetails</DataSetName>
+        <Top>11.75cm</Top>
+        <TableGroups>
+          <TableGroup>
+            <Grouping Name="table1_Group1">
+              <GroupExpressions>
+                <GroupExpression>=Fields!wait_type.Value</GroupExpression>
+              </GroupExpressions>
+            </Grouping>
+            <Sorting>
+              <SortBy>
+                <SortExpression>=Fields!duration.Value</SortExpression>
+                <Direction>Descending</Direction>
+              </SortBy>
+            </Sorting>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="wait_type_3">
+                          <rd:DefaultName>wait_type_3</rd:DefaultName>
+                          <Style>
+                            <BorderColor>
+                              <Default>LightGrey</Default>
+                            </BorderColor>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <FontFamily>Tahoma</FontFamily>
+                            <FontWeight>700</FontWeight>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>9</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!wait_type.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox15">
+                          <rd:DefaultName>textbox15</rd:DefaultName>
+                          <Style>
+                            <BorderColor>
+                              <Default>LightGrey</Default>
+                            </BorderColor>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <FontFamily>Tahoma</FontFamily>
+                            <FontWeight>700</FontWeight>
+                            <TextAlign>Right</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>8</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="duration_1">
+                          <rd:DefaultName>duration_1</rd:DefaultName>
+                          <Style>
+                            <BackgroundColor>LightCoral</BackgroundColor>
+                            <BorderColor>
+                              <Default>LightGrey</Default>
+                            </BorderColor>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <FontFamily>Tahoma</FontFamily>
+                            <FontWeight>700</FontWeight>
+                            <TextAlign>Right</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>7</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Sum(Fields!duration.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="signal_duration_2">
+                          <rd:DefaultName>signal_duration_2</rd:DefaultName>
+                          <Style>
+                            <BorderColor>
+                              <Default>LightGrey</Default>
+                            </BorderColor>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <FontFamily>Tahoma</FontFamily>
+                            <FontWeight>700</FontWeight>
+                            <TextAlign>Right</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>6</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Sum(Fields!signal_duration.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="completed_count_1">
+                          <rd:DefaultName>completed_count_1</rd:DefaultName>
+                          <Style>
+                            <BorderColor>
+                              <Default>LightGrey</Default>
+                            </BorderColor>
+                            <BorderStyle>
+                              <Default>Solid</Default>
+                            </BorderStyle>
+                            <FontFamily>Tahoma</FontFamily>
+                            <FontWeight>700</FontWeight>
+                            <TextAlign>Right</TextAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                          <ZIndex>5</ZIndex>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Count(Fields!wait_type.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.63492cm</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+          </TableGroup>
+        </TableGroups>
+        <Width>21.75cm</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="wait_type_2">
+                      <rd:DefaultName>wait_type_2</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "White", "Whitesmoke")</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>4</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!wait_type.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="timestamp">
+                      <rd:DefaultName>timestamp</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "White", "Whitesmoke")</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>3</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Format(Fields!timestamp.Value,"yyyy.MM.dd HH:mm:ss.fff")</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="duration">
+                      <rd:DefaultName>duration</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "White", "Whitesmoke")</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!duration.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="signal_duration">
+                      <rd:DefaultName>signal_duration</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "White", "Whitesmoke")</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!signal_duration.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="completed_count">
+                      <rd:DefaultName>completed_count</rd:DefaultName>
+                      <Style>
+                        <BackgroundColor>=iif(RowNumber(Nothing) Mod 2, "White", "Whitesmoke")</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=(Fields!completed_count.Value-MIN(Fields!completed_count.Value))+1</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.74956cm</Height>
+            </TableRow>
+          </TableRows>
+          <Visibility>
+            <Hidden>true</Hidden>
+            <ToggleItem>wait_type_3</ToggleItem>
+          </Visibility>
+        </Details>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox8">
+                      <rd:DefaultName>textbox8</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>14</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>wait type</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox12">
+                      <rd:DefaultName>textbox12</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>13</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>timestamp</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox9">
+                      <rd:DefaultName>textbox9</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>12</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>wait time</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox10">
+                      <rd:DefaultName>textbox10</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>11</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>signal duration</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox11">
+                      <rd:DefaultName>textbox11</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>10</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>number of waits</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.74956cm</Height>
+            </TableRow>
+          </TableRows>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>7.25cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>4.5cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.25cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.25cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>3.5cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>2.13404cm</Height>
+        <Left>0.5cm</Left>
+      </Table>
+      <Line Name="line2">
+        <Top>11.25cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>8</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Textbox Name="textbox7">
+        <Top>10.5cm</Top>
+        <Width>10.25cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>7</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Statement wait time details</Value>
+      </Textbox>
+      <Textbox Name="textbox30">
+        <rd:DefaultName>textbox30</rd:DefaultName>
+        <Top>5cm</Top>
+        <Width>8.25cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>6</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Statement top 5 wait events</Value>
+      </Textbox>
+      <Table Name="table3">
+        <ZIndex>5</ZIndex>
+        <DataSetName>SQL_Top5waits</DataSetName>
+        <Filters>
+          <Filter>
+            <FilterExpression>=Fields!duration.Value</FilterExpression>
+            <Operator>TopN</Operator>
+            <FilterValues>
+              <FilterValue>= 10</FilterValue>
+            </FilterValues>
+          </Filter>
+        </Filters>
+        <Top>6cm</Top>
+        <Width>12.25cm</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="wait_type_1">
+                      <rd:DefaultName>wait_type_1</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>2</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!wait_type.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <Style>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>1</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!duration.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="signal_duration_1">
+                      <rd:DefaultName>signal_duration_1</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!signal_duration.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.66667cm</Height>
+            </TableRow>
+          </TableRows>
+          <Sorting>
+            <SortBy>
+              <SortExpression>=Fields!duration.Value</SortExpression>
+              <Direction>Descending</Direction>
+            </SortBy>
+          </Sorting>
+        </Details>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox27">
+                      <rd:DefaultName>textbox27</rd:DefaultName>
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>8</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>wait type</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox5">
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>7</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>wait time </Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox13">
+                      <Style>
+                        <Color>White</Color>
+                        <BackgroundColor>IndianRed</BackgroundColor>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <BorderStyle>
+                          <Default>Solid</Default>
+                        </BorderStyle>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>6</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value>signal time</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.66667cm</Height>
+            </TableRow>
+          </TableRows>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>7.5cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>2.25cm</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>2.5cm</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>2.00001cm</Height>
+        <Footer>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox33">
+                      <rd:DefaultName>textbox33</rd:DefaultName>
+                      <Style>
+                        <BorderColor>
+                          <Default>LightGrey</Default>
+                        </BorderColor>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>5</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox34">
+                      <rd:DefaultName>textbox34</rd:DefaultName>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>4</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox35">
+                      <rd:DefaultName>textbox35</rd:DefaultName>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                        <PaddingBottom>2pt</PaddingBottom>
+                      </Style>
+                      <ZIndex>3</ZIndex>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.66667cm</Height>
+            </TableRow>
+          </TableRows>
+        </Footer>
+        <Left>0.5cm</Left>
+      </Table>
+      <Line Name="line3">
+        <Top>5.75cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>4</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Line Name="line1">
+        <Top>1.75cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>3</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Textbox Name="textbox22">
+        <Top>1cm</Top>
+        <Width>13.25cm</Width>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>2</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Level 3: Statement Level Wait Time</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Width>15cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>20pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Height>0.91429cm</Height>
+        <Value>Extended Events: Time Based Tuning</Value>
+      </Textbox>
+      <Rectangle Name="rectangle2">
+        <Left>0.5cm</Left>
+        <ReportItems>
+          <Textbox Name="textbox41">
+            <Top>1.75cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>IndianRed</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>10</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>11cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Wait time</Value>
+          </Textbox>
+          <Textbox Name="textbox47">
+            <Top>1.75cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontWeight>700</FontWeight>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>9</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>14cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!duration.Value, "SQL_WaitTimeDetails")+Sum(Fields!signal_duration.Value, "SQL_WaitTimeDetails")</Value>
+          </Textbox>
+          <Textbox Name="textbox37">
+            <Top>1cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>8</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>11cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Time frame</Value>
+          </Textbox>
+          <Textbox Name="textbox38">
+            <Top>1cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>7</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>14cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=int(Sum(Fields!duration.Value, "SQLinfo") / 1000)</Value>
+          </Textbox>
+          <Textbox Name="textbox48">
+            <ToolTip>Press for more details</ToolTip>
+            <Top>3.25cm</Top>
+            <Width>1cm</Width>
+            <Style>
+              <FontSize>8pt</FontSize>
+              <TextDecoration>Underline</TextDecoration>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>6</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Value />
+          </Textbox>
+          <Textbox Name="textbox19">
+            <rd:DefaultName>textbox19</rd:DefaultName>
+            <Top>1cm</Top>
+            <Width>5cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>5</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Session id</Value>
+          </Textbox>
+          <Textbox Name="textbox24">
+            <Top>1.75cm</Top>
+            <Width>5cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>4</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Trace start time</Value>
+          </Textbox>
+          <Textbox Name="textbox26">
+            <Top>2.5cm</Top>
+            <Width>5cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>3</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>0.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>Trace stop time</Value>
+          </Textbox>
+          <Textbox Name="session_id_1">
+            <rd:DefaultName>session_id_1</rd:DefaultName>
+            <Top>1cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontWeight>700</FontWeight>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+              <Direction>RTL</Direction>
+            </Style>
+            <ZIndex>2</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=First(Fields!session_id.Value, "SQLinfo")</Value>
+          </Textbox>
+          <Textbox Name="textbox23">
+            <Top>1.75cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Left</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>5.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=First(Format(Fields!timestamp_start.Value,"yyyy.MM.dd HH:mm:ss.fff"), "SQLinfo")</Value>
+          </Textbox>
+          <Textbox Name="textbox25">
+            <Top>2.5cm</Top>
+            <Width>5.25cm</Width>
+            <Style>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+              <BorderColor>
+                <Default>White</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Left</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <CanGrow>true</CanGrow>
+            <Left>5.25cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=First(Format(Fields!timestamp_end.Value,"yyyy.MM.dd HH:mm:ss.fff"), "SQLinfo")</Value>
+          </Textbox>
+        </ReportItems>
+        <Top>1cm</Top>
+        <Width>21.75cm</Width>
+        <Style>
+          <BackgroundColor>Gainsboro</BackgroundColor>
+          <BorderColor>
+            <Default>Silver</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <Height>3.75cm</Height>
+      </Rectangle>
+    </ReportItems>
+    <Height>14.13404cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>2.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

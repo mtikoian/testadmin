@@ -1,0 +1,679 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="Xeventdb">
+      <rd:DataSourceID>c795258f-8b28-4cf1-9a15-57b9d9036403</rd:DataSourceID>
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString>Data Source=W2003EE-SS2008;Initial Catalog=Xevent</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
+      </ConnectionProperties>
+    </DataSource>
+  </DataSources>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:GridSpacing>0.25cm</rd:GridSpacing>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <RightMargin>2.5cm</RightMargin>
+  <LeftMargin>2.5cm</LeftMargin>
+  <BottomMargin>2.5cm</BottomMargin>
+  <rd:ReportID>31bda83a-2ec8-433c-bf41-9009931cc532</rd:ReportID>
+  <PageWidth>21cm</PageWidth>
+  <DataSets>
+    <DataSet Name="Session_id">
+      <Fields>
+        <Field Name="session_id">
+          <DataField>session_id</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>Xeventdb</DataSourceName>
+        <CommandText>SELECT  (target_data.value('(event/action/value)[1]', 'int')) as session_id
+ 	FROM dbo.XEtable
+	WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'wait_info'</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="Session_info">
+      <Fields>
+        <Field Name="event_name">
+          <DataField>event_name</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="timestamp">
+          <DataField>timestamp</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>Xeventdb</DataSourceName>
+        <CommandText>SELECT (target_data.value('(event/@name)[1]', 'varchar(30)')) event_name,
+			target_data.value('(event/@timestamp)[1]', 'varchar(30)') timestamp
+	FROM dbo.XEtable</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="Session_infoMore">
+      <Fields>
+        <Field Name="ID">
+          <DataField />
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>Xeventdb</DataSourceName>
+        <CommandText>;WITH Session_infoMore_CTE(event_name) AS 
+(
+			SELECT	target_data.value('(event/@name)[1]', 'varchar(30)')
+			FROM dbo.XEtable xest
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sql_statement_completed'
+			UNION ALL
+			SELECT	target_data.value('(event/@name)[1]', 'varchar(30)')
+			FROM dbo.XEtable xest
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sp_statement_completed'
+)
+select COUNT(*) from Session_infoMore_CTE</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="Base_runtimeDetails">
+      <Fields>
+        <Field Name="work_type">
+          <DataField>work_type</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="timestamp">
+          <DataField>timestamp</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="cpu">
+          <DataField>cpu</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="duration">
+          <DataField>duration</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="waiting">
+          <DataField>waiting</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="tsql_stack">
+          <DataField>tsql_stack</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>Xeventdb</DataSourceName>
+        <CommandText>;WITH runtime_details_CTE(work_type, timestamp, cpu, duration, waiting, tsql_stack) AS 
+(
+			SELECT	target_data.value('(event/@name)[1]', 'varchar(30)'),
+					target_data.value('(event/@timestamp)[1]', 'varchar(30)'),
+					target_data.value('(event/data/value)[4]', 'int'), 
+					target_data.value('(event/data/value)[5]', 'int'), 
+					(target_data.value('(event/data/value)[5]', 'int')/1000 - target_data.value('(event/data/value)[4]', 'int')),
+					target_data.value('(event/action/value)[4]', 'varchar(max)')
+			FROM dbo.XEtable xest
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sql_statement_completed'
+			UNION ALL
+			SELECT	target_data.value('(event/@name)[1]', 'varchar(30)'),
+					target_data.value('(event/@timestamp)[1]', 'varchar(30)'),
+					target_data.value('(event/data/value)[4]', 'int'), 
+					target_data.value('(event/data/value)[5]', 'int'), 
+					(target_data.value('(event/data/value)[5]', 'int')/1000 - target_data.value('(event/data/value)[4]', 'int')),
+					target_data.value('(event/action/value)[4]', 'varchar(max)')
+			FROM dbo.XEtable xest
+			WHERE target_data.value('(event/@name)[1]', 'varchar(30)') = 'sp_statement_completed'
+			)
+SELECT CASE work_type
+	   WHEN 'sql_statement_completed' THEN 'sql statement'
+	   WHEN 'sp_statement_completed' THEN 'stored procedure'
+	   WHEN 'rpc_completed' THEN 'rpc call'
+	   END work_type, timestamp, cpu, duration, waiting, tsql_stack 
+	   FROM runtime_details_CTE</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+    <DataSet Name="timeframe">
+      <Fields>
+        <Field Name="hh">
+          <DataField>hh</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="mi">
+          <DataField>mi</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ss">
+          <DataField>ss</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="ms">
+          <DataField>ms</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>Xeventdb</DataSourceName>
+        <CommandText>;WITH wait_info_CTE(min_timestamp, max_timestamp) AS 
+(
+   SELECT  MIN((target_data.value('(event/@timestamp)[1]', 'varchar(30)'))),
+		   MAX(target_data.value('(event/@timestamp)[1]', 'varchar(30)'))
+	FROM dbo.XEtable
+)
+select  DATEDIFF(hh, min_timestamp, max_timestamp) as hh,
+		DATEDIFF(mi, min_timestamp, max_timestamp) as mi,
+		DATEDIFF(ss, min_timestamp, max_timestamp) as ss,
+		DATEDIFF(ms, min_timestamp, max_timestamp) as ms
+FROM wait_info_CTE</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+    </DataSet>
+  </DataSets>
+  <Width>30cm</Width>
+  <Body>
+    <ColumnSpacing>1cm</ColumnSpacing>
+    <ReportItems>
+      <Rectangle Name="rectangle4">
+        <Left>11.5cm</Left>
+        <ZIndex>13</ZIndex>
+        <ToolTip>Press for more details</ToolTip>
+        <ReportItems>
+          <Textbox Name="textbox15">
+            <Top>2.25cm</Top>
+            <Width>3.25cm</Width>
+            <Style>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>7</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>3cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!ms.Value, "timeframe")</Value>
+          </Textbox>
+          <Textbox Name="textbox16">
+            <Top>2.25cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>6</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.75cm</Height>
+            <Value>Milliseconds</Value>
+          </Textbox>
+          <Textbox Name="textbox17">
+            <Top>1.5cm</Top>
+            <Width>3.25cm</Width>
+            <Style>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>5</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>3cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!ss.Value, "timeframe")</Value>
+          </Textbox>
+          <Textbox Name="textbox10">
+            <Top>1.5cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>4</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.75cm</Height>
+            <Value>Seconds</Value>
+          </Textbox>
+          <Textbox Name="textbox11">
+            <Top>0.75cm</Top>
+            <Width>3.25cm</Width>
+            <Style>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>3</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>3cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!mi.Value, "timeframe")</Value>
+          </Textbox>
+          <Textbox Name="textbox14">
+            <Top>0.75cm</Top>
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>2</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Height>0.75cm</Height>
+            <Value>Minutes</Value>
+          </Textbox>
+          <Textbox Name="textbox18">
+            <Width>3.25cm</Width>
+            <Style>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <TextAlign>Right</TextAlign>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <ZIndex>1</ZIndex>
+            <CanGrow>true</CanGrow>
+            <Left>3cm</Left>
+            <Height>0.75cm</Height>
+            <Value>=Sum(Fields!hh.Value, "timeframe")</Value>
+          </Textbox>
+          <Textbox Name="textbox27">
+            <Width>3cm</Width>
+            <Style>
+              <Color>White</Color>
+              <BackgroundColor>DarkGray</BackgroundColor>
+              <BorderColor>
+                <Default>LightGrey</Default>
+              </BorderColor>
+              <BorderStyle>
+                <Default>Solid</Default>
+              </BorderStyle>
+              <FontFamily>Tahoma</FontFamily>
+              <FontSize>11pt</FontSize>
+              <FontWeight>700</FontWeight>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+            <CanGrow>true</CanGrow>
+            <Height>0.75cm</Height>
+            <Value>Hours</Value>
+          </Textbox>
+        </ReportItems>
+        <Top>2cm</Top>
+        <Width>10.25cm</Width>
+        <Height>3.5cm</Height>
+      </Rectangle>
+      <Textbox Name="textbox32">
+        <Top>5cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+          <Direction>RTL</Direction>
+        </Style>
+        <ZIndex>12</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>5.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>=Count(Fields!event_name.Value, "Session_info")</Value>
+      </Textbox>
+      <Textbox Name="textbox33">
+        <Top>5cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <Color>White</Color>
+          <BackgroundColor>DarkGray</BackgroundColor>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>11pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>11</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Number of  events</Value>
+      </Textbox>
+      <Textbox Name="textbox30">
+        <Top>4.25cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+          <Direction>RTL</Direction>
+        </Style>
+        <ZIndex>10</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>5.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>=Sum(Fields!ID.Value, "Session_infoMore")</Value>
+      </Textbox>
+      <Textbox Name="textbox31">
+        <Top>4.25cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <Color>White</Color>
+          <BackgroundColor>DarkGray</BackgroundColor>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>11pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>9</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Number of  executions</Value>
+      </Textbox>
+      <Line Name="line1">
+        <Top>1.75cm</Top>
+        <Width>19cm</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+        </Style>
+        <ZIndex>8</ZIndex>
+        <Left>0.5cm</Left>
+        <Height>0cm</Height>
+      </Line>
+      <Textbox Name="textbox25">
+        <Top>3.5cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>7</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>5.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>=max(Fields!timestamp.Value, "Session_info")</Value>
+      </Textbox>
+      <Textbox Name="textbox26">
+        <Top>3.5cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <Color>White</Color>
+          <BackgroundColor>DarkGray</BackgroundColor>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>11pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>6</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>trace stop time</Value>
+      </Textbox>
+      <Textbox Name="textbox23">
+        <Top>2.75cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>5</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>5.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>=min(Fields!timestamp.Value, "Session_info")</Value>
+      </Textbox>
+      <Textbox Name="textbox24">
+        <Top>2.75cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <Color>White</Color>
+          <BackgroundColor>DarkGray</BackgroundColor>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>11pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>4</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>trace start time</Value>
+      </Textbox>
+      <Textbox Name="session_id_1">
+        <rd:DefaultName>session_id_1</rd:DefaultName>
+        <Top>2cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <FontWeight>700</FontWeight>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+          <Direction>RTL</Direction>
+        </Style>
+        <ZIndex>3</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>5.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>=min(Fields!session_id.Value, "Session_id")</Value>
+      </Textbox>
+      <Textbox Name="textbox19">
+        <rd:DefaultName>textbox19</rd:DefaultName>
+        <Top>2cm</Top>
+        <Width>5cm</Width>
+        <Style>
+          <Color>White</Color>
+          <BackgroundColor>DarkGray</BackgroundColor>
+          <BorderColor>
+            <Default>LightGrey</Default>
+          </BorderColor>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>11pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>2</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Session id</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <Width>15cm</Width>
+        <Style>
+          <Color>DarkGray</Color>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>20pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <ZIndex>1</ZIndex>
+        <CanGrow>true</CanGrow>
+        <Height>0.91429cm</Height>
+        <Value>Extended Events: Time Based Tuning</Value>
+      </Textbox>
+      <Textbox Name="textbox22">
+        <Top>1cm</Top>
+        <Width>8cm</Width>
+        <Style>
+          <FontFamily>Tahoma</FontFamily>
+          <FontSize>14pt</FontSize>
+          <FontWeight>700</FontWeight>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+          <PaddingBottom>2pt</PaddingBottom>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Left>0.5cm</Left>
+        <Height>0.75cm</Height>
+        <Value>Level 1: Session Details Page</Value>
+      </Textbox>
+    </ReportItems>
+    <Height>17.34206cm</Height>
+  </Body>
+  <Language>en-US</Language>
+  <TopMargin>2.5cm</TopMargin>
+  <PageHeight>29.7cm</PageHeight>
+</Report>

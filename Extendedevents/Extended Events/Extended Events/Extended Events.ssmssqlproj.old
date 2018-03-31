@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Extended Events">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="STRATE-02\SQL2008:STRATE-02\Jason Strate">
+          <Created>2009-02-25T18:01:29.302-06:00</Created>
+          <Type>SQL</Type>
+          <Server>STRATE-02\SQL2008</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>AdventureWorks</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="01.01 Extended Event Components.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>01.01 Extended Event Components.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02.01 Severity 20 Error.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.01 Severity 20 Error.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02.02 Black Box Severity.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.02 Black Box Severity.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02.03 Deadlock Extended Event Setup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.03 Deadlock Extended Event Setup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02.04 Deadlock Extended Event Session 1.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.04 Deadlock Extended Event Session 1.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02.05 Deadlock Extended Event Session 2.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.05 Deadlock Extended Event Session 2.sql</FullPath>
+        </FileNode>
+        <FileNode Name="02.06 Black Box Deadlock.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>02.06 Black Box Deadlock.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03.01 Missing Objects.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>03.01 Missing Objects.sql</FullPath>
+        </FileNode>
+        <FileNode Name="04.01 Log Grow-Shrink.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>04.01 Log Grow-Shrink.sql</FullPath>
+        </FileNode>
+        <FileNode Name="04.02 CREATE DATABASE.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>04.02 CREATE DATABASE.sql</FullPath>
+        </FileNode>
+        <FileNode Name="05.01 Latch Contention Setup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>C:\Users\Jason Strate\Documents\Presentations\Library\Extended Events, Work Smarter Not Harder\Samples\05.01 Latch Contention Setup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="05.02 Latch Contention.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>C:\Users\Jason Strate\Documents\Presentations\Library\Extended Events, Work Smarter Not Harder\Samples\05.02 Latch Contention.sql</FullPath>
+        </FileNode>
+        <FileNode Name="05.03 Latch Contention Fix.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>C:\Users\Jason Strate\Documents\Presentations\Library\Extended Events, Work Smarter Not Harder\Samples\05.03 Latch Contention Fix.sql</FullPath>
+        </FileNode>
+        <FileNode Name="06.01 Page Splits Setup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>06.01 Page Splits Setup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="06.02 Page Splits Check.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>06.02 Page Splits Check.sql</FullPath>
+        </FileNode>
+        <FileNode Name="06.03 Page Splits.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>06.03 Page Splits.sql</FullPath>
+        </FileNode>
+        <FileNode Name="9999 Wait Stats.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>9999 Wait Stats.sql</FullPath>
+        </FileNode>
+        <FileNode Name="04.03 Log Grow-Shrink Details.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:STRATE-02\SQL2008:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>STRATE-02\SQL2008</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>04.03 Log Grow-Shrink Details.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>
