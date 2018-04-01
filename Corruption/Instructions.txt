@@ -1,0 +1,3 @@
+See the CHECKDB From Every Angle blog post from 11/24/08 for instructions.
+
+Get the databases from the top of the http://www.SQLskills.com/pastConferences.asp page.

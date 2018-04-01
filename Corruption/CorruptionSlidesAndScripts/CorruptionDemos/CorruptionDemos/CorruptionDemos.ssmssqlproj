@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="CorruptionDemos">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="WIN-TBD636BVKQR:WIN-TBD636BVKQR\Administrator">
+          <Created>2015-01-06T20:05:21.0226218-06:00</Created>
+          <Type>SQL</Type>
+          <Server>WIN-TBD636BVKQR</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>CorruptDemoDB</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="1 - CreateCorruptDemoDB.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>1 - CreateCorruptDemoDB.sql</FullPath>
+        </FileNode>
+        <FileNode Name="2 - CreateCorruptDataTable.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>2 - CreateCorruptDataTable.sql</FullPath>
+        </FileNode>
+        <FileNode Name="3 - CreateFirstNameTable.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>3 - CreateFirstNameTable.sql</FullPath>
+        </FileNode>
+        <FileNode Name="4 - CreateLastNameTable.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>4 - CreateLastNameTable.sql</FullPath>
+        </FileNode>
+        <FileNode Name="5 - CreateNamesTable.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>5 - CreateNamesTable.sql</FullPath>
+        </FileNode>
+        <FileNode Name="6 - CreateDBCCTable.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>6 - CreateDBCCTable.sql</FullPath>
+        </FileNode>
+        <FileNode Name="7 - GetPageIDandOffset.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>7 - GetPageIDandOffset.sql</FullPath>
+        </FileNode>
+        <FileNode Name="8 - GenerateDBCCResults.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>8 - GenerateDBCCResults.sql</FullPath>
+        </FileNode>
+        <FileNode Name="9 - GetDBCCPageInfo.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>9 - GetDBCCPageInfo.sql</FullPath>
+        </FileNode>
+        <FileNode Name="A - DBCC PAGE.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>A - DBCC PAGE.sql</FullPath>
+        </FileNode>
+        <FileNode Name="ALTERStatementsForCorruption.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>ALTERStatementsForCorruption.sql</FullPath>
+        </FileNode>
+        <FileNode Name="B - DBCC CHECKDB.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>B - DBCC CHECKDB.sql</FullPath>
+        </FileNode>
+        <FileNode Name="ErrorMessages.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:WIN-TBD636BVKQR:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>WIN-TBD636BVKQR</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>ErrorMessages.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

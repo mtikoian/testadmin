@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="DBCorruption">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="SQL2014\MSSQL2014INST01:PLSSUG\administrator">
+          <Created>2015-06-22T15:58:04.7200652+02:00</Created>
+          <Type>SQL</Type>
+          <Server>SQL2014\MSSQL2014INST01</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="000-Options.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>000-Options.sql</FullPath>
+        </FileNode>
+        <FileNode Name="001-Corruption 1.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>001-Corruption 1.sql</FullPath>
+        </FileNode>
+        <FileNode Name="002-Corruption 2.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>002-Corruption 2.sql</FullPath>
+        </FileNode>
+        <FileNode Name="003-VLDB restore.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>003-VLDB restore.sql</FullPath>
+        </FileNode>
+        <FileNode Name="004-Missing TLog.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>004-Missing TLog.sql</FullPath>
+        </FileNode>
+        <FileNode Name="005-MissingData.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>005-MissingData.sql</FullPath>
+        </FileNode>
+        <FileNode Name="006-Missing files.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>006-Missing files.sql</FullPath>
+        </FileNode>
+        <FileNode Name="007-TLog read.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>007-TLog read.sql</FullPath>
+        </FileNode>
+        <FileNode Name="998-Misc.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>998-Misc.sql</FullPath>
+        </FileNode>
+        <FileNode Name="999-Cleanup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SQL2014\MSSQL2014INST01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SQL2014\MSSQL2014INST01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>999-Cleanup.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>
