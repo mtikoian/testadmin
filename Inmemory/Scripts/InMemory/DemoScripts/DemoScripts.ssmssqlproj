@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="DemoScripts">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="(local)\SQL2014:sa">
+          <Created>2015-01-15T17:52:04.4967965-05:00</Created>
+          <Type>SQL</Type>
+          <Server>(local)\SQL2014</Server>
+          <UserName>sa</UserName>
+          <Authentication>SQL</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="A_RestoreAW2014.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>A_RestoreAW2014.sql</FullPath>
+        </FileNode>
+        <FileNode Name="A1_AddFileGroup.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>A1_AddFileGroup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="B1_Table1.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>B1_Table1.sql</FullPath>
+        </FileNode>
+        <FileNode Name="B2_CreateNewTables.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>B2_CreateNewTables.sql</FullPath>
+        </FileNode>
+        <FileNode Name="B3_LoadTable.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>B3_LoadTable.sql</FullPath>
+        </FileNode>
+        <FileNode Name="B4_AddressLineComparison.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>B4_AddressLineComparison.sql</FullPath>
+        </FileNode>
+        <FileNode Name="B5_NativelyCompiledStoredProcedureTemplate.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>B5_NativelyCompiledStoredProcedureTemplate.sql</FullPath>
+        </FileNode>
+        <FileNode Name="C1_RangeLookupOnHashIndex.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>C1_RangeLookupOnHashIndex.sql</FullPath>
+        </FileNode>
+        <FileNode Name="C2_RangeLookupOnRangeIndex.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>C2_RangeLookupOnRangeIndex.sql</FullPath>
+        </FileNode>
+        <FileNode Name="x_CreateResourcePool.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:(local)\SQL2014:False:sa</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>(local)\SQL2014</AssociatedConnSrvName>
+          <AssociatedConnUserName>sa</AssociatedConnUserName>
+          <FullPath>x_CreateResourcePool.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>
