@@ -1,0 +1,6 @@
+-----------------------------------------------------
+-- Issues with SSMS                                --
+-----------------------------------------------------
+-- Connect to the other VM and check compatibility 
+-- level of db on higher version
+-- Using SSMS 2014 check index on SQL Server 2005 instance
