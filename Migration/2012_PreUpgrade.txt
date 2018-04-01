@@ -1,0 +1,1244 @@
+/* 
+   *******************************************************************************
+    ENVIRONMENT:    SQL 2000
+
+	NAME:           2000_PREUPGRADE.SQL
+
+    DESCRIPTION:    THIS SCRIPT IS TO HELP WITH UPGRADE SQL 2000 DATABASES TO 
+                    SQL 2008.  IT REPORTS SOME SQL SERVER LEVEL INFORMATION AND
+                    NOTIFIES YOU OF ANY POTENTIAL ISSUES THAT MAY OCCUR DURING
+                    THE UPGRADE OR LIST ITEMS THAT ALSO NEEDS TO BE UPGRADED.  
+                    BELOW ARE THE THINGS THAT IT REPORTS
+                    
+                        * IF INSTANCE IS DEFAULT
+                        * COLLATION IS DIFFERENT
+                        * NOT SP4
+                        * LIST OF SP_CONFIGURE VALUES
+                        * ANY CUSTOM EXTENDED PROCS
+                        * ANY DATABASE THAT ARE USING FULL TEXT SEARCH
+                        * ANY DATABASE SETUP FOR REPLICATION
+                        * LIST OF ANY DTS PACKAGES ON SQL
+                        * IF USING LOG SHIPPING
+                        * ANY LINKED SERVERS 
+                        * IF ANY STORED PROCEDURE SET FOR STARTUP
+                        * DB OWNER IS NOT SA
+                        * DB COMPATIBILITY IS NOT 80
+                        * DB THAT DON'T HAVE AUTOGROWTH ON
+                        * LIST OF DATABASES AND DATA & LOG LOCATION
+                        * LIST OF SQL JOBS ON SQL 
+                        
+                    
+    AUTHOR         DATE       VERSION  DESCRIPTION
+    -------------- ---------- -------- ------------------------------------------
+   *******************************************************************************
+*/
+USE [master]
+GO
+
+SET NOCOUNT ON
+SET ANSI_WARNINGS OFF
+
+IF OBJECT_ID('tempdb..#xp_results', 'u') IS NOT NULL
+	DROP TABLE #xp_results
+
+IF OBJECT_ID('tempdb..#xp_results', 'u') IS NOT NULL
+	DROP TABLE #xp_results
+
+IF OBJECT_ID('tempdb..#ConfigReport', 'u') IS NOT NULL
+	DROP TABLE #ConfigReport
+
+IF OBJECT_ID('tempdb..#DriveInfo', 'u') IS NOT NULL
+	DROP TABLE #DriveInfo
+
+IF OBJECT_ID('tempdb..#ServerInfo', 'u') IS NOT NULL
+	DROP TABLE #ServerInfo
+
+IF OBJECT_ID('tempdb..#FTReport', 'u') IS NOT NULL
+	DROP TABLE #FTReport
+
+IF OBJECT_ID('tempdb..#DBReplReport', 'u') IS NOT NULL
+	DROP TABLE #DBReplReport
+
+IF OBJECT_ID('tempdb..#DBFileReport', 'u') IS NOT NULL
+	DROP TABLE #DBFileReport
+
+IF OBJECT_ID('tempdb..#DBDataFileInfo', 'u') IS NOT NULL
+	DROP TABLE #DBDataFileInfo
+
+DECLARE @Today DATETIME
+	,@Yesterday DATETIME
+	,@TwoDaysAgo DATETIME
+	,@ThreeDaysAgo DATETIME
+	,@TempDbDate DATETIME
+
+SET @Today = CONVERT(CHAR(10), GETDATE(), 112) -- Today's Date @ Midnight
+SET @Yesterday = DATEADD(dd, - 1, @Today)
+SET @TwoDaysAgo = DATEADD(dd, - 2, @Today)
+SET @ThreeDaysAgo = DATEADD(dd, - 3, @Today)
+
+SELECT @TempDbDate = crdate
+FROM master.dbo.sysdatabases
+
+CREATE TABLE #xp_results (
+	job_id UNIQUEIDENTIFIER NOT NULL
+	,last_run_date INT NOT NULL
+	,last_run_time INT NOT NULL
+	,next_run_date INT NOT NULL
+	,next_run_time INT NOT NULL
+	,next_run_schedule_id INT NOT NULL
+	,requested_to_run INT NOT NULL
+	,-- BOOL
+	request_source INT NOT NULL
+	,request_source_id SYSNAME COLLATE database_default NULL
+	,running INT NOT NULL
+	,-- BOOL
+	current_step INT NOT NULL
+	,current_retry_attempt INT NOT NULL
+	,job_state INT NOT NULL
+	)
+
+INSERT INTO #xp_results
+EXECUTE master.dbo.xp_sqlagent_enum_jobs 1
+	,'sa'
+
+DECLARE @SQLVersion VARCHAR(15)
+
+SET @SQLVersion = CAST(SERVERPROPERTY('ProductVersion') AS VARCHAR(15))
+
+IF LEFT(@SQLVersion, CHARINDEX('.', @SQLVersion) - 1) > '8'
+	PRINT '*** THIS SCRIPT SHOULD BE RUN ON A SQL SERVER 2000 BOX, ONLY!!!!'
+ELSE
+BEGIN
+	DECLARE @WindowsVerison VARCHAR(20)
+		,@PhysicalCPUCount TINYINT
+		,@LogicalCPUCount SMALLINT
+		,@PhysicalMemory INT
+		,@Drive CHAR(1)
+		,@FreeSpace INT
+		,@ApproxStartDate DATETIME
+		,@Value NVARCHAR(1024)
+		,@SQLPath VARCHAR(256)
+		,@DefaultDataPath VARCHAR(256)
+		,@DefaultLogPath VARCHAR(256)
+		,@Command NVARCHAR(4000)
+		,@ReturnValue INT
+		,@IPAddress VARCHAR(256)
+		,@DetailDomainName VARCHAR(128)
+		,@FSOObjectToken INT
+		,@OutputDrive INT
+		,@Source VARCHAR(255)
+		,@Description VARCHAR(255)
+		,@TotalSize VARCHAR(20)
+		,@Name VARCHAR(128)
+		,@Run INT
+		,@Default INT
+		,@ExtSP VARCHAR(128)
+		,@Db VARCHAR(128)
+		,@SQL VARCHAR(2000)
+		,@CatName VARCHAR(128)
+		,@Path VARCHAR(260)
+		,@DTS VARCHAR(128)
+		,@PrimarySrv VARCHAR(128)
+		,@PrimaryDb VARCHAR(128)
+		,@SecondarySrv VARCHAR(128)
+		,@SecondaryDb VARCHAR(128)
+		,@LinkServer VARCHAR(128)
+		,@Owner VARCHAR(128)
+		,@Cmpt TINYINT
+		,@Logical VARCHAR(256)
+		,@SP VARCHAR(128)
+		,@Type VARCHAR(5)
+		,@Size DEC(20, 4)
+		,@PhysicalName VARCHAR(256)
+		,@PrevDb VARCHAR(128)
+		,@SQLJob VARCHAR(128)
+		,@PrevSQLJob VARCHAR(128)
+		,@Enabled BIT
+		,@LastFailureDt DATETIME
+		,@LastSuccessDt DATETIME
+		,@NextRunDt DATETIME
+		,@ScheduleName VARCHAR(128)
+		,@ScheduleInfo VARCHAR(128)
+
+	PRINT 'Report Date:        ' + CONVERT(VARCHAR(30), GETDATE(), 109)
+	PRINT ''
+
+	CREATE TABLE #ServerInfo (
+		Id INT
+		,NAME VARCHAR(256)
+		,InternalValue INT
+		,Character_Value VARCHAR(2000)
+		)
+
+	INSERT INTO #ServerInfo
+	EXECUTE master.dbo.xp_msver
+
+	SELECT @WindowsVerison = ISNULL(Character_Value, '')
+	FROM #ServerInfo
+	WHERE NAME = 'WindowsVersion'
+
+	SELECT @PhysicalCPUCount = InternalValue
+	FROM #ServerInfo
+	WHERE NAME = 'ProcessorCount'
+
+	SELECT @PhysicalMemory = ISNULL(InternalValue, '')
+	FROM #ServerInfo
+	WHERE NAME = 'PhysicalMemory'
+
+	SELECT @ApproxStartDate = crdate
+	FROM master.dbo.sysdatabases WITH (NOLOCK)
+	WHERE NAME = 'tempdb'
+
+	PRINT 'MachineName:        ' + CAST(ISNULL(SERVERPROPERTY('MachineName'), 'NULL') AS VARCHAR(128))
+
+	SET @DetailDomainName = NULL
+
+	EXEC master.dbo.xp_regread 'HKEY_LOCAL_MACHINE'
+		,'SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
+		,'Domain'
+		,@DetailDomainName OUTPUT
+
+	PRINT 'Domain:             ' + ISNULL(@DetailDomainName, 'Unable to retrieve Domain Info')
+	PRINT ''
+	PRINT 'WindowsVersion:     ' + @WindowsVerison
+	PRINT 'CPU:                ' + CAST(@PhysicalCPUCount AS VARCHAR(128))
+	PRINT 'PhysicalMemory:     ' + CAST(@PhysicalMemory AS VARCHAR(128))
+	PRINT ''
+
+	CREATE TABLE #DriveInfo (
+		Drive CHAR(1)
+		,FreeSpace INT
+		)
+
+	INSERT INTO #DriveInfo
+	EXECUTE xp_fixeddrives
+
+	DECLARE CURSOR_DRIVES CURSOR FAST_FORWARD
+	FOR
+	SELECT Drive
+		,FreeSpace
+	FROM #DriveInfo
+
+	OPEN CURSOR_DRIVES
+
+	FETCH NEXT
+	FROM CURSOR_DRIVES
+	INTO @Drive
+		,@FreeSpace
+
+	PRINT 'Drives:          '
+
+	EXECUTE @ReturnValue = sp_OACreate 'Scripting.FileSystemObject'
+		,@FSOObjectToken OUT
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		EXECUTE @ReturnValue = sp_OAMethod @FSOObjectToken
+			,'GetDrive'
+			,@OutputDrive OUT
+			,@Drive
+
+		IF @ReturnValue = 0
+		BEGIN
+			EXECUTE @ReturnValue = sp_OAGetProperty @OutputDrive
+				,'TotalSize'
+				,@TotalSize OUT
+
+			IF @ReturnValue = 0
+				PRINT '    ' + @Drive + ':              ' + CAST(CAST(CAST(@TotalSize AS NUMERIC(20, 4)) / 1048576.0 AS INT) AS VARCHAR(25)) + ' MB in size and ' + CAST(@FreeSpace AS VARCHAR(25)) + ' MB of Free Space'
+			ELSE
+				PRINT '    ' + @Drive + ':              ' + CAST(@FreeSpace AS VARCHAR(25)) + ' MB of Free Space (Unable to get TotalSize)'
+		END
+		ELSE
+			PRINT '    ' + @Drive + ':              ' + CAST(@FreeSpace AS VARCHAR(25)) + ' MB of Free Space (Unable to get TotalSize)'
+
+		FETCH NEXT
+		FROM CURSOR_DRIVES
+		INTO @Drive
+			,@FreeSpace
+	END
+
+	CLOSE CURSOR_DRIVES
+
+	DEALLOCATE CURSOR_DRIVES
+
+	EXECUTE @ReturnValue = sp_OADestroy @FSOObjectToken
+
+	PRINT ''
+	PRINT 'ServerName:         ' + CAST(ISNULL(SERVERPROPERTY('ServerName'), 'NULL') AS VARCHAR(128))
+	PRINT 'InstanceName:       ' + CAST(ISNULL(SERVERPROPERTY('InstanceName'), 'Default') AS VARCHAR(128))
+
+	IF UPPER(CAST(ISNULL(SERVERPROPERTY('InstanceName'), 'Default') AS VARCHAR(128))) IN (
+			'DEFAULT'
+			,'MSSQLSERVER'
+			)
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> THIS IS A DEFAULT INSTANCE, THERE MAYBE IMPACT WHEN MIGRATING DATABASE TO A NAME INSTANCE. ** YOU NEED TO MAKE SURE APPLICATION CAN CONNECT TO NAME INSTANCE & PORT NUMBER WHEN MIGRATING TO NEW SERVER.'
+		PRINT ''
+	END
+
+	PRINT 'Approx Start Date:  ' + CONVERT(VARCHAR(35), @ApproxStartDate, 109)
+	PRINT 'SQL Edition:        ' + CAST(ISNULL(SERVERPROPERTY('Edition'), 'NULL') AS VARCHAR(128))
+	PRINT 'ProductVersion:     ' + ISNULL(@SQLVersion, 'NULL')
+	PRINT 'ProductLevel:       ' + CAST(ISNULL(SERVERPROPERTY('ProductLevel'), 'NULL') AS VARCHAR(128))
+
+	IF CAST(SERVERPROPERTY('ProductLevel') AS VARCHAR(128)) < 'SP4'
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> MUST BE AT LEAST SP4'
+		PRINT ''
+	END
+
+	PRINT 'Collation:          ' + CAST(ISNULL(SERVERPROPERTY('Collation'), 'NULL') AS VARCHAR(128))
+
+	IF CAST(SERVERPROPERTY('Collation') AS VARCHAR(128)) <> 'SQL_Latin1_General_CP1_CI_AS'
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> COLLATION IS DIFFERENT FROM THE DEFAULT SQL_Latin1_General_CP1_CI_AS.  ** PLEASE MAKE SURE WHEN MIGRATING TO NEW SERVER THAT THIS COLLATION HAS BEEN INSTALLED.'
+		PRINT ''
+	END
+
+	PRINT 'Is Clustered:       ' + CAST(ISNULL(SERVERPROPERTY('IsClustered'), 'NULL') AS VARCHAR(128))
+	PRINT ''
+
+	EXECUTE master.dbo.xp_instance_regread 'HKEY_LOCAL_MACHINE'
+		,'SOFTWARE\Microsoft\MSSQLServer\Setup\'
+		,'SQLProgramDir'
+		,@Value OUTPUT
+		,'no_output'
+
+	PRINT 'SQL Program Dir:    ' + ISNULL(@Value, '')
+
+	EXECUTE master.dbo.xp_instance_regread 'HKEY_LOCAL_MACHINE'
+		,'SOFTWARE\Microsoft\MSSQLServer\Setup\'
+		,'SQLPath'
+		,@Value OUTPUT
+		,'no_output'
+
+	PRINT 'SQL Path:           ' + ISNULL(@Value, '')
+
+	EXECUTE master.dbo.xp_instance_regread 'HKEY_LOCAL_MACHINE'
+		,'SOFTWARE\Microsoft\MSSQLServer\Setup\'
+		,'SQLBinRoot'
+		,@Value OUTPUT
+		,'no_output'
+
+	PRINT 'SQL Binary Dir:     ' + ISNULL(@Value, '')
+	PRINT ''
+
+	SET @SQLPath = NULL
+	SET @DefaultDataPath = NULL
+	SET @DefaultLogPath = NULL
+
+	EXEC master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE'
+		,N'SOFTWARE\Microsoft\MSSQLServer\Setup'
+		,N'SQLPath'
+		,@SQLPath OUTPUT
+
+	EXEC master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE'
+		,N'Software\Microsoft\MSSQLServer\MSSQLServer'
+		,N'DefaultData'
+		,@DefaultDataPath OUTPUT
+		,NO_OUTPUT
+
+	EXEC master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE'
+		,N'Software\Microsoft\MSSQLServer\MSSQLServer'
+		,N'DefaultLog'
+		,@DefaultLogPath OUTPUT
+		,NO_OUTPUT
+
+	IF RIGHT(@SQLPath, 1) <> '\'
+		SET @SQLPath = @SQLPath + '\'
+	SET @SQLPath = @SQLPath
+	SET @DefaultDataPath = ISNULL(@DefaultDataPath, @SQLPath + 'DATA\')
+	SET @DefaultLogPath = ISNULL(@DefaultLogPath, @SQLPath + 'DATA\')
+
+	PRINT 'Default Data Dir:   ' + @DefaultDataPath
+	PRINT 'Default Log Dir:    ' + @DefaultLogPath
+
+	CREATE TABLE #ConfigReport (
+		NAME VARCHAR(128)
+		,Min INT
+		,Max INT
+		,Config INT
+		,Run INT
+		,Dflt INT NULL
+		)
+
+	PRINT ''
+
+	EXECUTE sp_configure 'show advanced options'
+		,1
+
+	RECONFIGURE
+
+	INSERT INTO #ConfigReport (
+		NAME
+		,Min
+		,Max
+		,Config
+		,Run
+		)
+	EXECUTE sp_configure
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'affinity mask'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'allow updates'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'awe enabled'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'c2 audit mode'
+
+	UPDATE #ConfigReport
+	SET Dflt = 5
+	WHERE NAME = 'cost threshold for parallelism'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'Cross DB Ownership Chaining'
+
+	UPDATE #ConfigReport
+	SET Dflt = - 1
+	WHERE NAME = 'cursor threshold'
+
+	UPDATE #ConfigReport
+	SET Dflt = 1033
+	WHERE NAME = 'default full-text language'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'default language'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'fill factor (%)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'index create memory (KB)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'lightweight pooling'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'locks'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'max degree of parallelism'
+
+	UPDATE #ConfigReport
+	SET Dflt = 2147483647
+	WHERE NAME = 'max server memory (MB)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 65536
+	WHERE NAME = 'max text repl size (B)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 255
+	WHERE NAME = 'max worker threads'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'media retention'
+
+	UPDATE #ConfigReport
+	SET Dflt = 1024
+	WHERE NAME = 'min memory per query (KB)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'min server memory (MB)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 1
+	WHERE NAME = 'nested triggers'
+
+	UPDATE #ConfigReport
+	SET Dflt = 4096
+	WHERE NAME = 'network packet size (B)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'open objects'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'priority boost'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'query governor cost limit'
+
+	UPDATE #ConfigReport
+	SET Dflt = - 1
+	WHERE NAME = 'query wait (s)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'recovery interval (min)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 1
+	WHERE NAME = 'remote access'
+
+	UPDATE #ConfigReport
+	SET Dflt = 20
+	WHERE NAME = 'remote login timeout (s)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'remote proc trans'
+
+	UPDATE #ConfigReport
+	SET Dflt = 600
+	WHERE NAME = 'remote query timeout (s)'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'scan for startup procs'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'set working set size'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'show advanced options'
+
+	UPDATE #ConfigReport
+	SET Dflt = 2049
+	WHERE NAME = 'two digit year cutoff'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'user connections'
+
+	UPDATE #ConfigReport
+	SET Dflt = 0
+	WHERE NAME = 'user options'
+
+	DECLARE CURSOR_CONFIG CURSOR FAST_FORWARD
+	FOR
+	SELECT NAME
+		,Run
+		,Dflt
+	FROM #ConfigReport
+	WHERE NAME <> 'show advanced options'
+	ORDER BY 1
+
+	OPEN CURSOR_CONFIG
+
+	FETCH NEXT
+	FROM CURSOR_CONFIG
+	INTO @Name
+		,@Run
+		,@Default
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'Instance Configuration Information:     '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @Run = @Default
+			PRINT '                       ' + @Name + ' = ' + CAST(@Run AS VARCHAR(15))
+		ELSE
+			PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + @Name + ' = ' + CAST(@Run AS VARCHAR(15)) + ' (default = ' + CAST(@Default AS VARCHAR(15)) + ').  ** PLEASE MAKE SURE THIS CONFIGURAITON IS NEEDED ON NEW SERVER AND WHY ITS SET THIS WAY.  IF VALID SETTING TO BE CHANGE PLEASE DOCUMENT IT IN TOPOLOGY.'
+
+		FETCH NEXT
+		FROM CURSOR_CONFIG
+		INTO @Name
+			,@Run
+			,@Default
+	END
+
+	CLOSE CURSOR_CONFIG
+
+	DEALLOCATE CURSOR_CONFIG
+
+	DECLARE CURSOR_EXTSP CURSOR FAST_FORWARD
+	FOR
+	SELECT NAME
+	FROM master.dbo.sysobjects
+	WHERE type = 'x'
+		AND STATUS > 0
+	ORDER BY 1
+
+	OPEN CURSOR_EXTSP
+
+	FETCH NEXT
+	FROM CURSOR_EXTSP
+	INTO @ExtSP
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'Custom Extended SP: '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + @ExtSP + ' - ** PLEASE VERIFY IF EXTENDED STORED PROCEDURE IS TRULY NEEDED.  IF SO, PLEASE MAKE SURE TO MIGRATE TO NEW SERVER.  ALSO, MAKE SURE ITS DOCUMENTED IN TOPOLOGY AND WHAT ITS USED FOR.'
+
+		FETCH NEXT
+		FROM CURSOR_EXTSP
+		INTO @ExtSP
+	END
+
+	CLOSE CURSOR_EXTSP
+
+	DEALLOCATE CURSOR_EXTSP
+
+	CREATE TABLE #FTReport (
+		DbName VARCHAR(128)
+		,CatalogName VARCHAR(128)
+		,Path VARCHAR(260)
+		)
+
+	SET @SQL = 'USE [?];SELECT ''?'', name, path FROM sysfulltextcatalogs'
+
+	INSERT INTO #FTReport
+	EXECUTE sp_MSforeachdb @SQL
+
+	DECLARE CURSOR_DB CURSOR FAST_FORWARD
+	FOR
+	SELECT A.NAME
+		,B.CatalogName
+		,B.Path
+	FROM master.dbo.sysdatabases A
+	JOIN #FTReport B ON A.NAME = B.DbName
+	WHERE DATABASEPROPERTYEX(NAME, 'IsFulltextEnabled') = 1
+	ORDER BY 1
+
+	OPEN CURSOR_DB
+
+	FETCH NEXT
+	FROM CURSOR_DB
+	INTO @Db
+		,@CatName
+		,@Path
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'DB with Full-Text Enabled:  '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '    ' + @Db
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> Catalog Name = ' + ISNULL(@CatName, '') + ', Path = ' + ISNULL(@Path, '') + '.  ** WHEN MIGRATING FULL TEXT CATALOGS TO NEW SERVER, MAKE SURE THEY ARE REBUILT.'
+
+		FETCH NEXT
+		FROM CURSOR_DB
+		INTO @Db
+			,@CatName
+			,@Path
+	END
+
+	CLOSE CURSOR_DB
+
+	DEALLOCATE CURSOR_DB
+
+	--DECLARE CURSOR_DTS CURSOR FAST_FORWARD
+	--FOR
+	--	SELECT		DISTINCT name
+	--	FROM		msdb.dbo.sysdtspackages
+	--	ORDER BY	1
+	--OPEN CURSOR_DTS
+	--FETCH NEXT FROM CURSOR_DTS
+	--INTO @DTS
+	--IF @@FETCH_STATUS = 0
+	--	BEGIN
+	--		PRINT ''
+	--		PRINT 'DTS Packages:       '		
+	--	END
+	--WHILE @@FETCH_STATUS = 0
+	--BEGIN
+	--	PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + @DTS + ' ** THIS DTS PACKAGE WOULD NEED TO BE CONVERTED TO SSIS AND BE CALLED FROM CTRL-M.'
+	--	FETCH NEXT FROM CURSOR_DTS
+	--	INTO @DTS
+	--END
+	--CLOSE CURSOR_DTS
+	--DEALLOCATE CURSOR_DTS
+	CREATE TABLE #DBReplReport (DBName VARCHAR(128))
+
+	SET @SQL = '
+					IF EXISTS(SELECT * FROM [?].dbo.sysobjects WHERE name = ''MSsubscription_agents'')				
+						IF EXISTS(SELECT * FROM [?].dbo.MSsubscription_agents)
+							SELECT ''?''
+					
+					IF EXISTS(SELECT * FROM [?].dbo.sysobjects WHERE name = ''syspublications'')
+						IF EXISTS(SELECT * FROM [?].dbo.syspublications)
+							SELECT ''?''
+				  '
+
+	INSERT INTO #DBReplReport
+	EXECUTE master.dbo.sp_MSforeachdb @SQL
+
+	DECLARE CURSOR_DB CURSOR FAST_FORWARD
+	FOR
+	SELECT DISTINCT DBName
+	FROM #DBReplReport
+
+	OPEN CURSOR_DB
+
+	FETCH NEXT
+	FROM CURSOR_DB
+	INTO @Db
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'DB with Replication:'
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + @Db + ' ** MAKE SURE REPLICATION IS SETUP AND WORKING PROPERTLY ON NEW SERVER WHEN MIGRATING THIS DATABASE.  ALSO, MAKE SURE ALERTS ARE SETUP.'
+
+		FETCH NEXT
+		FROM CURSOR_DB
+		INTO @Db
+	END
+
+	CLOSE CURSOR_DB
+
+	DEALLOCATE CURSOR_DB
+
+	DECLARE CURSOR_LOGSHP CURSOR FAST_FORWARD
+	FOR
+	SELECT A.primary_server_name
+		,A.primary_database_name
+		,ISNULL(B.secondary_server_name, '')
+		,ISNULL(B.secondary_database_name, '')
+	FROM msdb.dbo.log_shipping_primaries A
+	LEFT JOIN msdb.dbo.log_shipping_secondaries B ON A.primary_id = B.primary_id
+
+	OPEN CURSOR_LOGSHP
+
+	FETCH NEXT
+	FROM CURSOR_LOGSHP
+	INTO @PrimarySrv
+		,@PrimaryDb
+		,@SecondarySrv
+		,@SecondaryDb
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'Log Shipping:       '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> Primary (' + @PrimarySrv + ' - ' + @PrimaryDb + ') Secondary (' + @SecondarySrv + ' - ' + @SecondaryDb + ').  ** MAKE SURE LOG SHIPPING IS SETUP AND WORKING PROPERLY WHEN MIGRATING THIS DATABASE.'
+
+		FETCH NEXT
+		FROM CURSOR_LOGSHP
+		INTO @PrimarySrv
+			,@PrimaryDb
+			,@SecondarySrv
+			,@SecondaryDb
+	END
+
+	CLOSE CURSOR_LOGSHP
+
+	DEALLOCATE CURSOR_LOGSHP
+
+	DECLARE CURSOR_LINKSRV CURSOR FAST_FORWARD
+	FOR
+	SELECT srvname
+	FROM sysservers
+	WHERE srvname <> CAST(SERVERPROPERTY('MachineName') AS VARCHAR(128)) + CASE 
+			WHEN CAST(SERVERPROPERTY('InstanceName') AS VARCHAR(128)) IS NULL
+				THEN ''
+			ELSE '\' + CAST(SERVERPROPERTY('InstanceName') AS VARCHAR(128))
+			END
+
+	OPEN CURSOR_LINKSRV
+
+	FETCH NEXT
+	FROM CURSOR_LINKSRV
+	INTO @LinkServer
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'Link Servers:       '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + @LinkServer + ' - ** VALIDATE IF THIS LINKED SERVER IS BEING USED WITH CUSTOMER.  IF NOT, DO NOT MIGRATE.  IF SO, MAKE SURE ITS NOT A TEST SERVER.  LINK TEST SEVERS ARE NOT ALLOWED'
+
+		FETCH NEXT
+		FROM CURSOR_LINKSRV
+		INTO @LinkServer
+	END
+
+	CLOSE CURSOR_LINKSRV
+
+	DEALLOCATE CURSOR_LINKSRV
+
+	DECLARE CURSOR_OWNER CURSOR FAST_FORWARD
+	FOR
+	SELECT A.NAME
+		,ISNULL(SUSER_SNAME(A.sid), 'UNKNOWN')
+	FROM sysdatabases A
+	WHERE A.sid <> 0x01 -- sa/ssaid
+
+	OPEN CURSOR_OWNER
+
+	FETCH NEXT
+	FROM CURSOR_OWNER
+	INTO @Db
+		,@Owner
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'Db Owner Not SA:     '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + QUOTENAME(@Owner) + ' IS OWNER OF DATABASE ' + QUOTENAME(@Db) + '.  ** CHANGE DATABASE OWNER TO ''SA'', IT ALSO MAYBE ''SSAID''.  IF THE OWNER WAS A NON-WDBS DBA, PLEASE MAKE SURE THE ACCOUNT HAS ACCESS IN THE DATABASE BEFORE CHANGING THE DATABASE OWNER.'
+
+		FETCH NEXT
+		FROM CURSOR_OWNER
+		INTO @Db
+			,@Owner
+	END
+
+	CLOSE CURSOR_OWNER
+
+	DEALLOCATE CURSOR_OWNER
+
+	DECLARE CURSOR_DBCMPT CURSOR FAST_FORWARD
+	FOR
+	SELECT NAME
+		,cmptlevel
+	FROM sysdatabases
+	WHERE cmptlevel <> 80
+	ORDER BY 1
+
+	OPEN CURSOR_DBCMPT
+
+	FETCH NEXT
+	FROM CURSOR_DBCMPT
+	INTO @Db
+		,@Cmpt
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'DB Compatibility not 80'
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> Database ' + QUOTENAME(@Db) + ' COMPATIBILITY LEVEL IS NOT 80, IT IS ' + CAST(@Cmpt AS VARCHAR(3)) + '.  ** COMPATIBILITY LEVEL MUST BE SET TO 80 BEFORE MIGRATING IT TO NEW SERVER.'
+
+		FETCH NEXT
+		FROM CURSOR_DBCMPT
+		INTO @Db
+			,@Cmpt
+	END
+
+	CLOSE CURSOR_DBCMPT
+
+	DEALLOCATE CURSOR_DBCMPT
+
+	CREATE TABLE #DBFileReport (
+		DBName VARCHAR(128)
+		,LogicalFile VARCHAR(256)
+		)
+
+	SET @SQL = '			
+					SELECT		''?''
+								,name
+					FROM		[?].dbo.sysfiles
+					WHERE		growth = 0
+				  '
+
+	INSERT INTO #DBFileReport
+	EXECUTE master.dbo.sp_MSforeachdb @SQL
+
+	DECLARE CURSOR_AUTOGROW CURSOR FAST_FORWARD
+	FOR
+	SELECT DBName
+		,LogicalFile
+	FROM #DBFileReport
+	WHERE DBName <> 'tempdb'
+	ORDER BY 1
+		,2
+
+	OPEN CURSOR_AUTOGROW
+
+	FETCH NEXT
+	FROM CURSOR_AUTOGROW
+	INTO @Db
+		,@Logical
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'DB with AutoGrow Off   '
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> DATABASE ' + QUOTENAME(@Db) + ' AUTO GROW FOR LOGICAL FILE ' + @Logical + ' IS TURNED OFF.  ** MAKE SURE WHEN MIGRATED TO NEW SERVER THIS IS TURNED ON AND APPROPRIATE GROWTH IS SET.'
+
+		FETCH NEXT
+		FROM CURSOR_AUTOGROW
+		INTO @Db
+			,@Logical
+	END
+
+	CLOSE CURSOR_AUTOGROW
+
+	DEALLOCATE CURSOR_AUTOGROW
+
+	DECLARE CURSOR_SP CURSOR FAST_FORWARD
+	FOR
+	SELECT NAME
+	FROM sysobjects
+	WHERE xtype IN (
+			'P'
+			,'X'
+			)
+		AND OBJECTPROPERTY(id, 'ExecIsStartup') = 1
+
+	OPEN CURSOR_SP
+
+	FETCH NEXT
+	FROM CURSOR_SP
+	INTO @SP
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'SP set to Exec At Startup:'
+	END
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT '>>>>>>>>>>>>>>>>>>>>>> ' + @SP + ' - ** VALIDATE IF THIS STARTUP PROCEDURE IS NEEDED, IGNORE [sp_MSrepl_startup], THIS IS USED FOR REPLICATION.  IF NEEDED, MAKE SURE TO DOCUMENT IT IN TOPOLOGY AND WHAT ITS USED FOR.'
+
+		FETCH NEXT
+		FROM CURSOR_SP
+		INTO @SP
+	END
+
+	CLOSE CURSOR_SP
+
+	DEALLOCATE CURSOR_SP
+
+	CREATE TABLE #DBDataFileInfo (
+		DbName VARCHAR(128)
+		,Type VARCHAR(5)
+		,Size INT
+		,LogicalName VARCHAR(128)
+		,PhysicalName VARCHAR(512)
+		)
+
+	SET @SQL = '	
+						USE [?];
+						SELECT		''?''
+									,CASE WHEN (status & 0x40) > 0 THEN ''Log''
+											ELSE ''Data''
+									 END
+									,size
+									,name
+									,filename
+						FROM		sysfiles
+				'
+
+	INSERT INTO #DBDataFileInfo
+	EXECUTE dbo.sp_MSforeachdb @SQL
+
+	DECLARE CURSOR_DB_INFO CURSOR FAST_FORWARD
+	FOR
+	SELECT DbName
+		,Type
+		,(Size * 8.0) / 1024.0
+		,LogicalName
+		,PhysicalName
+	FROM #DBDataFileInfo
+	ORDER BY 1
+		,2
+
+	OPEN CURSOR_DB_INFO
+
+	FETCH NEXT
+	FROM CURSOR_DB_INFO
+	INTO @Db
+		,@Type
+		,@Size
+		,@Logical
+		,@PhysicalName
+
+	PRINT ''
+	PRINT 'Database File Information:'
+
+	SET @PrevDb = ''
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @PrevDb <> @Db
+		BEGIN
+			PRINT '    ' + @Db
+
+			SET @PrevDb = @Db
+		END
+
+		PRINT '        Type:           ' + @Type
+		PRINT '        Size:           ' + CAST(@Size AS VARCHAR(25)) + ' MB'
+		PRINT '        Logical Name:   ' + @Logical
+		PRINT '        Physical Name:  ' + @PhysicalName
+		PRINT ''
+
+		FETCH NEXT
+		FROM CURSOR_DB_INFO
+		INTO @Db
+			,@Type
+			,@Size
+			,@Logical
+			,@PhysicalName
+	END
+
+	CLOSE CURSOR_DB_INFO
+
+	DEALLOCATE CURSOR_DB_INFO
+
+	DECLARE CURSOR_SQLJOBS CURSOR FAST_FORWARD
+	FOR
+	SELECT J.NAME
+		,ISNULL(L.NAME, 'NULL') AS Jobowner
+		,CAST(J.enabled AS VARCHAR(1)) [Enabled]
+		,RTRIM(ISNULL(MAX(CASE 
+						WHEN H.run_status = 0
+							THEN CONVERT(CHAR(19), DATEADD(ss, CAST(RIGHT(REPLICATE('0', 10 - LEN(CAST(H.run_duration AS VARCHAR(10)))) + CAST(H.run_duration AS VARCHAR(10)), 2) AS INT), DATEADD(mi, CAST(SUBSTRING(REPLICATE('0', 10 - LEN(CAST(H.run_duration AS VARCHAR(10)))) + CAST(H.run_duration AS VARCHAR(10)), 3, 2) AS INT), DATEADD(hh, CAST(LEFT(REPLICATE('0', 10 - LEN(CAST(H.run_duration AS VARCHAR(10)))) + CAST(H.run_duration AS VARCHAR(10)), 2) AS INT), CONVERT(CHAR(19), SUBSTRING(CAST(H.run_date AS VARCHAR(8)), 5, 2) + '/' + SUBSTRING(CAST(H.run_date AS VARCHAR(8)), 7, 2) + '/' + LEFT(CAST(H.run_date AS VARCHAR(8)), 4) + ' ' + LEFT(REPLICATE('0', 6 - LEN(CAST(H.run_time AS VARCHAR(6)))) + CAST(H.run_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(H.run_time AS VARCHAR(6)))) + CAST(H.run_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(H.run_time AS VARCHAR(6)))) + CAST(H.run_time AS VARCHAR(6)), 2), 120)))), 120)
+						ELSE NULL
+						END), 'NULL')) [LastFailureDate]
+		,RTRIM(ISNULL(MAX(CASE 
+						WHEN H.run_status = 1
+							THEN CONVERT(CHAR(19), DATEADD(ss, CAST(RIGHT(REPLICATE('0', 10 - LEN(CAST(H.run_duration AS VARCHAR(10)))) + CAST(H.run_duration AS VARCHAR(10)), 2) AS INT), DATEADD(mi, CAST(SUBSTRING(REPLICATE('0', 10 - LEN(CAST(H.run_duration AS VARCHAR(10)))) + CAST(H.run_duration AS VARCHAR(10)), 3, 2) AS INT), DATEADD(hh, CAST(LEFT(REPLICATE('0', 10 - LEN(CAST(H.run_duration AS VARCHAR(10)))) + CAST(H.run_duration AS VARCHAR(10)), 2) AS INT), CONVERT(CHAR(19), SUBSTRING(CAST(H.run_date AS VARCHAR(8)), 5, 2) + '/' + SUBSTRING(CAST(H.run_date AS VARCHAR(8)), 7, 2) + '/' + LEFT(CAST(H.run_date AS VARCHAR(8)), 4) + ' ' + LEFT(REPLICATE('0', 6 - LEN(CAST(H.run_time AS VARCHAR(6)))) + CAST(H.run_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(H.run_time AS VARCHAR(6)))) + CAST(H.run_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(H.run_time AS VARCHAR(6)))) + CAST(H.run_time AS VARCHAR(6)), 2), 120)))), 120)
+						ELSE NULL
+						END), 'NULL')) [LastSuccessDate]
+		,RTRIM(ISNULL(MIN(CASE 
+						WHEN X.next_run_date = 0
+							THEN NULL
+						ELSE CONVERT(VARCHAR(19), SUBSTRING(CAST(X.next_run_date AS VARCHAR(8)), 5, 2) + '/' + SUBSTRING(CAST(X.next_run_date AS VARCHAR(8)), 7, 2) + '/' + LEFT(CAST(X.next_run_date AS VARCHAR(8)), 4) + ' ' + LEFT(REPLICATE('0', 6 - LEN(CAST(X.next_run_time AS VARCHAR(6)))) + CAST(X.next_run_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(X.next_run_time AS VARCHAR(6)))) + CAST(X.next_run_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(X.next_run_time AS VARCHAR(6)))) + CAST(X.next_run_time AS VARCHAR(6)), 2), 120)
+						END), 'NULL')) [NextRunDate]
+		,S.NAME AS [ScheduleName]
+		,REPLACE(REPLACE(CASE S.freq_type
+					WHEN 1
+						THEN 'Start on ' + SUBSTRING(CAST(active_start_date AS VARCHAR(8)), 5, 2) + '/' + RIGHT(active_start_date, 2) + '/' + LEFT(active_start_date, 4) + ' ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2)
+					WHEN 4
+						THEN 'Occurs every ' + CAST(freq_interval AS VARCHAR(10)) + ' day(s)'
+					WHEN 8
+						THEN 'Occurs every ' + CAST(freq_recurrence_factor AS VARCHAR(10)) + ' week(s) on ' + CASE 
+								WHEN freq_interval & 1 = 1
+									THEN 'Sunday, '
+								ELSE ''
+								END + CASE 
+								WHEN freq_interval & 2 = 2
+									THEN 'Monday, '
+								ELSE ''
+								END + CASE 
+								WHEN freq_interval & 4 = 4
+									THEN 'Tuesday, '
+								ELSE ''
+								END + CASE 
+								WHEN freq_interval & 8 = 8
+									THEN 'Wednesday, '
+								ELSE ''
+								END + CASE 
+								WHEN freq_interval & 16 = 16
+									THEN 'Thursday, '
+								ELSE ''
+								END + CASE 
+								WHEN freq_interval & 32 = 32
+									THEN 'Friday, '
+								ELSE ''
+								END + CASE 
+								WHEN freq_interval & 64 = 64
+									THEN 'Saturday, '
+								ELSE ''
+								END
+					WHEN 16
+						THEN 'Occurs every ' + CAST(freq_recurrence_factor AS VARCHAR(10)) + ' month(s) on day ' + CAST(freq_interval AS VARCHAR(10)) + ' of that month'
+					WHEN 32
+						THEN 'Occurs every ' + CAST(freq_recurrence_factor AS VARCHAR(10)) + ' month(s) on the ' + CASE freq_relative_interval
+								WHEN 1
+									THEN 'First'
+								WHEN 2
+									THEN 'Second'
+								WHEN 4
+									THEN 'Third'
+								WHEN 8
+									THEN 'Fourth'
+								WHEN 16
+									THEN 'Last'
+								ELSE 'N/A'
+								END + ' ' + CASE freq_interval
+								WHEN 1
+									THEN 'Sunday'
+								WHEN 2
+									THEN 'Monday'
+								WHEN 3
+									THEN 'Tuesday'
+								WHEN 4
+									THEN 'Wednesday'
+								WHEN 5
+									THEN 'Thursday'
+								WHEN 6
+									THEN 'Friday'
+								WHEN 7
+									THEN 'Saturday'
+								WHEN 8
+									THEN 'Day'
+								WHEN 9
+									THEN 'Weekday'
+								WHEN 10
+									THEN 'Weekend Day'
+								ELSE ''
+								END
+					WHEN 64
+						THEN 'Start automatically when SQL Server Agent Starts'
+					WHEN 128
+						THEN 'Start whenever CPU(s) becomes idle'
+					ELSE 'N/A'
+					END + CASE freq_subday_type
+					WHEN 1
+						THEN ', at ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2)
+					WHEN 2
+						THEN ', every ' + CAST(freq_subday_interval AS VARCHAR(10)) + ' second(s) between ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ' and ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 2)
+					WHEN 4
+						THEN ', every ' + CAST(freq_subday_interval AS VARCHAR(10)) + ' minute(s) between ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ' and ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 2)
+					WHEN 8
+						THEN ', every ' + CAST(freq_subday_interval AS VARCHAR(10)) + ' hour(s) between ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_start_time AS VARCHAR(6)))) + CAST(active_start_time AS VARCHAR(6)), 2) + ' and ' + LEFT(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 2) + ':' + SUBSTRING(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 3, 2) + ':' + RIGHT(REPLICATE('0', 6 - LEN(CAST(active_end_time AS VARCHAR(6)))) + CAST(active_end_time AS VARCHAR(6)), 2)
+					ELSE 'N/A'
+					END, ', ,', ','), ', at', ' at') [ScheduleInfo]
+	FROM msdb.dbo.sysjobs J
+	JOIN #xp_results X ON J.job_id = X.job_id
+	LEFT JOIN msdb.dbo.sysjobschedules JS ON J.job_id = JS.job_id
+	LEFT JOIN msdb.dbo.sysschedules S ON JS.schedule_id = S.schedule_id
+	LEFT JOIN msdb.dbo.sysjobhistory H ON J.job_id = H.job_id
+		AND H.step_id = 0
+		AND CONVERT(CHAR(8), H.run_date, 112) >= @ThreeDaysAgo
+	LEFT JOIN master.sys.server_principals L ON J.owner_sid = L.sid
+	GROUP BY J.NAME
+		,J.enabled
+		,X.running
+		,L.NAME
+		,s.NAME
+		,s.active_end_time
+		,s.freq_type
+		,s.active_start_date
+		,s.active_start_time
+		,s.freq_interval
+		,s.freq_recurrence_factor
+		,freq_relative_interval
+		,freq_subday_type
+		,freq_subday_interval
+	ORDER BY J.NAME
+
+	OPEN CURSOR_SQLJOBS
+
+	FETCH NEXT
+	FROM CURSOR_SQLJOBS
+	INTO @SQLJob
+		,@Owner
+		,@Enabled
+		,@LastFailureDt
+		,@LastSuccessDt
+		,@NextRunDt
+		,@ScheduleName
+		,@ScheduleInfo
+
+	IF @@FETCH_STATUS = 0
+	BEGIN
+		PRINT ''
+		PRINT 'SQL Jobs:'
+	END
+
+	SET @PrevSQLJob = ''
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @SQLJob <> @PrevSQLJob
+		BEGIN
+			PRINT '    ' + @SQLJob
+
+			SET @PrevSQLJob = @SQLJob
+		END
+
+		PRINT '        Job Owner:      ' + ISNULL(@Owner, 'Unknown')
+		PRINT '        Enabled:        ' + CASE 
+				WHEN @Enabled = 1
+					THEN 'Yes'
+				ELSE 'No'
+				END
+		PRINT '        Schedule Name:  ' + ISNULL(@ScheduleName, '')
+		PRINT '        Schedule Info:  ' + ISNULL(@ScheduleInfo, '')
+		PRINT '        Last Success:   ' + ISNULL(CONVERT(VARCHAR(25), @LastSuccessDt, 120), '')
+		PRINT '        Last Faileure:  ' + ISNULL(CONVERT(VARCHAR(25), @LastFailureDt, 120), '')
+		PRINT '        Next Run:       ' + ISNULL(CONVERT(VARCHAR(25), @NextRunDt, 120), '')
+		PRINT ''
+
+		FETCH NEXT
+		FROM CURSOR_SQLJOBS
+		INTO @SQLJob
+			,@Owner
+			,@Enabled
+			,@LastFailureDt
+			,@LastSuccessDt
+			,@NextRunDt
+			,@ScheduleName
+			,@ScheduleInfo
+	END
+
+	CLOSE CURSOR_SQLJOBS
+
+	DEALLOCATE CURSOR_SQLJOBS
+
+	IF OBJECT_ID('tempdb..#xp_results', 'u') IS NOT NULL
+		DROP TABLE #xp_results
+
+	IF OBJECT_ID('tempdb..#ConfigReport', 'u') IS NOT NULL
+		DROP TABLE #ConfigReport
+
+	IF OBJECT_ID('tempdb..#DriveInfo', 'u') IS NOT NULL
+		DROP TABLE #DriveInfo
+
+	IF OBJECT_ID('tempdb..#ServerInfo', 'u') IS NOT NULL
+		DROP TABLE #ServerInfo
+
+	IF OBJECT_ID('tempdb..#FTReport', 'u') IS NOT NULL
+		DROP TABLE #FTReport
+
+	IF OBJECT_ID('tempdb..#DBReplReport', 'u') IS NOT NULL
+		DROP TABLE #DBReplReport
+
+	IF OBJECT_ID('tempdb..#DBFileReport', 'u') IS NOT NULL
+		DROP TABLE #DBFileReport
+
+	IF OBJECT_ID('tempdb..#DBDataFileInfo', 'u') IS NOT NULL
+		DROP TABLE #DBDataFileInfo
+END
