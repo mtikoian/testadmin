@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<DTSConfiguration>
+    <DTSConfigurationHeading>
+        <DTSConfigurationFileInfo GeneratedBy="John Flannery" GeneratedFromPackageName="Generic" GeneratedFromPackageID="{3F2F1480-57E4-4D20-A425-90C596ED8CA3}" GeneratedDate="8/1/2008 00:00:00 AM" /> 
+    </DTSConfigurationHeading>
+
+
+
+    <!-- AdventureWorks2012 -->
+  
+    <Configuration ConfiguredType="Property" Path="\Package.Connections[AdventureWorks2012].Properties[ConnectionString]" ValueType="String">
+        <ConfiguredValue>Data Source=.\e1dev;Initial Catalog=AdventureWorks2014;Provider=SQLNCLI11.1;Integrated Security=SSPI;</ConfiguredValue> 
+    </Configuration>
+   
+    
+</DTSConfiguration>
+  
