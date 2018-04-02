@@ -1,0 +1,981 @@
+Imports Microsoft.SqlServer.Management.SMO
+Imports Microsoft.SqlServer.Management.Common
+Imports Microsoft.SqlServer.Management.SMO.Agent
+Module Module1
+
+    Sub Main(ByVal CmdArgs() As String)
+
+        Dim strServerName As String
+        Dim strProdServer As String
+        Dim intTLogInterval As Integer
+        Dim intRetDays As Integer
+        Dim intFullBkupStart As Integer
+        Dim strBackupPassword As String  ' the password for the Backup (Red Gate SQL Backup Only)
+        Dim intRedgate As Integer
+        Dim strNotificationEmail As String
+        Dim strNotificationSource As String 'who notified?
+        Dim strNotificationSMTP As String 'What was the SMTP (not SQL 2000)?
+
+        Dim i As Integer
+
+        strServerName = "."     ' The name of the server we're connecting to
+        strProdServer = "P"     ' Production servers get Transaction Log Backups
+        intTLogInterval = 60    ' Most servers transaction log interval is once per hour
+        intRetDays = 3          ' Most servers will retain files for 3 days
+        intFullBkupStart = 2    ' Most backups start at 2am
+        strBackupPassword = ""   ' the password for the Backup (Red Gate SQL Backup Only)
+        strNotificationEmail = "Me@MyOrganisation.com" 'who do we notify?
+        strNotificationSource = "MyServer@MyOrganisation.com" 'who notified?
+        strNotificationSMTP = "smtp.MyOrganisation.com" 'What was the SMTP (not SQL 2000)?
+        intRedgate = 0
+
+        For i = 0 To UBound(CmdArgs)
+            Dim strCmdArg As String
+            strCmdArg = CmdArgs(i)
+            If Left(strCmdArg, 1) = "-" Then
+                Select Case Mid(strCmdArg, 2, 1)
+                    Case "S" 'the server name
+                        strServerName = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "P"    'is it a production server
+                        strProdServer = Mid(strCmdArg, 3, 1)
+                    Case "I"    'the log interval
+                        intTLogInterval = CInt(Mid(strCmdArg, 3, Len(strCmdArg) - 2))
+                    Case "R"   'retention days
+                        intRetDays = CInt(Mid(strCmdArg, 3, Len(strCmdArg) - 2))
+                    Case "B"    'backup start hour
+                        intFullBkupStart = CInt(Mid(strCmdArg, 3, Len(strCmdArg) - 2))
+                    Case "W"    'the backup password
+                        strBackupPassword = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "G"    'Are we doing a nice Redgate backup?
+                        intRedgate = CInt(Mid(strCmdArg, 3, Len(strCmdArg) - 2))
+                    Case "T"    'Email: who do we notify?
+                        strNotificationEmail = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "F"    'From Whom: who was the source?
+                        strNotificationSource = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "E"    'what SMTP server?
+                        strNotificationSMTP = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                End Select
+            End If
+        Next
+        'So, for example, to schedule a native backup, you could issue the following command line:
+
+        'u:\DBMaint\BuildDailyBackupJob -S"MyServer\Inst01" -PP -I15 -R3 -B2 -T"myname@myorg.com"
+
+        'the job will connect to server "MyServer\Inst01", cause that server to be treated  
+        'as a Production Server, generate transaction log backups every 15 minutes, retain
+        ' those backup files for 3 days, start the full backup job every 
+        'morning at 2AM and notify mynam@myorg.com of the backup.
+
+
+	'Alternatively, you can schedule the backup through your tool of choice
+	'In this example, we use Red Gate SQL Backup, via the following command line:
+
+        ' -S"MyServer" -PP -I30 -R5 -B5 -R3 -G1 -W"brian" -T"myname@myorg.com" 
+        '         -F"hisname@myorg.com" -E"SMTP.myorg.com" 
+
+        'S"MyServer" use MyServer 
+        '-PP        treat it as a production server (p)
+        '-I30       number of minutes between log backups (30 here)
+        '-R5        number of days to retain the files before deleting them (5 here)
+        '-B5        backup start hour 5AM in this example
+        '-W"brian"  the backup password (redgate only) Brian in this example
+        '-G1        Is this using Redgate's SQL Backup (Yes in this example) 
+        '-T"who@Where"     To Email: who do we notify?
+        '-F"From@Where"    From Whom: who was the source?
+        '-E"SMTP.WHO.COM"  'what SMTP server? (SQL 2005 only)
+
+
+        'the job will connect to server "MyServer", cause that server to be treated  
+        'as a Production Server, generate transaction log backups every 30 minutes, retain
+        ' those backup files for 5 days, and start the full backup job every 
+        'morning at 5AM.
+
+
+        'The first thing we need to do is to connect to the server, which is 
+        'handled in this code:
+        Try
+            ' Connect to the server
+            Dim srvMgmtServer As Server
+            srvMgmtServer = New Server(strServerName)
+            Dim srvConn As ServerConnection
+            srvConn = srvMgmtServer.ConnectionContext
+            srvConn.LoginSecure = True
+
+            'We'll be creating three Agent jobs in this program, and, because we run this job 
+            'every day, these jobs will normally already exist, so we need to delete the existing
+            'jobs  with the same names first.
+
+            Dim tblServerJobs As DataTable
+            Dim rowServerJobs As DataRow
+            Dim jobDumpJob As Job
+            'Drop the existing database_dump job
+            tblServerJobs = srvMgmtServer.JobServer.EnumJobs
+            For Each rowServerJobs In tblServerJobs.Rows
+                If rowServerJobs("Name") = "DailyFullBackup" _
+                Or rowServerJobs("Name") = "TransLogBackup" _
+                Or rowServerJobs("Name") = "SystemFullBackup" Then
+                    jobDumpJob = srvMgmtServer.JobServer.Jobs(rowServerJobs("Name"))
+                    jobDumpJob.Drop()
+                End If
+            Next
+
+            'The jobs are gone so we can start building the new Agent jobs. We do this within subroutines
+            'to make the program easier to follow. All servers get full backups and system database backups,
+            'but only production servers (in my environment) get transaction log backups. In fact, this 
+            'program will set the user databases on non-production servers to Simple Recovery mode so the
+            'transaction logs are automatically truncated on checkpoint. Within the main subroutine all 
+            'that's left to do is execute the job creation subroutines.
+
+            BuildDailyFullBackup(srvMgmtServer, intTLogInterval, intRetDays, intFullBkupStart, _
+                strProdServer, intRedgate, strBackupPassword, strNotificationEmail, _
+                strNotificationSource, strNotificationSMTP)
+            ' We only need Transaction Log backups on Production Servers
+            If strProdServer = "P" Then
+                BuildDailyTlogBackup(srvMgmtServer, intTLogInterval, intRetDays, intFullBkupStart, _
+                intRedgate, strBackupPassword, strNotificationEmail, strNotificationSource, strNotificationSMTP)
+            End If
+            BuildSystemFullBackup(srvMgmtServer, intRedgate, strBackupPassword, strNotificationEmail, _
+            strNotificationSource, strNotificationSMTP)
+        Catch smoex As SmoException
+            Console.WriteLine("There has been an SMO error")
+            'Display the SMO exception message.
+            Console.WriteLine(smoex.Message)
+            'Display the sequence of non-SMO exceptions that caused the SMO exception.
+            Dim ex As Exception
+            ex = smoex.InnerException
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+            'Catch other non-SMO exceptions.
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+    End Sub
+    'Failure Reporting
+
+    'The first thing we want to do is create a function for our failure reporting step. We want to use the 
+    'same program whether we're running SQL Server 2000 or SQL Server 2005, so within our BuildNotifyStep 
+    'function we create the appropriate commands based on the version to which we're connected. This function
+    'will return the Transact-SQL command which will send the appropriate notification email, based on the step 
+    'that failed. 
+    'This function is used in all three programs, so it accepts the job name, server version and database name 
+    'as parameters and uses them to construct a meaningful error message. If the error is a server-level error 
+    'an empty string is passed in the database name parameter.
+
+    Private Function BuildNotifyStep( _
+     ByVal strJobName As String, _
+     ByVal intVersion As Integer, _
+     ByVal strDBName As String, _
+     ByVal strNotificationEmail As String, _
+     ByVal strNotificationSource As String, _
+     ByVal strNotificationSMTP As String) As String
+        Dim strCmd As String
+
+        If intVersion = 9 Then
+            strCmd = "declare @rc int, @subj varchar(255), @mesg varchar(255)" + vbCrLf
+            strCmd = strCmd + "select @subj = @@servername + ' - " + strJobName + " Job Failure'" + vbCrLf
+            strCmd = strCmd + "select @mesg = 'The " + strJobName + " job"
+            If strDBName <> "" Then
+                strCmd = strCmd + " for database " + strDBName
+            End If
+            strCmd = strCmd + " on ' + @@servername + ' failed at ' + convert(varchar(25), getdate(), 100)" + vbCrLf
+            strCmd = strCmd + "exec @rc = master.dbo.xp_smtp_sendmail" + vbCrLf
+            strCmd = strCmd + "	@FROM			= N'" + strNotificationSource + "'," + vbCrLf
+            strCmd = strCmd + "	@FROM_NAME		= N'DB Admin'," + vbCrLf
+            strCmd = strCmd + "	@TO			    = N'" + strNotificationEmail + "'," + vbCrLf
+            strCmd = strCmd + "	@priority		= N'NORMAL'," + vbCrLf
+            strCmd = strCmd + "	@subject		= @subj," + vbCrLf
+            strCmd = strCmd + "	@message		= @mesg," + vbCrLf
+            strCmd = strCmd + "	@type			= N'text/plain'," + vbCrLf
+            strCmd = strCmd + "	@server 		= N'" + strNotificationSMTP + "'" + vbCrLf
+        Else
+            strCmd = "declare @rc int, @subj varchar(255), @mesg varchar(255)" + vbCrLf
+            strCmd = strCmd + "select @subj = @@servername + ' - " + strJobName + " Job Failure'" + vbCrLf
+            strCmd = strCmd + "select @mesg = 'The " + strJobName + " job"
+            If strDBName <> "" Then
+                strCmd = strCmd + " for database " + strDBName
+            End If
+            strCmd = strCmd + " on ' + @@servername + ' failed at ' + convert(varchar(25), getdate(), 100)" + vbCrLf
+            strCmd = strCmd + "EXEC msdb.dbo.sp_send_dbmail" + vbCrLf
+            strCmd = strCmd + "  @profile_name = 'DBMail'," + vbCrLf
+            strCmd = strCmd + "  @recipients = '" + strNotificationEmail + "'," + vbCrLf
+            strCmd = strCmd + "  @body = @mesg," + vbCrLf
+            strCmd = strCmd + "  @subject = @subj" + vbCrLf
+        End If
+        BuildNotifyStep = strCmd
+
+    End Function
+    'The BuildDailyFullBackup Agent job
+
+    'The first subroutine we'll build is the BuildDailyFullBackup subroutine, which takes all the 
+    'parameters we received from the command line.
+
+    Sub BuildDailyFullBackup( _
+     ByRef srvMgmtServer As Server, _
+     ByVal intTLogInterval As Integer, _
+     ByVal intRetDays As Integer, _
+     ByVal intFullBkupStart As Integer, _
+     ByVal strProdServer As String, _
+     ByVal intRedgate As Integer, _
+     ByVal strBackupPassword As String, _
+     ByVal strNotificationEmail As String, _
+     ByVal strNotificationSource As String, _
+     ByVal strNotificationSMTP As String)
+
+
+        'We need to define variables for building the backup job and the various job steps used by
+        ' the backup job :
+
+        Dim intStepID As Integer            'Identify the current StepID
+        Dim dbcDatabases As DatabaseCollection  'The Server's Database Collection
+        Dim dbDatabase As Database          'The Current Database Object
+        Dim intVersion As Integer           'The Server's Version Number
+        Dim strJobName As String            'The Job Name
+        Dim strBackupDir As String          'The Server's Backup Directory
+        Dim strCmd As String                'The Transact-SQL command
+        Dim i As Integer                'An iterator
+
+        strJobName = "DailyFullBackup"
+
+        Dim jobUserFullBkupJob As Job           'The Job object
+        Dim jbsUserFullBkupJobStep As JobStep       'The Job Step object
+        Dim jbsUserFullBkupFailStep As JobStep  'The Job Step object for the failure step
+        Dim jbschUserFullBkupJobSched As JobSchedule    'The Job Schedule object
+        Dim strUserFullBkupFailCmd As String        'The command string for the failure step
+
+        'Next, we get the collection of server databases, and set the default initial fields for the 
+        'server to include the "IsSystemObject" property, which speeds up the processing of the program 
+        'significantly.We'll also get the version number of the server we're connected to, and store the 
+        'backup directory for the server.
+
+        dbcDatabases = srvMgmtServer.Databases
+        srvMgmtServer.SetDefaultInitFields(GetType(Database), "IsSystemObject")
+
+        'Determine the SQL Server Version
+        intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+        strBackupDir = srvMgmtServer.Settings.BackupDirectory
+
+        'We can now start to create the first job. We'll instantiate the Job object, using the server's 
+        'JobServer object and the job name as properties, then set the description, category, and owner, 
+        'and create the job. We'll also initialize the iterator for later use.
+
+        'Create the Daily Full Backup Job
+        jobUserFullBkupJob = New Job(srvMgmtServer.JobServer, strJobName)
+        jobUserFullBkupJob.Description = "Daily Full Backup"
+        jobUserFullBkupJob.Category = "[Uncategorized (Local)]"
+        jobUserFullBkupJob.OwnerLoginName = "sa"
+        jobUserFullBkupJob.Create()
+        i = 0
+
+        'Within the backup job we need to clean up history and old backup files, so the first step in the 
+        'job handles that. We establish dates to keep job history for one month, and we keep backup files 
+        'based on  the retention days parameter passed in.
+
+        'The sp_delete_backuphistory command works for both SQL 2000 and SQL 2005.  For purging the files, 
+        'SQL 2000 uses the xp_sqlmaint function we'll use to back up the files , whereas in SQL 2005 we need
+        'to execute the xp_delete_file stored procedure. SQL 2005 also added the @oldest_date parameter to 
+        'the sp_purge_jobhistory stored procedure so we can use that to delete job history older than one month.
+
+        'Cleanup history and backup files
+        i += 1
+        strCmd = "" + vbCrLf
+        strCmd = strCmd + "declare @dtfiles datetime, @dthist datetime" + vbCrLf
+        strCmd = strCmd + "select @dthist = dateadd(m, -1, getdate())" + vbCrLf
+        strCmd = strCmd + "select @dtfiles = dateadd(d, -" + Trim(CStr(intRetDays)) + ", getdate())" + vbCrLf
+        strCmd = strCmd + "" + vbCrLf
+        strCmd = strCmd + "--Cleanup History" + vbCrLf
+        strCmd = strCmd + "exec msdb.dbo.sp_delete_backuphistory @dthist" + vbCrLf
+        If intRedgate = 0 And intVersion = 9 Then      'In SQL 2000 sqlmaint purges the files, in SQL 2005 we use xp_delete_file
+            strCmd = strCmd + "" + vbCrLf 'redGate backups do their own purging
+            strCmd = strCmd + "--Cleanup Maintenance" + vbCrLf
+            strCmd = strCmd + "exec msdb.dbo.sp_purge_jobhistory  @oldest_date=@dthist" + vbCrLf
+            strCmd = strCmd + "exec master.dbo.xp_delete_file 0,N'" + strBackupDir + "',N'bak',@dtfiles" + vbCrLf
+        End If
+
+        'We've built the command for the step, now we need to add the step to the job.
+
+        jbsUserFullBkupJobStep = New JobStep(jobUserFullBkupJob, "Step " + CStr(i))
+        jbsUserFullBkupJobStep.DatabaseName = "master"
+        jbsUserFullBkupJobStep.Command = strCmd
+        jbsUserFullBkupJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+        jbsUserFullBkupJobStep.OnSuccessStep = i + 2
+        jbsUserFullBkupJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+        jbsUserFullBkupJobStep.Create()
+        intStepID = jbsUserFullBkupJobStep.ID
+        If i = 1 Then
+            jobUserFullBkupJob.ApplyToTargetServer(srvMgmtServer.Name)
+            jobUserFullBkupJob.StartStepID = intStepID
+            jobUserFullBkupJob.Alter()
+        End If
+
+        'Notice that on success we want to skip the next step, because that's the step that will report the 
+        'failure of the step we just created. Also, if this is the first step of the job (we know that it is 
+        'here, but in other subroutines this will be useful) we need to set the job's starting step ID to this 
+        'step.
+
+        'Now we need to build the failure notification step. We load the database name with the word "Cleanup"
+        'to indicate that it was the cleanup step that failed, if in fact that occurred. We also set the 
+        'completion action for both success and failure to go to the next step.
+
+
+        strUserFullBkupFailCmd = BuildNotifyStep(strJobName, intVersion, "Cleanup", strNotificationEmail, _
+            strNotificationSource, strNotificationSMTP)
+        i += 1
+        jbsUserFullBkupFailStep = New JobStep(jobUserFullBkupJob, "Step " + CStr(i))
+        jbsUserFullBkupFailStep.DatabaseName = "master"
+        jbsUserFullBkupFailStep.Command = strUserFullBkupFailCmd
+        jbsUserFullBkupFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+        jbsUserFullBkupFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+        jbsUserFullBkupFailStep.Create()
+
+        'We now want to iterate through the collection of databases on the server. For this job we only want 
+        'user databases, and we don't want snapshot databases.
+
+        For Each dbDatabase In dbcDatabases
+            Dim bolProcessDB As Boolean
+            Dim strDBName As String
+
+            bolProcessDB = True
+            If dbDatabase.IsSystemObject = True Then
+                bolProcessDB = False
+            End If
+            If dbDatabase.CompatibilityLevel = CompatibilityLevel.Version90 Then
+                If dbDatabase.IsDatabaseSnapshot Then
+                    bolProcessDB = False
+                End If
+            End If
+            strDBName = dbDatabase.Name
+            If bolProcessDB = True Then
+
+                'First we'll build the command for the step, based on which version of SQL Server we're using. 
+                'For SQL 2000 the sqlmaint function does everything we need, but for SQL 2005 we need to execute
+                ' a Transact-SQL statement to backup the file. We'll first construct a string containing the date 
+                'in YYYYMMDDHHMMSS format and use that as part of the backup file name. We then backup the database 
+                'to that disk file, then do a RESTORE VERIFYONLY to make certain that the backup file is valid.
+
+                i += 1
+                strCmd = "" + vbCrLf
+                strCmd = strCmd + "--Backup Database " + strDBName + " w/Verify" + vbCrLf
+                If intRedgate <> 0 Then
+                    strCmd = strCmd + "declare @strbackup varchar(500),  @strDate varchar(30),  @database varchar(50)" + vbCrLf
+                    strCmd = strCmd + "declare @dt datetime, @command varchar (2000)" + vbCrLf
+                    strCmd = strCmd + "declare @backupSetId as int" + vbCrLf
+                    strCmd = strCmd + "" + vbCrLf
+                    strCmd = strCmd + "select @dt = getdate()" + vbCrLf
+                    strCmd = strCmd + "set @strDate = CONVERT(varchar, @dt , 112)" + vbCrLf
+                    strCmd = strCmd + "set @strDate = @strDate + Left(CONVERT(varchar, @dt , 108),2)" + vbCrLf
+                    strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),4,2)" + vbCrLf
+                    strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),7,2)" + vbCrLf
+                    strCmd = strCmd + "" + vbCrLf
+                    strCmd = strCmd + "--Backup Transaction Log " + strDBName + " w/Verify" + vbCrLf
+                    strCmd = strCmd + "set @database = '" + strDBName + "'" + vbCrLf
+                    strCmd = strCmd + "set @strbackup = '" + strBackupDir + _
+                        "' + '\FULL_'+@@ServerName+'_' + @database + '_' + @strDate + '.sqb'" + vbCrLf
+                    strCmd = strCmd + "--Backup System Database " + strDBName + vbCrLf
+                    strCmd = strCmd + "Select @command= '-SQL ""BACKUP DATABASE [" + strDBName _
+                        + "] TO DISK = '''+ @strBackup + ''' WITH " + IIf(strBackupPassword <> "", "PASSWORD = ''" _
+                        + strBackupPassword + "'',", "") _
+                        + " ERASEFILES=14, " + vbCrLf
+                    strCmd = strCmd + "INIT, VERIFY, NAME = ''Database (" + strDBName _
+                        + "), ' + CONVERT(varchar, @dt , 113) + ''', DESCRIPTION = ''Backup on ' + CONVERT(varchar, @dt , 113) + '  Database: " _
+                        + strDBName + "  Instance: (local)''" + " "" -E ' " + vbCrLf
+                    strCmd = strCmd + "Execute master..sqlbackup @command"
+
+                ElseIf intVersion = 8 Then      ' In SQL Server 2000 use the xp_sqlmaint procedure
+                    'Full Backups
+                    strCmd = strCmd + "EXECUTE master.dbo.xp_sqlmaint N'-D " + strDBName + "  -VrfyBackup"
+                    strCmd = strCmd + " -BkUpMedia DISK -BkUpDB  -UseDefDir  -DelBkUps "
+                    strCmd = strCmd + Trim(CStr(intRetDays)) + "DAYS -BkExt ""BAK""'" + vbCrLf
+
+                Else
+                    'Full Backups
+                    strCmd = strCmd + "declare @strbackup varchar(500),  @strDate varchar(30),  @database varchar(50)" + vbCrLf
+                    strCmd = strCmd + "declare @dt datetime" + vbCrLf
+                    strCmd = strCmd + "declare @backupSetId as int" + vbCrLf
+                    strCmd = strCmd + "" + vbCrLf
+                    strCmd = strCmd + "select @dt = getdate()" + vbCrLf
+                    strCmd = strCmd + "set @strDate = CONVERT(varchar, @dt , 112)" + vbCrLf
+                    strCmd = strCmd + "set @strDate = @strDate + Left(CONVERT(varchar, @dt , 108),2)" + vbCrLf
+                    strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),4,2)" + vbCrLf
+                    strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),7,2)" + vbCrLf
+                    strCmd = strCmd + "" + vbCrLf
+                    strCmd = strCmd + "set @database = '" + strDBName + "'" + vbCrLf
+                    strCmd = strCmd + "set @strbackup = '" + strBackupDir + "' + '\' + @database + '_backup_' + @strDate + '.bak'" + vbCrLf
+                    strCmd = strCmd + "BACKUP DATABASE [" + strDBName + "] TO  DISK = @strbackup WITH NOFORMAT, INIT," + vbCrLf
+                    strCmd = strCmd + "NAME = N'" + strDBName + "-Full Database Backup', SKIP, NOREWIND, NOUNLOAD,  STATS = 10" + vbCrLf
+                    strCmd = strCmd + "select @backupSetId = position from msdb..backupset" + vbCrLf
+                    strCmd = strCmd + "where database_name=N'" + strDBName + "'" + vbCrLf
+                    strCmd = strCmd + "and backup_set_id=(select max(backup_set_id) from msdb..backupset where database_name=N'" + strDBName + "' )" + vbCrLf
+                    strCmd = strCmd + "if @backupSetId is null begin raiserror(N'Verify failed. Backup information for database ''" + strDBName + "'' not found.', 16, 1) end" + vbCrLf
+                    strCmd = strCmd + "RESTORE VERIFYONLY FROM  DISK = @strbackup WITH  FILE = @backupSetId,  NOUNLOAD,  NOREWIND" + vbCrLf
+                End If
+
+                'The command now built, we'll construct the step and add it to the job.
+
+                jbsUserFullBkupJobStep = New JobStep(jobUserFullBkupJob, "Step " + CStr(i) + " Full Backup of " + strDBName)
+                jbsUserFullBkupJobStep.DatabaseName = dbDatabase.Name
+                jbsUserFullBkupJobStep.Command = strCmd
+                jbsUserFullBkupJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+                jbsUserFullBkupJobStep.OnSuccessStep = i + 2
+                jbsUserFullBkupJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+                jbsUserFullBkupJobStep.Create()
+                intStepID = jbsUserFullBkupJobStep.ID
+                If i = 1 Then
+                    jobUserFullBkupJob.ApplyToTargetServer(srvMgmtServer.Name)
+                    jobUserFullBkupJob.StartStepID = intStepID
+                    jobUserFullBkupJob.Alter()
+                End If
+
+                'We then add the failure notification step.
+
+                strUserFullBkupFailCmd = BuildNotifyStep(strJobName, intVersion, dbDatabase.Name, _
+                    strNotificationEmail, strNotificationSource, strNotificationSMTP)
+                i += 1
+                jbsUserFullBkupFailStep = New JobStep(jobUserFullBkupJob, "Step " + CStr(i))
+                jbsUserFullBkupFailStep.DatabaseName = "master"
+                jbsUserFullBkupFailStep.Command = strUserFullBkupFailCmd
+                jbsUserFullBkupFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+                jbsUserFullBkupFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+                jbsUserFullBkupFailStep.Create()
+
+
+            End If
+        Next
+        i += 1
+        ' Now we've cycled through all the databases, we need a dummy step so the final database has 
+        'a step to go to when it's successful, so I added this step.
+
+        jbsUserFullBkupJobStep = New JobStep(jobUserFullBkupJob, "Step " + CStr(i))
+        jbsUserFullBkupJobStep.DatabaseName = "master"
+        jbsUserFullBkupJobStep.Command = "select 1"
+        jbsUserFullBkupJobStep.OnSuccessAction = StepCompletionAction.QuitWithSuccess
+        jbsUserFullBkupJobStep.OnFailAction = StepCompletionAction.QuitWithSuccess
+        jbsUserFullBkupJobStep.Create()
+
+        'Now we can schedule the job. We want the job to run daily, so we set the job schedule's 
+        'FrequencyTypes property to Daily and the FrequencySubDayTypes to Once. We set the 
+        'ActiveStartTimeOfDay to a TimeSpan variable initialized to the time we passed in for the start 
+        'time for the full backup. We set the end time to one second before midnight. We also need to set the 
+        'FrequencyInterval to 1 and set the ActiveStartDate to Today. Then we can create the schedule.
+
+        'Define a JobSchedule object variable by supplying the parent job and name arguments in the constructor. 
+        jbschUserFullBkupJobSched = New JobSchedule(jobUserFullBkupJob, "Sched 01")
+        'Set properties to define the schedule frequency, and duration.
+        jbschUserFullBkupJobSched.FrequencyTypes = FrequencyTypes.Daily
+        jbschUserFullBkupJobSched.FrequencySubDayTypes = FrequencySubDayTypes.Once
+        Dim tsUserFullBkupStart As TimeSpan
+        tsUserFullBkupStart = New TimeSpan(intFullBkupStart, 0, 0)
+        jbschUserFullBkupJobSched.ActiveStartTimeOfDay = tsUserFullBkupStart
+        Dim tsUserFullBkupEnd As TimeSpan
+        tsUserFullBkupEnd = New TimeSpan(23, 59, 59)
+        jbschUserFullBkupJobSched.ActiveEndTimeOfDay = tsUserFullBkupEnd
+        jbschUserFullBkupJobSched.FrequencyInterval = 1
+        Dim dtUserFullBkupStartDate As Date = Date.Today
+        jbschUserFullBkupJobSched.ActiveStartDate = dtUserFullBkupStartDate
+        'Create the job schedule on the instance of SQL Agent.
+        jbschUserFullBkupJobSched.Create()
+    End Sub
+
+    'We've now created the job that will do a full backup of every user database once a day at the desired hour.
+
+    '                       Transaction Log backup Job
+
+    '   The next subroutine we'll build will create the transaction log backup job. We'll run this conditionally, 
+    'because we set the Dev and QA databases to Simple Recovery mode, so we don't need log backups. In the Main() 
+    'subroutine the call looks like this:
+
+    ' We only need Transaction Log backups on Production Servers
+    '   If strProdServer = "P" Then
+    '      BuildDailyTlogBackup(srvMgmtServer, intTLogInterval, _
+    '	intRetDays, intFullBkupStart)
+    '   End If
+
+    'The structure of the subroutine is very similar to the full backup subroutine. First we define the necessary 
+    'variables.
+
+    Sub BuildDailyTlogBackup( _
+     ByRef srvMgmtServer As Server, _
+     ByVal intTLogInterval As Integer, _
+     ByVal intRetDays As Integer, _
+     ByVal intFullBkupStart As Integer, _
+     ByVal intRedgate As Integer, _
+     ByVal strBackupPassword As String, _
+     ByVal strNotificationEmail As String, _
+     ByVal strNotificationSource As String, _
+     ByVal strNotificationSMTP As String)
+
+        Dim intStepID As Integer            'Identify the current StepID
+        Dim dbcDatabases As DatabaseCollection  'The Server's Database Collection
+        Dim dbDatabase As Database          'The Current Database Object
+        Dim intVersion As Integer           'The Server's Version Number
+        Dim strJobName As String            'The Job Name
+        Dim strBackupDir As String          'The Server's Backup Directory
+        Dim strCmd As String                'The Transact-SQL command
+        Dim i As Integer                'An iterator
+
+        strJobName = "TransLogBackup"
+        intFullBkupStart += 1   ' Add 1 hour to the start of the full backups for the start of the tlog backups.
+
+        Dim jobUserTlogBkupJob As Job           'The Job object
+        Dim jbsUserTlogBkupJobStep As JobStep       'The Job Step object
+        Dim jbsUserTlogBkupFailStep As JobStep  'The Job Step object for the failure step
+        Dim jbschUserTlogBkupJobSched As JobSchedule    'The Job Schedule object
+        Dim strUserTlogBkupFailCmd As String        'The command string for the failure step
+
+        'Notice that we set the start of the transaction log backups to one hour after the start of the full 
+        'backup job. In some cases the transaction log backups fail if the full backups are running at the same 
+        'time, so this protects us from these problems. Given that the backups are generally run in the wee hours 
+        'of the morning there's generally not a lot of transaction activity at this time any way.
+
+        'Now we can get the database collection, set the default init fields, get the server version and backup 
+        'directory for the server, as we did for the full backup. We'll also create the new job.
+
+        dbcDatabases = srvMgmtServer.Databases
+        srvMgmtServer.SetDefaultInitFields(GetType(Database), "IsSystemObject")
+
+        'Determine the SQL Server Version
+        intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+        strBackupDir = srvMgmtServer.Settings.BackupDirectory
+
+        'Create the Trans Log Backup Job
+        jobUserTlogBkupJob = New Job(srvMgmtServer.JobServer, strJobName)
+        jobUserTlogBkupJob.Description = "Trans Log Backup"
+        jobUserTlogBkupJob.Category = "[Uncategorized (Local)]"
+        jobUserTlogBkupJob.OwnerLoginName = "sa"
+        jobUserTlogBkupJob.Create()
+        'strJobID = jobUserTlogBkupJob.JobID
+        i = 0
+
+        'In SQL 2000 the sqlmaint function purges the transaction log backup files, but in SQL 2005 we use the 
+        'xp_delete_file stored procedure to delete the files, so we need to build both the step to execute the 
+        'stored procedure and the step to report if there was a problem with the delete.
+
+        If intVersion = 9 Then
+            'Cleanup backup files
+            i += 1
+
+            strCmd = "" + vbCrLf
+            strCmd = strCmd + "declare @dtfiles datetime" + vbCrLf
+            strCmd = strCmd + "select @dtfiles = dateadd(d, -" + Trim(CStr(intRetDays)) + ", getdate())" + vbCrLf
+            strCmd = strCmd + "" + vbCrLf
+            strCmd = strCmd + "--Cleanup Maintenance" + vbCrLf
+            strCmd = strCmd + "exec master.dbo.xp_delete_file 0,N'" + strBackupDir + "',N'trn',@dtfiles" + vbCrLf
+            jbsUserTlogBkupJobStep = New JobStep(jobUserTlogBkupJob, "Step " + CStr(i))
+            jbsUserTlogBkupJobStep.DatabaseName = "master"
+            jbsUserTlogBkupJobStep.Command = strCmd
+            jbsUserTlogBkupJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+            jbsUserTlogBkupJobStep.OnSuccessStep = i + 2
+            jbsUserTlogBkupJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+            jbsUserTlogBkupJobStep.Create()
+            intStepID = jbsUserTlogBkupJobStep.ID
+
+            If i = 1 Then
+                jobUserTlogBkupJob.ApplyToTargetServer(srvMgmtServer.Name)
+                jobUserTlogBkupJob.StartStepID = intStepID
+                jobUserTlogBkupJob.Alter()
+            End If
+
+            strUserTlogBkupFailCmd = BuildNotifyStep(strJobName, intVersion, "Cleanup", strNotificationEmail, _
+                strNotificationSource, strNotificationSMTP)
+            i += 1
+            jbsUserTlogBkupFailStep = New JobStep(jobUserTlogBkupJob, "Step " + CStr(i))
+            jbsUserTlogBkupFailStep.DatabaseName = "master"
+            jbsUserTlogBkupFailStep.Command = strUserTlogBkupFailCmd
+            jbsUserTlogBkupFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+            jbsUserTlogBkupFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+            jbsUserTlogBkupFailStep.Create()
+        End If
+
+        'Like for the full backup job, we want to iterate through the collection of databases on the server, and we
+        ' only want user databases, but no snapshot databases.
+
+        For Each dbDatabase In dbcDatabases
+            Dim bolProcessDB As Boolean
+
+            bolProcessDB = True
+            If dbDatabase.IsSystemObject = True Then
+                bolProcessDB = False
+            End If
+            If dbDatabase.CompatibilityLevel = CompatibilityLevel.Version90 Then
+                If dbDatabase.IsDatabaseSnapshot Then
+                    bolProcessDB = False
+                End If
+            End If
+            If bolProcessDB = True Then
+
+
+
+                'The log backup job step code is put in place of the … notation. We set the database name, increment the 
+                'step number, and start the job step command string.
+
+                Dim strDBName As String
+                strDBName = dbDatabase.Name
+
+                i += 1
+
+                strCmd = "" + vbCrLf
+                strCmd = strCmd + "--Backup Database " + strDBName + " w/Verify" + vbCrLf
+
+                'We'll only back up the transaction log if the recovery model is set to Full (I don't have any databases set 
+                'to Bulk Logged). If the server is SQL 2000 we'll build a call to xp_sqlmaint, but if it's SQL 2005 we'll build
+                ' the date string for the file name, execute the BACKUP LOG statement to back it up to the disk file in the correct
+                ' backup directory, and then do a RESTORE VERIFYONLY to make sure the backup is good.
+
+                'Trans Log Backups
+                If dbDatabase.DatabaseOptions.RecoveryModel = RecoveryModel.Full Then
+                    If intRedgate <> 0 Then ''  
+                        strCmd = strCmd + "declare @strbackup varchar(500),  @strDate varchar(30),  @database varchar(50)" + vbCrLf
+                        strCmd = strCmd + "declare @dt datetime, @command varchar (2000)" + vbCrLf
+                        strCmd = strCmd + "declare @backupSetId as int" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "select @dt = getdate()" + vbCrLf
+                        strCmd = strCmd + "set @strDate = CONVERT(varchar, @dt , 112)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + Left(CONVERT(varchar, @dt , 108),2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),4,2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),7,2)" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "--Backup Transaction Log " + strDBName + " w/Verify" + vbCrLf
+                        strCmd = strCmd + "set @database = '" + strDBName + "'" + vbCrLf
+                        strCmd = strCmd + "set @strbackup = '" + strBackupDir _
+                            + "' + '\LOG_'+@@ServerName+'_' + @database + '_' + @strDate + '.sqb'" + vbCrLf
+                        strCmd = strCmd + "--Backup Transaction Log " + strDBName + vbCrLf
+                        strCmd = strCmd + "Select @command= '-SQL ""BACKUP LOG [" + strDBName _
+                            + "] TO DISK = '''+ @strBackup + ''' WITH " _
+                            + IIf(strBackupPassword <> "", "PASSWORD = ''" + strBackupPassword + "'',", "") _
+                            + " ERASEFILES=" + Trim(CStr(intRetDays)) + ", " + vbCrLf
+                        strCmd = strCmd + "INIT, VERIFY, NAME = ''Database (" + strDBName _
+                            + "), ' + CONVERT(varchar, @dt , 113) + ''', DESCRIPTION = ''Backup on ' + CONVERT(varchar, @dt , 113) + '  Database: " _
+                            + strDBName + "  Instance: (local)''" + " "" -E ' " + vbCrLf
+                        strCmd = strCmd + "Execute master..sqlbackup @command"
+                    ElseIf intVersion = 8 Then
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "--Backup Transaction Log " + strDBName + " w/Verify" + vbCrLf
+                        strCmd = strCmd + "EXECUTE master.dbo.xp_sqlmaint N'-D " + strDBName + "  -VrfyBackup"
+                        strCmd = strCmd + " -BkUpMedia DISK -BkUpLog  -UseDefDir  -DelBkUps "
+                        strCmd = strCmd + Trim(CStr(intRetDays)) + "DAYS -BkExt ""TRN""'" + vbCrLf
+                    Else
+                        strCmd = strCmd + "declare @strbackup varchar(500),  @strDate varchar(30),  @database varchar(50)" + vbCrLf
+                        strCmd = strCmd + "declare @dt datetime, @dtfiles datetime, @dthist datetime, @sysfiles datetime" + vbCrLf
+                        strCmd = strCmd + "declare @backupSetId as int" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "select @dt = getdate()" + vbCrLf
+                        strCmd = strCmd + "set @strDate = CONVERT(varchar, @dt , 112)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + Left(CONVERT(varchar, @dt , 108),2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),4,2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),7,2)" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "--Backup Transaction Log " + strDBName + " w/Verify" + vbCrLf
+                        strCmd = strCmd + "set @database = '" + strDBName + "'" + vbCrLf
+                        strCmd = strCmd + "set @strbackup = '" + strBackupDir + "' + '\' + @database + '_tlog_' + @strDate + '.trn'" + vbCrLf
+                        strCmd = strCmd + "BACKUP LOG [" + strDBName + "] TO  DISK = @strbackup WITH NOFORMAT, NOINIT," + vbCrLf
+                        strCmd = strCmd + "NAME = N'" + strDBName + "-Transaction Log Backup', SKIP, REWIND, NOUNLOAD,  STATS = 10" + vbCrLf
+                        strCmd = strCmd + "select @backupSetId = position from msdb..backupset" + vbCrLf
+                        strCmd = strCmd + "where database_name=N'" + strDBName + "'" + vbCrLf
+                        strCmd = strCmd + "and backup_set_id=(select max(backup_set_id) from msdb..backupset where database_name=N'" + strDBName + "' )" + vbCrLf
+                        strCmd = strCmd + "if @backupSetId is null begin raiserror(N'Verify failed. Backup information for database ''" + strDBName + "'' not found.', 16, 1) end" + vbCrLf
+                        strCmd = strCmd + "RESTORE VERIFYONLY FROM  DISK = @strbackup WITH  FILE = @backupSetId,  NOUNLOAD,  NOREWIND" + vbCrLf
+                    End If
+                End If
+
+                'Now we can create the job step using the command we just built, set the job's first step if necessary, 
+                'and build the error notification step to report any problems that occur during the backup.
+
+                jbsUserTlogBkupJobStep = New JobStep(jobUserTlogBkupJob, "Step " + CStr(i))
+                jbsUserTlogBkupJobStep.DatabaseName = dbDatabase.Name
+                jbsUserTlogBkupJobStep.Command = strCmd
+                jbsUserTlogBkupJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+                jbsUserTlogBkupJobStep.OnSuccessStep = i + 2
+                jbsUserTlogBkupJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+                jbsUserTlogBkupJobStep.Create()
+                intStepID = jbsUserTlogBkupJobStep.ID
+
+                If i = 1 Then
+                    jobUserTlogBkupJob.ApplyToTargetServer(srvMgmtServer.Name)
+                    jobUserTlogBkupJob.StartStepID = intStepID
+                    jobUserTlogBkupJob.Alter()
+                End If
+
+                strUserTlogBkupFailCmd = BuildNotifyStep(strJobName, intVersion, dbDatabase.Name, strNotificationEmail, _
+                    strNotificationSource, strNotificationSMTP)
+                i += 1
+                jbsUserTlogBkupFailStep = New JobStep(jobUserTlogBkupJob, "Step " + CStr(i))
+                jbsUserTlogBkupFailStep.DatabaseName = "master"
+                jbsUserTlogBkupFailStep.Command = strUserTlogBkupFailCmd
+                jbsUserTlogBkupFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+                jbsUserTlogBkupFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+                jbsUserTlogBkupFailStep.Create()
+
+
+                'The transaction log backups are done pretty regularly during the day to provide more consistent recovery 
+                'from failure. I normally run them once an hour, but one server is set to run them every 15 minutes. The 
+                'interval in minutes is passed in from the command line to accommodate the appropriate backup strategy. 
+                'Once again, the start of the job is set to one hour after the start of the full backup job.
+
+            End If
+        Next
+        'Just like for the full backup job, we need a dummy step for the last backup to jump to if successful.
+
+        i += 1
+        jbsUserTlogBkupJobStep = New JobStep(jobUserTlogBkupJob, "Step " + CStr(i))
+        jbsUserTlogBkupJobStep.DatabaseName = "master"
+        jbsUserTlogBkupJobStep.Command = "select 1"
+        jbsUserTlogBkupJobStep.OnSuccessAction = StepCompletionAction.QuitWithSuccess
+        jbsUserTlogBkupJobStep.OnFailAction = StepCompletionAction.QuitWithSuccess
+        jbsUserTlogBkupJobStep.Create()
+
+        'Define a JobSchedule object variable by supplying the parent job and name arguments in the constructor. 
+        jbschUserTlogBkupJobSched = New JobSchedule(jobUserTlogBkupJob, "Sched 01")
+        'Set properties to define the schedule frequency, and duration.
+        jbschUserTlogBkupJobSched.FrequencyTypes = FrequencyTypes.Daily
+        Dim tsUserTlogBkupStart As TimeSpan
+        tsUserTlogBkupStart = New TimeSpan(intFullBkupStart, 0, 0)
+        jbschUserTlogBkupJobSched.ActiveStartTimeOfDay = tsUserTlogBkupStart
+        Dim tsUserTlogBkupEnd As TimeSpan
+        tsUserTlogBkupEnd = New TimeSpan(23, 59, 59)
+        jbschUserTlogBkupJobSched.ActiveEndTimeOfDay = tsUserTlogBkupEnd
+        jbschUserTlogBkupJobSched.FrequencySubDayTypes = FrequencySubDayTypes.Minute
+        jbschUserTlogBkupJobSched.FrequencySubDayInterval = intTLogInterval
+        jbschUserTlogBkupJobSched.FrequencyTypes = FrequencyTypes.Daily
+        jbschUserTlogBkupJobSched.FrequencyInterval = 1
+        Dim dtUserTlogBkupStartDate As Date = Date.Today
+        jbschUserTlogBkupJobSched.ActiveStartDate = dtUserTlogBkupStartDate
+        'Create the job schedule on the instance of SQL Agent.
+        jbschUserTlogBkupJobSched.Create()
+
+    End Sub
+
+    '               The System database backup job
+
+    'The last backup job we need to create is for the system databases. I set all my servers 
+    'to run this backup job once a week at 2am on Sunday morning. I keep these backup files 
+    'on disk for two weeks. If I make any changes on my servers I can easily run this job manually 
+    'to prevent any loss, but things generally don't change frequently enough to justify running 
+    'the backups more regularly. Your mileage may vary.
+
+    Sub BuildSystemFullBackup(ByRef srvMgmtServer As Server, _
+    ByVal intRedgate As Integer, _
+    ByVal strBackupPassword As String, _
+    ByVal strNotificationEmail As String, _
+    ByVal strNotificationSource As String, _
+    ByVal strNotificationSMTP As String)
+
+        Dim intStepID As Integer            'Identify the current StepID
+        Dim dbcDatabases As DatabaseCollection  'The Server's Database Collection
+        Dim dbDatabase As Database          'The Current Database Object
+        Dim intVersion As Integer           'The Server's Version Number
+        Dim strJobName As String            'The Job Name
+        Dim strBackupDir As String          'The Server's Backup Directory
+        Dim strCmd As String                'The Transact-SQL command
+        Dim i As Integer                'An iterator
+
+        strJobName = "SystemFullBackup"
+
+        Dim jobSystemFullBkupJob As Job           'The Job object
+        Dim jbsSystemFullBkupJobStep As JobStep       'The Job Step object
+        Dim jbsSystemFullBkupFailStep As JobStep  'The Job Step object for the failure step
+        Dim jbschSystemFullBkupJobSched As JobSchedule    'The Job Schedule object
+        Dim strSystemFullBkupFailCmd As String        'The command string for the failure step
+
+        dbcDatabases = srvMgmtServer.Databases
+        srvMgmtServer.SetDefaultInitFields(GetType(Database), "IsSystemObject")
+
+        'Determine the SQL Server Version
+        intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+        strBackupDir = srvMgmtServer.Settings.BackupDirectory
+
+        'Create the Trans Log Backup Job
+        jobSystemFullBkupJob = New Job(srvMgmtServer.JobServer, strJobName)
+        jobSystemFullBkupJob.Description = "System Full Backup"
+        jobSystemFullBkupJob.Category = "[Uncategorized (Local)]"
+        jobSystemFullBkupJob.OwnerLoginName = "sa"
+        jobSystemFullBkupJob.Create()
+        i = 0
+
+        'We need to clean up the old backup files if we're running SQL 2005. Also, note that for SQL 2005 servers 
+        'I created a subfolder called ‘System' in the server's backup directory, so I can have a different cleanup 
+        'frequency for the system backup files. This is because the xp_delete_file will delete everything with the
+        'supplied extension value, and both user and system databases are backed up with the .bak extension.
+
+        If intVersion = 9 Then
+            'Cleanup backup files
+            i += 1
+
+            strCmd = "" + vbCrLf
+            strCmd = strCmd + "declare @sysfiles datetime" + vbCrLf
+            strCmd = strCmd + "select @sysfiles = dateadd(d, -14, getdate())" + vbCrLf
+            strCmd = strCmd + "" + vbCrLf
+            strCmd = strCmd + "--Cleanup Maintenance" + vbCrLf
+            strCmd = strCmd + "exec master.dbo.xp_delete_file 0,N'" + strBackupDir + "\System\',N'bak',@sysfiles" + vbCrLf
+
+            jbsSystemFullBkupJobStep = New JobStep(jobSystemFullBkupJob, "Step " + CStr(i))
+            jbsSystemFullBkupJobStep.DatabaseName = "master"
+            jbsSystemFullBkupJobStep.Command = strCmd
+            jbsSystemFullBkupJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+            jbsSystemFullBkupJobStep.OnSuccessStep = i + 2
+            jbsSystemFullBkupJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+            jbsSystemFullBkupJobStep.Create()
+            intStepID = jbsSystemFullBkupJobStep.ID
+
+            If i = 1 Then
+                jobSystemFullBkupJob.ApplyToTargetServer(srvMgmtServer.Name)
+                jobSystemFullBkupJob.StartStepID = intStepID
+                jobSystemFullBkupJob.Alter()
+            End If
+
+            strSystemFullBkupFailCmd = BuildNotifyStep(strJobName, intVersion, "Cleanup", strNotificationEmail, _
+                strNotificationSource, strNotificationSMTP)
+            i += 1
+            jbsSystemFullBkupFailStep = New JobStep(jobSystemFullBkupJob, "Step " + CStr(i))
+            jbsSystemFullBkupFailStep.DatabaseName = "master"
+            jbsSystemFullBkupFailStep.Command = strSystemFullBkupFailCmd
+            jbsSystemFullBkupFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+            jbsSystemFullBkupFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+            jbsSystemFullBkupFailStep.Create()
+        End If
+
+        'We need to loop through the databases, but notice that the loop is a little different than the other 
+        'two subroutines. We only want system databases here, but we don't want to back up tempdb.
+
+        For Each dbDatabase In dbcDatabases
+            If dbDatabase.IsSystemObject = True Then
+                Dim strDBName As String
+                strDBName = dbDatabase.Name
+
+                If strDBName <> "tempdb" Then
+
+                    'Now, within the loop we build the command to back up the system databases, using either xp_sqlmaint 
+                    'or building the date string and file name, and building the backup and verify Transact-SQL statements.
+
+                    i += 1
+
+                    strCmd = "" + vbCrLf
+                    strCmd = strCmd + "--Backup Database " + strDBName + " w/Verify" + vbCrLf
+                    If intRedgate <> 0 Then ''  
+                        strCmd = strCmd + "declare @strbackup varchar(500),  @strDate varchar(30),  @database varchar(50)" + vbCrLf
+                        strCmd = strCmd + "declare @dt datetime, @command varchar (2000)" + vbCrLf
+                        strCmd = strCmd + "declare @backupSetId as int" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "select @dt = getdate()" + vbCrLf
+                        strCmd = strCmd + "set @strDate = CONVERT(varchar, @dt , 112)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + Left(CONVERT(varchar, @dt , 108),2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),4,2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),7,2)" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "--Backup Transaction Log " + strDBName + " w/Verify" + vbCrLf
+                        strCmd = strCmd + "set @database = '" + strDBName + "'" + vbCrLf
+                        strCmd = strCmd + "set @strbackup = '" + strBackupDir _
+                            + "' + '\FULL_'+@@ServerName+'_' + @database + '_' + @strDate + '.sqb'" + vbCrLf
+                        strCmd = strCmd + "--Backup System Database " + strDBName + vbCrLf
+                        strCmd = strCmd + "Select @command= '-SQL ""BACKUP DATABASE [" _
+                            + strDBName + "] TO DISK = '''+ @strBackup + ''' WITH " _
+                            + IIf(strBackupPassword <> "", "PASSWORD = ''" + strBackupPassword + "'',", "") _
+                            + " ERASEFILES=14, " + vbCrLf
+                        strCmd = strCmd + "INIT, VERIFY, NAME = ''Database (" + strDBName _
+                        + "), ' + CONVERT(varchar, @dt , 113) + ''', DESCRIPTION = ''Backup on ' + CONVERT(varchar, @dt , 113) + '  Database: " _
+                        + strDBName + "  Instance: (local)''" + " "" -E ' " + vbCrLf
+                        strCmd = strCmd + "Execute master..sqlbackup @command"
+
+                    ElseIf intVersion = 8 Then      ' In SQL Server 2000 use the xp_sqlmaint procedure to backup the databases and delete old backup files
+                        'Full Backups
+                        strCmd = strCmd + "EXECUTE master.dbo.xp_sqlmaint N'-D " + strDBName + "  -VrfyBackup"
+                        strCmd = strCmd + " -BkUpMedia DISK -BkUpDB  -UseDefDir  -DelBkUps "
+                        strCmd = strCmd + "14DAYS -BkExt ""BAK""'" + vbCrLf
+                    Else
+                        'Full Backups
+                        strCmd = strCmd + "declare @strbackup varchar(500),  @strDate varchar(30),  @database varchar(50)" + vbCrLf
+                        strCmd = strCmd + "declare @dt datetime" + vbCrLf
+                        strCmd = strCmd + "declare @backupSetId as int" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "select @dt = getdate()" + vbCrLf
+                        strCmd = strCmd + "set @strDate = CONVERT(varchar, @dt , 112)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + Left(CONVERT(varchar, @dt , 108),2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),4,2)" + vbCrLf
+                        strCmd = strCmd + "set @strDate = @strDate + SubString(CONVERT(varchar, @dt , 108),7,2)" + vbCrLf
+                        strCmd = strCmd + "" + vbCrLf
+                        strCmd = strCmd + "set @database = '" + strDBName + "'" + vbCrLf
+                        strCmd = strCmd + "set @strbackup = '" + strBackupDir + "' + '\System\' + @database + '_backup_' + @strDate + '.bak'" + vbCrLf
+                        strCmd = strCmd + "BACKUP DATABASE [" + strDBName + "] TO  DISK = @strbackup WITH NOFORMAT, INIT," + vbCrLf
+                        strCmd = strCmd + "NAME = N'" + strDBName + "-Full Database Backup', SKIP, NOREWIND, NOUNLOAD,  STATS = 10" + vbCrLf
+                        strCmd = strCmd + "select @backupSetId = position from msdb..backupset" + vbCrLf
+                        strCmd = strCmd + "where database_name=N'" + strDBName + "'" + vbCrLf
+                        strCmd = strCmd + "and backup_set_id=(select max(backup_set_id) from msdb..backupset where database_name=N'" + strDBName + "' )" + vbCrLf
+                        strCmd = strCmd + "if @backupSetId is null begin raiserror(N'Verify failed. Backup information for database ''" + strDBName + "'' not found.', 16, 1) end" + vbCrLf
+                        strCmd = strCmd + "RESTORE VERIFYONLY FROM  DISK = @strbackup WITH  FILE = @backupSetId,  NOUNLOAD,  NOREWIND" + vbCrLf
+                    End If
+
+                    'Once the command is built we build the step to use the command, and build the error notification step 
+                    'for the database.
+
+                    jbsSystemFullBkupJobStep = New JobStep(jobSystemFullBkupJob, "Step " + CStr(i))
+                    jbsSystemFullBkupJobStep.DatabaseName = dbDatabase.Name
+                    jbsSystemFullBkupJobStep.Command = strCmd
+                    jbsSystemFullBkupJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+                    jbsSystemFullBkupJobStep.OnSuccessStep = i + 2
+                    jbsSystemFullBkupJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+                    jbsSystemFullBkupJobStep.Create()
+                    intStepID = jbsSystemFullBkupJobStep.ID
+
+                    If i = 1 Then
+                        jobSystemFullBkupJob.ApplyToTargetServer(srvMgmtServer.Name)
+                        jobSystemFullBkupJob.StartStepID = intStepID
+                        jobSystemFullBkupJob.Alter()
+                    End If
+
+                    strSystemFullBkupFailCmd = BuildNotifyStep(strJobName, intVersion, dbDatabase.Name, _
+                    strNotificationEmail, strNotificationSource, strNotificationSMTP)
+                    i += 1
+                    jbsSystemFullBkupFailStep = New JobStep(jobSystemFullBkupJob, "Step " + CStr(i))
+                    jbsSystemFullBkupFailStep.DatabaseName = "master"
+                    jbsSystemFullBkupFailStep.Command = strSystemFullBkupFailCmd
+                    jbsSystemFullBkupFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+                    jbsSystemFullBkupFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+                    jbsSystemFullBkupFailStep.Create()
+
+
+                    'Again, once we're done with all the databases in the loop, we build the dummy step, as in the other subroutines.
+
+
+                End If
+            End If
+        Next
+        i += 1
+        jbsSystemFullBkupJobStep = New JobStep(jobSystemFullBkupJob, "Step " + CStr(i))
+        jbsSystemFullBkupJobStep.DatabaseName = "master"
+        jbsSystemFullBkupJobStep.Command = "select 1"
+        jbsSystemFullBkupJobStep.OnSuccessAction = StepCompletionAction.QuitWithSuccess
+        jbsSystemFullBkupJobStep.OnFailAction = StepCompletionAction.QuitWithSuccess
+        jbsSystemFullBkupJobStep.Create()
+        'Last, we define the job schedule, specifying that the job is run weekly, starting at 2am on Sunday.
+
+        'Define a JobSchedule object variable by supplying the parent job and name arguments in the constructor. 
+        jbschSystemFullBkupJobSched = New JobSchedule(jobSystemFullBkupJob, "Sched 01")
+        'Set properties to define the schedule frequency, and duration.
+        jbschSystemFullBkupJobSched.FrequencyTypes = FrequencyTypes.Weekly
+        jbschSystemFullBkupJobSched.FrequencyRecurrenceFactor = 1
+        jbschSystemFullBkupJobSched.FrequencySubDayTypes = FrequencySubDayTypes.Once
+        Dim tsSystemFullBkupStart As TimeSpan
+        tsSystemFullBkupStart = New TimeSpan(2, 0, 0)
+        jbschSystemFullBkupJobSched.ActiveStartTimeOfDay = tsSystemFullBkupStart
+        Dim tsSystemFullBkupEnd As TimeSpan
+        tsSystemFullBkupEnd = New TimeSpan(23, 59, 59)
+        jbschSystemFullBkupJobSched.ActiveEndTimeOfDay = tsSystemFullBkupEnd
+        jbschSystemFullBkupJobSched.FrequencyInterval = 1
+        Dim dtSystemFullBkupStartDate As Date = Date.Today
+        jbschSystemFullBkupJobSched.ActiveStartDate = dtSystemFullBkupStartDate
+        'Create the job schedule on the instance of SQL Agent.
+        jbschSystemFullBkupJobSched.Create()
+
+    End Sub
+
+    'This program, once implemented, will create the jobs that run our full backups for our user and system 
+    'databases, and will run the transaction log backups for our user databases, all at the intervals we find 
+    'most appropriate for our business needs.
+
+
+
+End Module

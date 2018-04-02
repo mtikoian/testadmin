@@ -1,0 +1,61 @@
+The Differences between Truncate and Delete: 
+
+Both the statements are similar, but there are many differences that exist between them. Those similarities and differences are explained below:
+
+TRUNCATE and DELETE both removes the data, not the structure
+Both commands remove rows from a table, but the table structure and its columns, constraints, indexes, and so on remain. To remove the table definition in addition to its data, use the DROP TABLE statement.
+
+Conditional based deletion of data
+Conditional based deletion of data means that not all rows are deleted. Let's suppose I have a table authors and from this table I want to delete the authors that are living in Australia. Let's examine what our options for doing this with each command.
+
+TRUNCATE - In case of the TRUNCATE command we can't perform the conditional based deletion because there is no WHERE clause allowed with this command. 
+DELETE - The DELETE command provides the functionality of conditional based deletion of data from the table using the WHERE clause. 
+
+# Delete and Truncate both are logged operations:
+On most of the articles I have read on the Internet, I have seen this written: "delete is a logged operation and truncate is not a logged operation", which means when we run the delete command it logs (records) the information about the deleted rows and when we run the truncate command it doesn't log any data. But this is not true; truncate is also a logged operation but in a different way. It uses fewer system and transaction log resources than delete. The TRUNCATE command uses minimum logging resources, which is why it is faster than delete. So both delete and truncate are logged operations, but they work differently as shown below.
+
+DELETE is a logged operation on a per row basis. The DELETE statement removes rows one at a time and records an entry in the transaction log for each deleted row. So, in case if you are deleting a huge number of records then it can cause your transaction log to grow. This means the deletion of a huge number of records will use more server resources as it logs each and every row that is deleted. That is why your transaction log will grow very rapidly. Since the delete statement records each deleted row it is also slow. Some people ask that if this is done for each row then why does not Microsoft modify the delete statement to not record each deleted row??? The answer is when you run your databases in full recovery mode, detailed logging is necessary for SQL Server to be able to recover your database to the most recent state. 
+TRUNCATE logs the deallocation of the data pages in which the data exists. TRUNCATE is faster than DELETE due to the way TRUNCATE "removes" rows from the table. It won't log the deletion of each row; instead it logs the deallocation of the data pages of the table. The TRUNCATE statement removes the data by deallocating the data pages used to store the table data and records only the page deallocation in the transaction log. Actually, TRUNCATE does not remove data, but rather deallocates whole data pages and removes pointers to indexes. The data still exists until it is overwritten or the database is shrunk. This action does not require a lot of resources and is therefore very fast. It is a common mistake to think that TRUNCATE is not logged. This is wrong. The deallocation of the data pages is recorded in the log file. Therefore, "Books Online (BOL)" refers to TRUNCATE operations as "minimally logged" operations. You can use TRUNCATE within a transaction, and when this transaction is rolled-back, the data pages are reallocated again and the database is again in its original, consistent state. 
+
+ ### TRUNCATE is a DDL command whereas DELETE is a DML command
+This is also a common difference you might have read in many articles. That is TRUNCATE is a DDL (data definition language) operation and DELETE is a DML (data manipulation language) operation. Yes according to SQL server it's true. But why it is so, why is TRUNCATE DDL and DELETE DML? Let's look at this;
+
+When we run the TRUNCATE command it puts a "Schema modification (Sch-M)" lock on the table. What is "schema modification (Sch-M)"?
+
+The Database Engine uses schema modification (Sch-M) locks during a table data definition language (DDL) operation, such as adding a column or dropping a table. During the time that it is held, the Sch-M lock prevents concurrent access to the table. This means the Sch-M lock blocks all outside operations until the lock is released. Now you'll ask how it blocks any modification to the table when in the case of TRUNCATE we are performing modifications because we are deleting data? But deleting the data is the one side of coin only. What we see with the internal workings of truncate is because as you read above, that it doesn't remove the data. Rather it deallocates the data pages. Because TRUNCATE doesn't perform any data modification in the table that is why the DELETE TRIGGER is not called. I think we are not modifying the data of the table, BUT as you know TRUNCATE resets the Identity counter of the column in the table, which means the TRUNCATE is modifying the table definition or structure, which comes under the DDL operations. Also when you are truncating a table, you can't modify or add any data to the table. So, to become a DDL operation you have to fulfill some of the conditions written below:
+
+Modifying a table structure or definition comes under DDL operations, and 
+When you are modifying the table structure, you can't access the table to do any data modification. 
+Since TRUNCATE is doing all the activities above, that proves that TRUNCATE is a DDL operation.
+
+Now we move to the DELETE command. In case of the DELETE command I am not sure which lock is implemented, but as we know and you can read above that DELETE command deletes the rows one by one. It is modifying the data by deleting it from the table, and because DELETE performs data modifications that is why the DELETE TRIGGER is called. The DELETE command does not modify the table structure in any manner, such as like how TRUNCATE modifies the identity column by resetting its value. 
+
+To become a DML operation you have to fulfill some of the conditions written below:
+
+Modifying the table data. 
+When you are modifying the table data in the mean time you can't perform any table structure modification on the table. 
+Here the DELETE command is modifying the data of the table and also when delete statement is running you can't modify the table structure. So we can say that DELETE is a DML operation.
+
+
+Behavior of Truncate and Delete for Triggers
+Triggers are important topic in SQL Server, and here I am talking about how both TRUNCATE and DELETE behave differently for Triggers. As you all know triggers fire whenever any data modification happens in the table. In case of TRUNCATE and DELETE, because they are deleting data from the table, the DELETE TRIGGER will fire if present and also the INSTEAD OF and AFTER triggers can be triggered if present. The INSERT and UPDATE triggers will not be fired here.
+
+So let's take both one by one:
+
+TRUNCATE - When we run the TRUNCATE command to delete all the rows of a table it actually doesn't remove any row rather it deallocates the data pages. So in the case of the TRUNCATE command, triggers will not be fired because here no modification takes place. As we know that TRUNCATE is a DDL command, and DDL commands doesn't modify your data; instead they modify your table structure and definition. 
+DELETE - In case of DELETE the DELETE trigger will be fired if present and also if the INSTEAD OF and AFTER triggers for DELETE TRIGGER is present then they also will be fired. As we know that delete command is a DML command and it deletes the data on row-by-row basis. So that means delete is modifying the data by deleting it from the table. As we know delete is a DML command and trigger will be fired whenever any DML operation on the table takes place. 
+Where we can use these statements
+There are some restrictions on the use of both of these statements as follows:
+
+For Delete
+
+The DELETE statement may fail if it violates a trigger or tries to remove a row referenced by data in another table with a FOREIGN KEY constraint. If the DELETE removes multiple rows, and any one of the removed rows violates a trigger or constraint, the statement is canceled, an error is returned, and no rows are removed. 
+For Truncate
+You cannot use TRUNCATE TABLE on tables that:
+
+Are referenced by a FOREIGN KEY constraint. 
+Participate in an indexed view. 
+Are published using transactional replication or merge replication. 
+
+#Permissions of performing TRUNCATE or DELETE operation
+For using both the statements you need some permissions on the server, which decides whether you can perform the Delete or Truncate action on the table or not. To truncate a table, you need at least ALTER permissions on the table (which is granted by default to the table owner, members of the sysadmin fixed server role, and the db_owner and db_ddladmin fixed database roles). To delete rows using the delete statement, you only need the DELETE permission.

@@ -1,0 +1,628 @@
+Imports Microsoft.SqlServer.Management.SMO
+Imports Microsoft.SqlServer.Management.Common
+Imports Microsoft.SqlServer.Management.SMO.Agent
+Module Module1
+
+    Sub Main(ByVal CmdArgs() As String)
+        Dim strServerName As String
+        Dim i As Integer
+        Dim intVersion As Integer
+        Dim strNotificationEmail As String
+        Dim strNotificationSource As String 'who notified?
+        Dim strNotificationSMTP As String 'What was the SMTP (not SQL 2000)?
+
+        strServerName = "."      ' The name of the server we're connecting to
+        strNotificationEmail = "Me@MyOrganisation.com" 'who do we notify?
+        strNotificationSource = "MyServer@MyOrganisation.com" 'who notified?
+        strNotificationSMTP = "smtp.MyOrganisation.com" 'What was the SMTP (not SQL 2000)?
+
+        For i = 0 To UBound(CmdArgs)
+            Dim strCmdArg As String
+            strCmdArg = CmdArgs(i)
+            If Left(strCmdArg, 1) = "-" Then
+                Select Case Mid(strCmdArg, 2, 1)
+                    Case "S"
+                        strServerName = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "T"    'Email: who do we notify?
+                        strNotificationEmail = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "F"    'From Whom: who was the source?
+                        strNotificationSource = Mid(strCmdArg, 3, Len(strCmdArg) - 2)
+                    Case "E"    'what SMTP server?
+                        strNotificationSMTP = Mid(strCmdArg, 3, Len(strCmdArg) - 2)                
+                End Select
+            End If
+        Next
+
+        Try
+
+            ' Connect to the server
+            Dim srvMgmtServer As Server
+            srvMgmtServer = New Server(strServerName)
+            Dim srvConn As ServerConnection
+            srvConn = srvMgmtServer.ConnectionContext
+            srvConn.LoginSecure = True
+
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Index), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "IsSystemObject")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "IsSystemObject")
+
+            'Determine the SQL Server Version
+            intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+
+            'Drop the existing database_dump job
+            tblServerJobs = srvMgmtServer.JobServer.EnumJobs
+            For Each rowServerJobs In tblServerJobs.Rows
+                If rowServerJobs("Name") = "CheckDBIntegrity" _
+                Or rowServerJobs("Name") = "SystemDBOptimizations" Or rowServerJobs("Name") = "UserDBOptimizations" Then
+                    jobDumpJob = srvMgmtServer.JobServer.Jobs(rowServerJobs("Name"))
+                    jobDumpJob.Drop()
+                End If
+            Next
+
+            BuildDBIntegrity(srvMgmtServer)
+            BuildSystemDBOpt(srvMgmtServer)
+            BuildUserDBOpt(srvMgmtServer)
+
+        Catch smoex As SmoException
+            Console.WriteLine("There has been an SMO error")
+            'Display the SMO exception message.
+            Console.WriteLine(smoex.Message)
+            'Display the sequence of non-SMO exceptions that caused the SMO exception.
+            Dim ex As Exception
+            ex = smoex.InnerException
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+            'Catch other non-SMO exceptions.
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+
+    End Sub
+    Sub BuildDBIntegrity(ByRef srvMgmtServer As Server)
+        Dim strJobID As Guid                        ' The JobID assigned to the job we're creating
+        Dim intStepID As Integer                    ' The StepID for each step created in the job
+        Dim dbcDatabases As DatabaseCollection      ' The database collection on the target server
+        Dim dbDatabase As Database                  ' The Database object for the current database
+        Dim intVersion As Integer                   ' The SQL Server version number
+
+        Dim jobDBIntJob As Job                      ' The Job object for the created job
+        Dim jbsDBIntJobStep As JobStep              ' The JobStep object for the current step
+        Dim jbsDBIntFailStep As JobStep             ' The JobStep object for the failure step
+        Dim jbschDBIntJobSched As JobSchedule       ' The JobSchedule object for the schedule
+        Dim strDBIntFailCmd As String               ' The string containing the command to execute on failure
+        Dim i As Integer                            ' An iterator
+
+        Try
+
+            ' Get the database collection from the server and set the default init fields
+            dbcDatabases = srvMgmtServer.Databases
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Index), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "IsSystemObject")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "IsSystemObject")
+
+            'Determine the SQL Server Version
+            intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+
+            'Create the Check DB Integrity Job
+            jobDBIntJob = New Job(srvMgmtServer.JobServer, "CheckDBIntegrity")
+            jobDBIntJob.Description = "Check DB Integrity"
+            jobDBIntJob.Category = "[Uncategorized (Local)]"
+            jobDBIntJob.OwnerLoginName = "sa"
+            jobDBIntJob.Create()
+            strJobID = jobDBIntJob.JobID
+            i = 0
+
+            ' We need a checkdb step and a failure step for each database except tempdb
+            For Each dbDatabase In dbcDatabases
+                If dbDatabase.Name <> "tempdb" Then
+                    i += 1
+                    jbsDBIntJobStep = New JobStep(jobDBIntJob, "Step " + CStr(i))
+                    jbsDBIntJobStep.DatabaseName = dbDatabase.Name
+                    jbsDBIntJobStep.Command = "DBCC CHECKDB WITH NO_INFOMSGS"
+                    jbsDBIntJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+                    jbsDBIntJobStep.OnSuccessStep = i + 2
+                    jbsDBIntJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+                    jbsDBIntJobStep.Create()
+                    intStepID = jbsDBIntJobStep.ID
+
+                    If i = 1 Then
+                        jobDBIntJob.ApplyToTargetServer(srvMgmtServer.Name)
+                        jobDBIntJob.StartStepID = intStepID
+                        jobDBIntJob.Alter()
+                    End If
+
+                    strDBIntFailCmd = BuildNotifyStep("CheckDBIntegrity", intVersion, dbDatabase.Name)
+                    i += 1
+                    jbsDBIntFailStep = New JobStep(jobDBIntJob, "Step " + CStr(i))
+                    jbsDBIntFailStep.DatabaseName = "master"
+                    jbsDBIntFailStep.Command = strDBIntFailCmd
+                    jbsDBIntFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+                    jbsDBIntFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+                    jbsDBIntFailStep.Create()
+                End If
+            Next
+            ' Here we add a "dummy" step for the last checkdb step to go to on success
+            i += 1
+            jbsDBIntJobStep = New JobStep(jobDBIntJob, "Step " + CStr(i))
+            jbsDBIntJobStep.DatabaseName = "master"
+            jbsDBIntJobStep.Command = "select 1"
+            jbsDBIntJobStep.OnSuccessAction = StepCompletionAction.QuitWithSuccess
+            jbsDBIntJobStep.OnFailAction = StepCompletionAction.QuitWithSuccess
+            jbsDBIntJobStep.Create()
+
+            'Define a JobSchedule object variable by supplying the parent job and name arguments in the constructor. 
+            jbschDBIntJobSched = New JobSchedule(jobDBIntJob, "Sched 01")
+            'Set properties to define the schedule frequency, and duration.
+            jbschDBIntJobSched.FrequencyTypes = FrequencyTypes.Weekly
+            jbschDBIntJobSched.FrequencyRecurrenceFactor = 1
+            jbschDBIntJobSched.FrequencySubDayTypes = FrequencySubDayTypes.Once
+            Dim tsDBIntStart As TimeSpan
+            tsDBIntStart = New TimeSpan(0, 0, 0)
+            jbschDBIntJobSched.ActiveStartTimeOfDay = tsDBIntStart
+            Dim tsDBIntEnd As TimeSpan
+            tsDBIntEnd = New TimeSpan(23, 59, 59)
+            jbschDBIntJobSched.ActiveEndTimeOfDay = tsDBIntEnd
+            jbschDBIntJobSched.FrequencyInterval = 1
+            Dim dtDBIntStartDate As Date = Date.Today
+            jbschDBIntJobSched.ActiveStartDate = dtDBIntStartDate
+            'Create the job schedule on the instance of SQL Agent.
+            jbschDBIntJobSched.Create()
+
+        Catch smoex As SmoException
+            Console.WriteLine("There has been an SMO error")
+            'Display the SMO exception message.
+            Console.WriteLine(smoex.Message)
+            'Display the sequence of non-SMO exceptions that caused the SMO exception.
+            Dim ex As Exception
+            ex = smoex.InnerException
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+            'Catch other non-SMO exceptions.
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+
+    End Sub
+    Sub BuildSystemDBOpt(ByRef srvMgmtServer As Server)
+        Dim strJobID As Guid                        ' The JobID assigned to the job we're creating
+        Dim intStepID As Integer                    ' The StepID for each step created in the job
+        Dim dbcDatabases As DatabaseCollection      ' The database collection on the target server
+        Dim dbDatabase As Database                  ' The Database object for the current database
+        Dim intVersion As Integer                   ' The SQL Server version number
+
+        Dim jobSysDBOptJob As Job                   ' The Job object for the created job
+        Dim jbsSysDBOptJobStep As JobStep           ' The JobStep object for the current step
+        Dim jbsSysDBOptFailStep As JobStep          ' The JobStep object for the failure step
+        Dim jbschSysDBOptJobSched As JobSchedule    ' The JobSchedule object for the schedule
+        Dim strSysDBOptFailCmd As String            ' The string containing the command to execute on failure
+        Dim i As Integer                            ' An iterator
+
+        Try
+            ' Get the database collection from the server and set the default init fields
+            dbcDatabases = srvMgmtServer.Databases
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Index), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "IsSystemObject")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "IsSystemObject")
+
+            'Determine the SQL Server Version
+            intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+
+            'Create the SystemDB Optimizations Job
+            jobSysDBOptJob = New Job(srvMgmtServer.JobServer, "SystemDBOptimizations")
+            jobSysDBOptJob.Description = "SystemDB Optimizations"
+            jobSysDBOptJob.Category = "[Uncategorized (Local)]"
+            jobSysDBOptJob.OwnerLoginName = "sa"
+            jobSysDBOptJob.Create()
+            strJobID = jobSysDBOptJob.JobID
+            i = 0
+
+            ' In each database we want to shrink the database, leaving 10 percent free space,
+            ' for each table within the database we want to update statistics, and for each view
+            ' we want to update statistics with the FULLSCAN and NORECOMPUT options.
+            For Each dbDatabase In dbcDatabases
+                If dbDatabase.IsSystemObject = True Then
+                    If dbDatabase.Name <> "tempdb" Then
+                        Dim strOptCmd As String             ' The optimizations command string
+                        Dim objTableColl As TableCollection ' The collection of tables in the database
+                        Dim objTable As Table               ' A table object for iteration
+                        Dim objViewColl As ViewCollection   ' The collection of views in the database
+                        Dim objView As View                 ' A view object for iteration
+
+                        i += 1
+                        If intVersion = 9 Then
+                            ' Shrink Database Command
+                            strOptCmd = "DBCC SHRINKDATABASE(N'" + dbDatabase.Name + "', 10, TRUNCATEONLY)" + vbCrLf
+                            strOptCmd = strOptCmd + "" + vbCrLf
+                            objTableColl = dbDatabase.Tables    ' Get the database table collection
+                            objViewColl = dbDatabase.Views      ' Get the database view collection
+                            ' Update Statistics
+                            For Each objTable In objTableColl
+                                If objTable.IsSystemObject = False Then
+                                    strOptCmd = strOptCmd + "UPDATE STATISTICS [" + objTable.Schema + "].[" + objTable.Name + "]" + vbCrLf
+                                End If
+                            Next
+                            For Each objView In objViewColl
+                                If objView.IsSystemObject = False Then
+                                    strOptCmd = strOptCmd + "UPDATE STATISTICS [" + objView.Schema + "].[" + objView.Name + "] WITH FULLSCAN ,NORECOMPUTE" + vbCrLf
+                                End If
+                            Next
+                            strOptCmd = strOptCmd + "" + vbCrLf
+                        Else
+                            ' The xp_sqlmaint stored procedure handles this maintance in SQL Server 2000 servers
+                            strOptCmd = "EXECUTE master.dbo.xp_sqlmaint N'-D " + dbDatabase.Name + " -WriteHistory  -RebldIdx 10 -RmUnusedSpace 50 10 '" + vbCrLf
+                        End If
+                        ' Add the Job Step, and assign the command just built to the step
+                        jbsSysDBOptJobStep = New JobStep(jobSysDBOptJob, "Step " + CStr(i))
+                        jbsSysDBOptJobStep.DatabaseName = dbDatabase.Name
+                        jbsSysDBOptJobStep.Command = strOptCmd
+                        jbsSysDBOptJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+                        jbsSysDBOptJobStep.OnSuccessStep = i + 2
+                        jbsSysDBOptJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+                        jbsSysDBOptJobStep.Create()
+                        intStepID = jbsSysDBOptJobStep.ID
+
+                        If i = 1 Then                   ' If this is the first job step, assign that step to the job
+                            jobSysDBOptJob.ApplyToTargetServer(srvMgmtServer.Name)
+                            jobSysDBOptJob.StartStepID = intStepID
+                            jobSysDBOptJob.Alter()
+                        End If
+
+                        ' Build the failure notification step
+                        strSysDBOptFailCmd = BuildNotifyStep("SystemDBOptimizations", intVersion, dbDatabase.Name)
+                        i += 1
+                        jbsSysDBOptFailStep = New JobStep(jobSysDBOptJob, "Step " + CStr(i))
+                        jbsSysDBOptFailStep.DatabaseName = "master"
+                        jbsSysDBOptFailStep.Command = strSysDBOptFailCmd
+                        jbsSysDBOptFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+                        jbsSysDBOptFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+                        jbsSysDBOptFailStep.Create()
+                    End If
+                End If
+            Next
+            i += 1
+            ' Build a "dummy" step for the last maintenance step to branch to on success
+            jbsSysDBOptJobStep = New JobStep(jobSysDBOptJob, "Step " + CStr(i))
+            jbsSysDBOptJobStep.DatabaseName = "master"
+            jbsSysDBOptJobStep.Command = "select 1"
+            jbsSysDBOptJobStep.OnSuccessAction = StepCompletionAction.QuitWithSuccess
+            jbsSysDBOptJobStep.OnFailAction = StepCompletionAction.QuitWithSuccess
+            jbsSysDBOptJobStep.Create()
+
+            'Define a JobSchedule object variable by supplying the parent job and name arguments in the constructor. 
+            jbschSysDBOptJobSched = New JobSchedule(jobSysDBOptJob, "Sched 01")
+            'Set properties to define the schedule frequency, and duration.
+            jbschSysDBOptJobSched.FrequencyTypes = FrequencyTypes.Weekly
+            jbschSysDBOptJobSched.FrequencyRecurrenceFactor = 1
+            jbschSysDBOptJobSched.FrequencySubDayTypes = FrequencySubDayTypes.Once
+            Dim tsSysDBOptStart As TimeSpan
+            tsSysDBOptStart = New TimeSpan(3, 0, 0)
+            jbschSysDBOptJobSched.ActiveStartTimeOfDay = tsSysDBOptStart
+            Dim tsSysDBOptEnd As TimeSpan
+            tsSysDBOptEnd = New TimeSpan(23, 59, 59)
+            jbschSysDBOptJobSched.ActiveEndTimeOfDay = tsSysDBOptEnd
+            jbschSysDBOptJobSched.FrequencyInterval = 1
+            Dim dtSysDBOptStartDate As Date = Date.Today
+            jbschSysDBOptJobSched.ActiveStartDate = dtSysDBOptStartDate
+            'Create the job schedule on the instance of SQL Agent.
+            jbschSysDBOptJobSched.Create()
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+
+    End Sub
+    Sub BuildUserDBOpt(ByRef srvMgmtServer As Server)
+        Dim strJobID As Guid                        ' The JobID assigned to the job we're creating
+        Dim intStepID As Integer                    ' The StepID for each step created in the job
+        Dim dbcDatabases As DatabaseCollection      ' The database collection on the target server
+        Dim dbDatabase As Database                  ' The Database object for the current database
+        Dim intVersion As Integer                   ' The SQL Server version number
+
+        Dim jobUserDBOptJob As Job                  ' The Job object for the created job
+        Dim jbsUserDBOptJobStep As JobStep          ' The JobStep object for the current step
+        Dim jbsUserDBOptFailStep As JobStep         ' The JobStep object for the failure step
+        Dim jbschUserDBOptJobSched As JobSchedule   ' The JobSchedule object for the schedule
+        Dim strUserDBOptFailCmd As String           ' The string containing the command to execute on failure
+        Dim i As Integer                            ' An iterator
+
+        Try
+            ' Get the database collection from the server and set the default init fields
+            dbcDatabases = srvMgmtServer.Databases
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Index), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "IsSystemObject")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "IsSystemObject")
+
+            'Determine the SQL Server Version
+            intVersion = CInt(Left(srvMgmtServer.Information.Version.ToString, 1))
+
+            'Create the UserDB Optimizations Job
+            jobUserDBOptJob = New Job(srvMgmtServer.JobServer, "UserDBOptimizations")
+            jobUserDBOptJob.Description = "UserDB Optimizations"
+            jobUserDBOptJob.Category = "[Uncategorized (Local)]"
+            jobUserDBOptJob.OwnerLoginName = "sa"
+            jobUserDBOptJob.Create()
+            strJobID = jobUserDBOptJob.JobID
+            i = 0
+
+            For Each dbDatabase In dbcDatabases
+                Dim bolProcessDB As Boolean
+
+                bolProcessDB = True
+                If dbDatabase.IsSystemObject = True Then
+                    bolProcessDB = False
+                End If
+                If dbDatabase.CompatibilityLevel = CompatibilityLevel.Version90 Then
+                    If dbDatabase.IsDatabaseSnapshot Then
+                        bolProcessDB = False
+                    End If
+                End If
+                If bolProcessDB = True Then
+                    Dim strOptCmd As String
+
+                    i += 1
+                    If intVersion = 9 Then
+                        ' Shrink Database Command
+                        strOptCmd = "DBCC SHRINKDATABASE(N'" + dbDatabase.Name + _
+                            "', 10, TRUNCATEONLY)" + vbCrLf
+                        strOptCmd = strOptCmd + "" + vbCrLf
+                        ' Reorg Indexes
+                        BuildIndexReorgProc(srvMgmtServer, dbDatabase.Name)
+                        strOptCmd = strOptCmd + "exec db_index_reorg" + vbCrLf
+                        strOptCmd = strOptCmd + "" + vbCrLf
+                        ' Update Statistics
+                        BuildUpdateStatsProc(srvMgmtServer, dbDatabase.Name)
+                        strOptCmd = strOptCmd + "exec db_update_stats" + vbCrLf
+                        strOptCmd = strOptCmd + "" + vbCrLf
+                    Else
+                        strOptCmd = "EXECUTE master.dbo.xp_sqlmaint N'-D " + dbDatabase.Name + _
+                            " -WriteHistory  -RebldIdx 10 -RmUnusedSpace 50 10 '" + vbCrLf
+                    End If
+                    jbsUserDBOptJobStep = New JobStep(jobUserDBOptJob, "Step " + CStr(i))
+                    jbsUserDBOptJobStep.DatabaseName = dbDatabase.Name
+                    jbsUserDBOptJobStep.Command = strOptCmd
+                    jbsUserDBOptJobStep.OnSuccessAction = StepCompletionAction.GoToStep
+                    jbsUserDBOptJobStep.OnSuccessStep = i + 2
+                    jbsUserDBOptJobStep.OnFailAction = StepCompletionAction.GoToNextStep
+                    jbsUserDBOptJobStep.Create()
+                    intStepID = jbsUserDBOptJobStep.ID
+
+                    If i = 1 Then
+                        jobUserDBOptJob.ApplyToTargetServer(srvMgmtServer.Name)
+                        jobUserDBOptJob.StartStepID = intStepID
+                        jobUserDBOptJob.Alter()
+                    End If
+
+                    strUserDBOptFailCmd = BuildNotifyStep("UserDBOptimizations", intVersion, dbDatabase.Name)
+                    i += 1
+                    jbsUserDBOptFailStep = New JobStep(jobUserDBOptJob, "Step " + CStr(i))
+                    jbsUserDBOptFailStep.DatabaseName = "master"
+                    jbsUserDBOptFailStep.Command = strUserDBOptFailCmd
+                    jbsUserDBOptFailStep.OnSuccessAction = StepCompletionAction.GoToNextStep
+                    jbsUserDBOptFailStep.OnFailAction = StepCompletionAction.GoToNextStep
+                    jbsUserDBOptFailStep.Create()
+                End If
+            Next
+            i += 1
+            jbsUserDBOptJobStep = New JobStep(jobUserDBOptJob, "Step " + CStr(i))
+            jbsUserDBOptJobStep.DatabaseName = "master"
+            jbsUserDBOptJobStep.Command = "select 1"
+            jbsUserDBOptJobStep.OnSuccessAction = StepCompletionAction.QuitWithSuccess
+            jbsUserDBOptJobStep.OnFailAction = StepCompletionAction.QuitWithSuccess
+            jbsUserDBOptJobStep.Create()
+
+            'Define a JobSchedule object variable by supplying the parent job and name arguments in the constructor. 
+            jbschUserDBOptJobSched = New JobSchedule(jobUserDBOptJob, "Sched 01")
+            'Set properties to define the schedule frequency, and duration.
+            jbschUserDBOptJobSched.FrequencyTypes = FrequencyTypes.Weekly
+            jbschUserDBOptJobSched.FrequencyRecurrenceFactor = 1
+            jbschUserDBOptJobSched.FrequencySubDayTypes = FrequencySubDayTypes.Once
+            Dim tsUserDBOptStart As TimeSpan
+            tsUserDBOptStart = New TimeSpan(3, 0, 0)
+            jbschUserDBOptJobSched.ActiveStartTimeOfDay = tsUserDBOptStart
+            Dim tsUserDBOptEnd As TimeSpan
+            tsUserDBOptEnd = New TimeSpan(23, 59, 59)
+            jbschUserDBOptJobSched.ActiveEndTimeOfDay = tsUserDBOptEnd
+            jbschUserDBOptJobSched.FrequencyInterval = 1
+            Dim dtUserDBOptStartDate As Date = Date.Today
+            jbschUserDBOptJobSched.ActiveStartDate = dtUserDBOptStartDate
+            'Create the job schedule on the instance of SQL Agent.
+            jbschUserDBOptJobSched.Create()
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+
+    End Sub
+
+    Sub BuildIndexReorgProc(ByRef srvMgmtServer As Server, ByVal strDatabase As String)
+        Dim dbDatabase As Database          ' The Database object
+        Dim objTableColl As TableCollection ' The table collection
+        Dim objTable As Table               ' The table object (for iteration)
+        Dim objIndexColl As IndexCollection ' The index collection
+        Dim objIndex As Index               ' The index object (for iteration)
+        Dim objViewColl As ViewCollection   ' The view collection
+        Dim objView As View                 ' The view object (for iteration)
+        Dim spStoredProc As StoredProcedure ' The stored procedure object
+        Dim strSPText As String             ' The text string for the stored procedure
+
+        Try
+            ' Get the database object from the server and set the default init fields
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Index), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "IsSystemObject")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "IsSystemObject")
+            dbDatabase = srvMgmtServer.Databases(strDatabase)
+            ' Drop the stored procedure if it already exists
+            spStoredProc = dbDatabase.StoredProcedures("db_index_reorg")
+            If Not (spStoredProc Is Nothing) Then
+                spStoredProc.Drop()
+            End If
+
+            'Build the stored procedure for the index reorg
+            spStoredProc = New StoredProcedure(dbDatabase, "db_index_reorg")
+            spStoredProc.TextMode = False
+            spStoredProc.AnsiNullsStatus = False
+            spStoredProc.QuotedIdentifierStatus = False
+            strSPText = "" + vbCrLf
+            ' Create an ALTER INDEX statement for each index in each table
+            objTableColl = dbDatabase.Tables
+            For Each objTable In objTableColl
+                If objTable.IsSystemObject = False Then
+                    objIndexColl = objTable.Indexes
+                    For Each objIndex In objIndexColl
+                        strSPText = strSPText + "ALTER INDEX [" + objIndex.Name + _
+                            "] ON [" + objTable.Schema + "].[" + objTable.Name + _
+                            "] REORGANIZE WITH ( LOB_COMPACTION = ON )" + vbCrLf
+                    Next
+                End If
+            Next
+            strSPText = strSPText + "" + vbCrLf
+            ' Create an ALTER INDEX statement for each index in each view
+            objViewColl = dbDatabase.Views
+            For Each objView In objViewColl
+                If objView.IsSystemObject = False Then
+                    objIndexColl = objView.Indexes
+                    For Each objIndex In objIndexColl
+                        strSPText = strSPText + "ALTER INDEX [" + objView.Name + _
+                            "] ON [" + objView.Schema + "].[" + objView.Name + _
+                            "] REORGANIZE WITH ( LOB_COMPACTION = ON )" + vbCrLf
+                    Next
+                End If
+            Next
+            strSPText = strSPText + "" + vbCrLf
+            ' Assign the stored procedure text body and create it
+            spStoredProc.TextBody = strSPText
+            spStoredProc.Create()
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+
+    End Sub
+    Sub BuildUpdateStatsProc(ByRef srvMgmtServer As Server, ByVal strDatabase As String)
+        Dim dbDatabase As Database          ' The Database object
+        Dim objTableColl As TableCollection ' The table collection
+        Dim objTable As Table               ' The table object (for iteration)
+        Dim objViewColl As ViewCollection   ' The view collection
+        Dim objView As View                 ' The view object (for iteration)
+        Dim spStoredProc As StoredProcedure ' The stored procedure object
+        Dim strSPText As String             ' The text string for the stored procedure
+
+        Try
+            ' Get the database object from the server and set the default init fields
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Index), "Name")
+            srvMgmtServer.SetDefaultInitFields(GetType(Table), "IsSystemObject")
+            srvMgmtServer.SetDefaultInitFields(GetType(View), "IsSystemObject")
+            dbDatabase = srvMgmtServer.Databases(strDatabase)
+            spStoredProc = dbDatabase.StoredProcedures("db_update_stats")
+            If Not (spStoredProc Is Nothing) Then
+                spStoredProc.Drop()
+            End If
+
+            'Build the stored procedure for the update stats
+            spStoredProc = New StoredProcedure(dbDatabase, "db_update_stats")
+            spStoredProc.TextMode = False
+            spStoredProc.AnsiNullsStatus = False
+            spStoredProc.QuotedIdentifierStatus = False
+            strSPText = "" + vbCrLf
+            ' Create an UPDATE STATISTICS statement for each table
+            objTableColl = dbDatabase.Tables
+            For Each objTable In objTableColl
+                If objTable.IsSystemObject = False Then
+                    strSPText = strSPText + "UPDATE STATISTICS [" + _
+                        objTable.Schema + "].[" + objTable.Name + _
+                        "]" + vbCrLf
+                End If
+            Next
+            ' Create an UPDATE STATISTICS statement for each view
+            objViewColl = dbDatabase.Views
+            For Each objView In objViewColl
+                If objView.IsSystemObject = False Then
+                    strSPText = strSPText + "UPDATE STATISTICS [" + _
+                        objView.Schema + "].[" + objView.Name + _
+                        "] WITH FULLSCAN ,NORECOMPUTE" + vbCrLf
+                End If
+            Next
+            strSPText = strSPText + "" + vbCrLf
+            spStoredProc.TextBody = strSPText
+            spStoredProc.Create()
+        Catch ex As Exception
+            Console.WriteLine("There has been a VB error. " + ex.Message)
+            Do While ex.InnerException IsNot (Nothing)
+                Console.WriteLine(ex.InnerException.Message)
+                ex = ex.InnerException
+            Loop
+        End Try
+
+    End Sub
+    Private Function BuildNotifyStep(ByVal strJobName As String, ByVal intVersion As Integer, ByVal strDBName As String) As String
+        Dim strNotifyStep As String
+
+        If intVersion = 8 Then
+            strNotifyStep = "declare @rc int, @subj varchar(255), @mesg varchar(255)" + vbCrLf
+            strNotifyStep = strNotifyStep + "select @subj = @@servername + ' - " + strJobName + " Job Failure'" + vbCrLf
+            strNotifyStep = strNotifyStep + "select @mesg = 'The " + strJobName + " job"
+            If strDBName <> "" Then
+                strNotifyStep = strNotifyStep + " for database " + strDBName
+            End If
+            strNotifyStep = strNotifyStep + " on ' + @@servername + ' failed at ' + convert(varchar(25), getdate(), 100)" + vbCrLf
+            strNotifyStep = strNotifyStep + "exec @rc = master.dbo.xp_smtp_sendmail" + vbCrLf
+            strNotifyStep = strNotifyStep + "	@FROM			= N'dbadmin@advanstar.com'," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@FROM_NAME		= N'DB Admin'," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@TO			    = N'adv_sqldba@advanstar.com'," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@priority		= N'NORMAL'," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@subject		= @subj," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@message		= @mesg," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@type			= N'text/plain'," + vbCrLf
+            strNotifyStep = strNotifyStep + "	@server 		= N'clevallxch01.advanstar.com'" + vbCrLf
+        Else
+            strNotifyStep = "declare @rc int, @subj varchar(255), @mesg varchar(255)" + vbCrLf
+            strNotifyStep = strNotifyStep + "select @subj = @@servername + ' - " + strJobName + " Job Failure'" + vbCrLf
+            strNotifyStep = strNotifyStep + "select @mesg = 'The " + strJobName + " job"
+            If strDBName <> "" Then
+                strNotifyStep = strNotifyStep + " for database " + strDBName
+            End If
+            strNotifyStep = strNotifyStep + " on ' + @@servername + ' failed at ' + convert(varchar(25), getdate(), 100)" + vbCrLf
+            strNotifyStep = strNotifyStep + "EXEC msdb.dbo.sp_send_dbmail" + vbCrLf
+            strNotifyStep = strNotifyStep + "  @profile_name = 'DBMail'," + vbCrLf
+            strNotifyStep = strNotifyStep + "  @recipients = 'adv_sqldba@advanstar.com'," + vbCrLf
+            strNotifyStep = strNotifyStep + "  @body = @mesg," + vbCrLf
+            strNotifyStep = strNotifyStep + "  @subject = @subj" + vbCrLf
+        End If
+        BuildNotifyStep = strNotifyStep
+
+    End Function
+
+End Module
