@@ -1,0 +1,7 @@
+1)Execute script 1_BkJ_Generate_Users.sql on blackjackshared database
+2)copy o/p to script 2 and execute script on click(CMDB)
+save results as txt tab delimited
+3)Edit file 3-CBP_PRE_LOAD_CONFIG.sql
+updates paths and execute 
+
+4)Generate_LDAP_Extract.sql copy results to excel

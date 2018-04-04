@@ -1,0 +1,13 @@
+IF OBJECT_ID('#SpaceUsed') IS NOT NULL
+	DROP TABLE #SpaceUsed;
+CREATE TABLE #SpaceUsed ([DBName] SYSNAME, [FileName] SYSNAME, [SpaceUsed] FLOAT, [TotalSize] FLOAT);
+
+IF ((SERVERPROPERTY('PRODUCTVERSION') > '10' AND SERVERPROPERTY('ENGINEEDITION') = 3) OR (SERVERPROPERTY('PRODUCTVERSION') > '10.5'))
+	EXEC SP_MSFOREACHDB N'USE [?]; INSERT #SpaceUsed SELECT ''?'', name, FILEPROPERTY(name,''SpaceUsed'')*8/1024*.3,Size*8/1024 FROM SYS.database_files WHERE type = 0;';
+ELSE
+	EXEC SP_MSFOREACHDB N'USE [?]; INSERT #SpaceUsed SELECT ''?'', name, FILEPROPERTY(name,''SpaceUsed'')*8/1024,Size*8/1024 FROM SYS.database_files WHERE type = 0;';
+
+SELECT * FROM #SpaceUsed
+SELECT SUM([SpaceUsed]) FROM #SpaceUsed
+
+DROP TABLE #SpaceUsed

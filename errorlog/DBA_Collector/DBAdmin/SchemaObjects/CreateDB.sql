@@ -1,0 +1,27 @@
+USE [master]
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = '$(DBName)')
+BEGIN
+
+	RAISERROR('Database $(DBName) exists, dropping.',10,1) WITH NOWAIT;
+	ALTER DATABASE $(DBName) SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+	DROP DATABASE $(DBName);
+END
+GO
+
+CREATE DATABASE [$(DBName)]
+ON
+(
+	NAME = '$(DBName)_Primary',
+	FILENAME = '$(DATA_PATH)\$(DBName)_Data.mdf',
+	SIZE = 128MB,
+	MAXSIZE = 1096MB,
+	FILEGROWTH=64MB
+)
+LOG ON 
+(
+	NAME = '$(DBName)_Log',
+	FILENAME = '$(LOG_PATH)\$(DBName)_Log.ldf',
+	SIZE = 64MB,
+	MAXSIZE = 1024MB,
+	FILEGROWTH=64MB
+);
