@@ -1,4 +1,0 @@
-RAISERROR('Testing EDEV_DBA alerts. (SEV 17)',17,1) WITH LOG;
-RAISERROR('Testing EDEV_DBA alerts. (SEV 18)',18,1) WITH LOG;
-RAISERROR('Testing EDEV_DBA alerts. (SEV 19)',19,1) WITH LOG;
-RAISERROR('Testing EDEV_DBA alerts. (SEV 20)',20,1) WITH LOG;
