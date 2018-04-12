@@ -1,0 +1,55 @@
+USE NETIKIP
+GO
+--Data base Role for Mobius  
+/*
+only creation of the role....users are created in the "client implementation" scripts
+*/
+
+
+-- Create the UI urole in the BISSec database
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'u_role_mobius' AND type = 'R')
+CREATE ROLE urole_DAA_Application AUTHORIZATION dbo;
+GO
+IF EXISTS
+       (SELECT 1
+          FROM sys.database_principals
+         WHERE name = N'u_role_mobius' AND type IN ('R'))
+    BEGIN
+      PRINT '<<< CREATED ROLE  u_role_mobius IN DATABASE >>>'
+    END
+GO
+
+
+-- Create the UI prole in the BISSec database
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = N'p_role_mobius' AND type = 'R')
+CREATE ROLE p_role_mobius AUTHORIZATION dbo;
+GO
+IF EXISTS
+       (SELECT 1
+          FROM sys.database_principals
+         WHERE name = N'p_role_mobius' AND type IN ('R'))
+    BEGIN
+      PRINT '<<< CREATED ROLE p_role_mobius IN DATABASE  >>>'
+    END
+GO
+
+-- Add the urole to the prole (permissions granted to prole)
+EXEC sp_addrolemember @rolename= 'p_role_mobius',  @membername='u_role_mobius'
+IF EXISTS
+       (SELECT 1
+          FROM     sys.database_role_members drm
+               INNER JOIN
+                   sys.database_principals dp
+               ON drm.role_principal_id = dp.principal_id
+         WHERE dp.type = 'R' AND dp.name = 'p_role_mobius')
+    BEGIN
+        PRINT '<<< ADDED ROLE MEMBER u_role_mobius TO p_role_mobius IN DATABASE  >>>'
+    END
+GO
+ 
+  
+--ALTER AUTHORIZATION ON SCHEMA::cds TO p_role_cds
+
+--GRANT SELECT ON dbo.CUST TO p_role_cds;
+
+--GRANT SELECT ON dbo.GP_FUND TO p_role_cds;
