@@ -1,0 +1,231 @@
+DBBuild starting on 20131121_121048 
+ 
+ALLUSERSPROFILE=C:\Documents and Settings\All Users
+APPDATA=C:\Documents and Settings\vbandi\Application Data
+CLIENTNAME=Console
+CommonProgramFiles=C:\Program Files\Common Files
+COMPUTERNAME=LT-00001453
+ComSpec=C:\WINDOWS\system32\cmd.exe
+CURRENT_DT=20131121_121048
+DBName=NETIKIP
+DBSchema=dbo
+DBServer=seinetikqadb02
+ErrMsg="Invalid Input_File_List variable"
+FP_NO_HOST_CHECK=NO
+HOMEDRIVE=C:
+HOMEPATH=\Documents and Settings\vbandi
+Input_File_List=C:\CDSUpdatePackage01\Database\Rollback\\Docs\DBBuild_Input_File_List.Txt
+J2D_D3D=false
+LogDir=C:\CDSUpdatePackage01\Database\Rollback\\Logs
+LogFile=C:\CDSUpdatePackage01\Database\Rollback\\Logs\DBBuild_20131121_121048.log
+LOGONSERVER=\\POLARIS
+mydate=20131121
+mytime=121048
+NUMBER_OF_PROCESSORS=4
+OS=Windows_NT
+Path=C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\system32\WindowsPowerShell\v1.0;C:\Program Files\E!PC\;C:\Program Files\ATI Technologies\ATI.ACE\Core-Static;C:\Program Files\Microsoft SQL Server\100\Tools\Binn\;C:\Program Files\Microsoft SQL Server\100\DTS\Binn\;C:\Program Files\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\;C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies\;C:\Program Files\TortoiseSVN\bin;C:\Program Files\Microsoft SQL Server\80\Tools\Binn\;C:\Program Files\Windows Imaging\
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.PSC1
+PROCESSOR_ARCHITECTURE=x86
+PROCESSOR_IDENTIFIER=x86 Family 6 Model 58 Stepping 9, GenuineIntel
+PROCESSOR_LEVEL=6
+PROCESSOR_REVISION=3a09
+ProgramFiles=C:\Program Files
+PROMPT=$P$G
+PSModulePath=C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\
+ROOTDIR=C:\CDSUpdatePackage01\Database\Rollback\
+Script=EMPTY
+SESSIONNAME=Console
+STARTDIR=C:\CDSUpdatePackage01\Database\Rollback\
+SystemDrive=C:
+SystemRoot=C:\WINDOWS
+TEMP=C:\DOCUME~1\vbandi\LOCALS~1\Temp
+TMP=C:\DOCUME~1\vbandi\LOCALS~1\Temp
+UATDATA=C:\WINDOWS\CCM\UATData\D9F8C395-CAB8-491d-B8AC-179A1FE1BE77
+USERDNSDOMAIN=CORP.SEIC.COM
+USERDOMAIN=SEI-DOMAIN-1
+USERNAME=VBandi
+USERPROFILE=C:\Documents and Settings\vbandi
+windir=C:\WINDOWS
+__COMPAT_LAYER=EnableNXShowUI 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_DP_PI_U_LotActivity_Col.sql 
+Changed database context to 'NetikDP'.
+Base_To_System_FX_Rt column dropped from table DP_PI_U_LotActivity
+System_Currency_ID column dropped from table DP_PI_U_LotActivity
+Original_Sys_Curr_Unit_Prc column dropped from table DP_PI_U_LotActivity
+Original_Local_Curr_Unit_Prc column dropped from table DP_PI_U_LotActivity
+Sys_Curr_Unit_Prc column dropped from table DP_PI_U_LotActivity
+Sys_Curr_Amortized_Cost_Amt column dropped from table DP_PI_U_LotActivity
+Sys_Curr_Amortization_Amt column dropped from table DP_PI_U_LotActivity
+Sys_Curr_Accrued_Income_Amt column dropped from table DP_PI_U_LotActivity
+Sys_Curr_Unrealized_GL_Amt column dropped from table DP_PI_U_LotActivity
+Revalued_Unrealized_Gain_Loss_Amt column dropped from table DP_PI_U_LotActivity
+ 
+ 
+**********************
+Columns Altered Successfully for table DP_PI_U_LotActivity
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_DP_PI_U_PositionActivity_Col.sql 
+Changed database context to 'NetikDP'.
+Base_To_System_FX_Rt column dropped from table DP_PI_U_PositionActivity
+System_Currency_ID column dropped from table DP_PI_U_PositionActivity
+Original_Sys_Curr_Unit_Prc column dropped from table DP_PI_U_PositionActivity
+Original_Local_Curr_Unit_Prc column dropped from table DP_PI_U_PositionActivity
+Sys_Curr_Unit_Prc column dropped from table DP_PI_U_PositionActivity
+Sys_Curr_Amortized_Cost_Amt column dropped from table DP_PI_U_PositionActivity
+Sys_Curr_Amortization_Amt column dropped from table DP_PI_U_PositionActivity
+Sys_Curr_Accrued_Income_Amt column dropped from table DP_PI_U_PositionActivity
+Sys_Curr_Unrealized_GL_Amt column dropped from table DP_PI_U_PositionActivity
+Revalued_Unrealized_Gain_Loss_Amt column dropped from table DP_PI_U_PositionActivity
+ 
+ 
+**********************
+Columns Altered Successfully for table DP_PI_U_PositionActivity
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_DP_PI_U_TransactionActivity_Col.sql 
+Changed database context to 'NetikDP'.
+Sys_Curr_Unit_Prc dropped from table DP_PI_U_TransactionActivity
+Sys_Curr_Purchase_Cost_Amt dropped from table DP_PI_U_TransactionActivity
+Sys_Curr_Gross_Amt dropped from table DP_PI_U_TransactionActivity
+Sys_Curr_Net_Amt dropped from table DP_PI_U_TransactionActivity
+Sys_Curr_Realized_GL_Amt dropped from table DP_PI_U_TransactionActivity
+Sys_Curr_Investment_GL_Amt dropped from  table DP_PI_U_TransactionActivity
+Revalued_Realized_Gain_Loss_Amt dropped from  table DP_PI_U_TransactionActivity
+Sys_Curr_Accrued_Income_Amt dropped from  table DP_PI_U_TransactionActivity
+Sys_Curr_Broker_Commission_Amt dropped from  table DP_PI_U_TransactionActivity
+Revalued_Unrealized_Gain_Loss_Amt dropped from  table DP_PI_U_TransactionActivity
+Column Broker_Commission_Purpose_Tx  alreday exists 
+ 
+ 
+**********************
+ERROR OCCURRED
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_DP_T_LotActivity_Col.sql 
+Changed database context to 'NetikDP'.
+Base_To_System_FX_Rt column dropped from table DP_T_LotActivity
+System_Currency_ID column dropped from table DP_T_LotActivity
+Original_Sys_Curr_Unit_Prc column dropped from table DP_T_LotActivity
+Original_Local_Curr_Unit_Prc column dropped from table DP_T_LotActivity
+Sys_Curr_Unit_Prc column dropped from table DP_T_LotActivity
+Sys_Curr_Amortized_Cost_Amt column dropped from table DP_T_LotActivity
+Sys_Curr_Amortization_Amt column dropped from table DP_T_LotActivity
+Sys_Curr_Accrued_Income_Amt column dropped from table DP_T_LotActivity
+Sys_Curr_Unrealized_GL_Amt column dropped from table DP_T_LotActivity
+Revalued_Unrealized_Gain_Loss_Amt column dropped from table DP_T_LotActivity
+ 
+ 
+**********************
+Columns Altered Successfully for table DP_T_LotActivity
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_DP_T_PositionActivity_Col.sql 
+Changed database context to 'NetikDP'.
+Base_To_System_FX_Rt column dropped from table DP_T_PositionActivity
+System_Currency_ID column dropped from table DP_T_PositionActivity
+Original_Sys_Curr_Unit_Prc column dropped from table DP_T_PositionActivity
+Original_Local_Curr_Unit_Prc column dropped from table DP_T_PositionActivity
+Sys_Curr_Unit_Prc column dropped from table DP_T_PositionActivity
+Sys_Curr_Amortized_Cost_Amt column dropped from table DP_T_PositionActivity
+Sys_Curr_Amortization_Amt column dropped from table DP_T_PositionActivity
+Sys_Curr_Accrued_Income_Amt column dropped from table DP_T_PositionActivity
+Sys_Curr_Unrealized_GL_Amt column dropped from table DP_T_PositionActivity
+Revalued_Unrealized_Gain_Loss_Amt column dropped from table DP_T_PositionActivity
+ 
+ 
+**********************
+Columns Altered Successfully for table DP_T_PositionActivity
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_DP_T_TransactionActivity_Col.sql 
+Changed database context to 'NetikDP'.
+Sys_Curr_Unit_Prc column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Purchase_Cost_Amt column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Gross_Amt column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Net_Amt column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Realized_GL_Amt column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Investment_GL_Amt column dropped from  table DP_T_TransactionActivity
+Revalued_Realized_Gain_Loss_Amt column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Accrued_Income_Amt column dropped from  table DP_T_TransactionActivity
+Sys_Curr_Broker_Commission_Amt column dropped from  table DP_T_TransactionActivity
+Revalued_Unrealized_Gain_Loss_Amt column dropped from  table DP_T_TransactionActivity
+ 
+ 
+**********************
+Columns Altered Successfully for table DP_T_TransactionActivity
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_LOT_DG_Col.sql 
+Changed database context to 'NetikIP'.
+constraint **FK__LOT_DG__System_Currency_Id__CurrencyTypeCode** still exists 
+Column Base_To_System_FX_Rt alreday exists 
+Column System_Currency_ID  alreday exists 
+Column Original_Sys_Curr_Unit_Prc  alreday exists 
+Column Original_Local_Curr_Unit_Prc  alreday exists 
+Column Sys_Curr_Unit_Prc  alreday exists 
+Column Sys_Curr_Amortized_Cost_Amt  alreday exists 
+Column Sys_Curr_Amortization_Amt  alreday exists 
+Column Sys_Curr_Accrued_Income_Amt  alreday exists 
+Column Sys_Curr_Unrealized_GL_Amt  alreday exists 
+Column Revalued_Unrealized_Gain_Loss_Amt  alreday exists 
+ 
+ 
+**********************
+ERROR OCCURRED
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\UDFPositionView_dropview.sql 
+Changed database context to 'NetikIP'.
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_POSITION_DG_Col.sql 
+Changed database context to 'NetikIP'.
+constraint **FK__Position_Dg__System_Currency_Id__CurrencyTypeCode** still exists 
+Column Base_To_System_FX_Rt alreday exists 
+Column System_Currency_ID  alreday exists 
+Column Original_Sys_Curr_Unit_Prc  alreday exists 
+Column Original_Local_Curr_Unit_Prc  alreday exists 
+Column Sys_Curr_Unit_Prc  alreday exists 
+Column Sys_Curr_Amortized_Cost_Amt  alreday exists 
+Column Sys_Curr_Amortization_Amt  alreday exists 
+Column Sys_Curr_Accrued_Income_Amt  alreday exists 
+Column Sys_Curr_Unrealized_GL_Amt  alreday exists 
+Column Revalued_Unrealized_Gain_Loss_Amt  alreday exists 
+ 
+ 
+**********************
+ERROR OCCURRED
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\Alter_Table_Tranevent_dg_Col.sql 
+Changed database context to 'NetikIP'.
+Column Sys_Curr_Unit_Prc alreday exists 
+Column Sys_Curr_Purchase_Cost_Amt  alreday exists 
+Column Sys_Curr_Gross_Amt  alreday exists 
+Column Sys_Curr_Net_Amt  alreday exists 
+Column Sys_Curr_Realized_GL_Amt  alreday exists 
+Column Sys_Curr_Investment_GL_Amt  alreday exists 
+Column Revalued_Realized_Gain_Loss_Amt  alreday exists 
+Column Sys_Curr_Accrued_Income_Amt  alreday exists 
+Column Sys_Curr_Broker_Commission_Amt  alreday exists 
+Column Revalued_Unrealized_Gain_Loss_Amt  alreday exists 
+Column Broker_Commission_Credit_Purpose  alreday exists 
+ 
+ 
+**********************
+ERROR OCCURRED
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\NAVView.sql 
+Changed database context to 'NetikIP'.
+VIEW dbo.NAVView has been Altered.
+ERRORLEVEL=0 
+ 
+Executing C:\CDSUpdatePackage01\Database\Rollback\\scripts\UDFPositionView.sql 
+Changed database context to 'NetikIP'.
+VIEW UDFPositionView Created successfully 
+ERRORLEVEL=0 
+ 
+DBBuild finished on 20131121_121048 

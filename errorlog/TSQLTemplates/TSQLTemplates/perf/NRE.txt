@@ -1,0 +1,193 @@
+USE NETIKNRE;
+GO
+
+--Query returns details of task ID and status 
+WITH cte
+AS (
+	SELECT SUBSTRING(CONVERT(VARCHAR(20), TASK_RUN_TMS, 121), 1, 10) AS 'RUNDATE'
+		,SUBSTRING(CONVERT(VARCHAR(20), TASK_RUN_TMS, 121), 12, 8) AS 'RUNTIME'
+		,s.app_param_lng
+		,CASE SCHD_TASK_STATUS
+			WHEN 0
+				THEN 'Scheduled '
+			WHEN 1
+				THEN 'Success '
+			WHEN 2
+				THEN 'Failed '
+			WHEN 3
+				THEN 'In Process '
+			END + (
+			CASE 
+				WHEN DATALENGTH(RTRIM(TASK_STATUS_MSG)) = 0
+					THEN ''
+				WHEN TASK_STATUS_MSG IS NULL
+					THEN ''
+				ELSE TASK_STATUS_MSG
+				END
+			) AS STATUS
+		,SCHD_TASK_STATUS
+		,TASK_RUN_TMS
+		,TASK_start_dte
+		,CASE 
+			WHEN SCHD_TASK_STATUS IN (2)
+				THEN 'Failed'
+			WHEN SCHD_TASK_STATUS IN (
+					0
+					,1
+					,3
+					,4
+					)
+				AND TASK_start_dte IS NOT NULL
+				AND TASK_start_dte BETWEEN TASK_RUN_TMS
+					AND DATEADD(MINUTE, 15, TASK_RUN_TMS)
+				AND TASK_cmpl_tms BETWEEN TASK_RUN_TMS
+					AND DATEADD(MINUTE, 15, TASK_RUN_TMS)
+				THEN 'Ontime - Delivered'
+			WHEN SCHD_TASK_STATUS IN (3)
+				AND getdate() > DATEADD(MINUTE, 15, TASK_start_dte)
+				AND TASK_start_dte BETWEEN TASK_RUN_TMS
+					AND DATEADD(MINUTE, 15, TASK_RUN_TMS)
+				AND TASK_cmpl_tms IS NULL
+				THEN 'Report Not Delivered check!!!'
+			WHEN SCHD_TASK_STATUS IN (
+					0
+					,1
+					,3
+					,4
+					)
+				AND TASK_start_dte IS NULL
+				THEN 'Scheduled'
+					--WHEN SCHD_TASK_STATUS = 2
+					--     OR TASK_start_dte > DATEADD(MINUTE, 15, TASK_RUN_TMS)
+					--     OR TASK_start_dte IS NULL
+					--     THEN 'report is delayed'
+			ELSE 'Report is delayed'
+			END AS status2
+		,s.task_nme AS 'TASKNAME'
+		,s.Task_Email_Add_Nme
+		,s.inq_num
+		,s.user_id
+		,st.TASK_CMPL_TMS
+		,s.start_dte
+		,s.end_dte
+		,s.task_status
+		,s.task_id
+	FROM SCH_SCHEDULED_TASK st WITH (NOLOCK)
+	LEFT JOIN sch_task s WITH (NOLOCK) ON st.task_id = s.task_id
+	WHERE SUBSTRING(CONVERT(VARCHAR(20), TASK_RUN_TMS, 121), 1, 10) = SUBSTRING(CONVERT(VARCHAR(20), getdate(), 121), 1, 10)
+	)
+--AND st.SCHD_TASK_STATUS = 2
+--ORDER BY st.TASK_RUN_TMS DESC;)
+SELECT RUNDATE
+	,RUNTIME
+	,STATUS
+	,status2 AS Detailedstatus
+	,SCHD_TASK_STATUS
+	,TASKNAME
+	,task_id
+	,TASK_RUN_TMS
+	,task_start_dte
+	,TASK_CMPL_TMS
+	,start_dte
+	,end_dte
+	,Task_Email_Add_Nme
+	,app_param_lng
+	,inq_num
+	,user_id
+FROM cte
+WHERE status2 IN (
+		'Report is delayed'
+		,'Failed'
+		)
+
+UNION ALL
+
+SELECT SUBSTRING(CONVERT(VARCHAR(20), TASK_RUN_TMS, 121), 1, 10) AS 'RUNDATE'
+	,SUBSTRING(CONVERT(VARCHAR(20), TASK_RUN_TMS, 121), 12, 8) AS 'RUNTIME'
+	,CASE SCHD_TASK_STATUS
+		WHEN 0
+			THEN 'Scheduled '
+		WHEN 1
+			THEN 'Success '
+		WHEN 2
+			THEN 'Failed '
+		WHEN 3
+			THEN 'In Process '
+		END + (
+		CASE 
+			WHEN DATALENGTH(RTRIM(TASK_STATUS_MSG)) = 0
+				THEN ''
+			WHEN TASK_STATUS_MSG IS NULL
+				THEN ''
+			ELSE TASK_STATUS_MSG
+			END
+		) AS STATUS
+	,CASE 
+		WHEN cast(CONVERT(VARCHAR(20), s.end_dte, 101) AS DATETIME) <= cast(CONVERT(VARCHAR(20), getdate(), 101) AS DATETIME)
+			THEN 'Inactive not scheduled for next run/No action required'
+		ELSE 'Inactive'
+		END AS Detailedstatus
+	,st.SCHD_TASK_STATUS
+	,s.task_nme AS 'TASKNAME'
+	,s.task_id
+	,st.TASK_RUN_TMS
+	,st.task_start_dte
+	,st.TASK_CMPL_TMS
+	,s.start_dte
+	,s.end_dte
+	,Task_Email_Add_Nme
+	,s.app_param_lng
+	,inq_num
+	,user_id
+FROM sch_task s
+INNER JOIN SCH_SCHEDULED_TASK st ON st.task_id = s.task_id
+	AND CONVERT(VARCHAR(10), s.lst_chg_tms, 101) = CONVERT(VARCHAR(10), st.TASK_RUN_TMS, 101)
+WHERE task_status = 0
+	AND CONVERT(VARCHAR(10), s.lst_chg_tms, 101) = CONVERT(VARCHAR(10), getdate(), 101)
+
+EXCEPT
+
+SELECT RUNDATE
+	,RUNTIME
+	,STATUS
+	,status2 AS Detailedstatus
+	,SCHD_TASK_STATUS
+	,TASKNAME
+	,task_id
+	,TASK_RUN_TMS
+	,task_start_dte
+	,TASK_CMPL_TMS
+	,start_dte
+	,end_dte
+	,Task_Email_Add_Nme
+	,app_param_lng
+	,inq_num
+	,user_id
+FROM cte
+WHERE status2 IN (
+		'Report is delayed'
+		,'Failed'
+		)
+
+
+
+
+
+
+
+
+/*
+
+
+select * from SCH_SCHEDULED_TASK
+
+WHERE task_id = '6E6DAB8A50454EB0ADA133F3F0C58D4E                  '
+order by task_start_dte desc
+
+select * from [NetikNRE].[dbo].[SCH_QUEUE]
+where  itemnum  = 157331
+ --- filename like 'DDF43E9491F24CF2835BC453F180D555%'
+  order by starttime desc
+*/
+
+

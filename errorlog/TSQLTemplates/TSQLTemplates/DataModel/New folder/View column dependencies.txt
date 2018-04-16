@@ -1,0 +1,73 @@
+DECLARE @COLUMN_NAME NVARCHAR(100)
+ 
+SET @COLUMN_NAME = 'mgmg_performance'
+ 
+--List Tables and Views using the column
+SELECT
+    TAB.TABLE_NAME,
+    TAB.TABLE_TYPE,
+    COL.COLUMN_NAME,
+    COL.ORDINAL_POSITION
+, COL.CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS COL
+    JOIN INFORMATION_SCHEMA.TABLES TAB
+        ON COL.TABLE_NAME = TAB.TABLE_NAME
+WHERE COLUMN_NAME = @COLUMN_NAME
+ 
+--List Stored Procs / Fuctions using the column
+SELECT
+    ROUTINE_NAME,
+    ROUTINE_DEFINITION
+FROM INFORMATION_SCHEMA.ROUTINES
+WHERE ROUTINE_DEFINITION LIKE '%' + @COLUMN_NAME + '%'
+ 
+--List constraints using the column
+SELECT
+    *
+FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
+WHERE COLUMN_NAME = @COLUMN_NAME
+ 
+--Key column usage
+SELECT
+    TABLE_NAME,
+    COLUMN_NAME,
+    ORDINAL_POSITION
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE COLUMN_NAME = @COLUMN_NAME
+
+
+
+-- View column dependencies
+SELECT ReferencingObject = SCHEMA_NAME(o1.schema_id) + '.' + o1.name,
+       ReferencedObject = SCHEMA_NAME(o2.schema_id) + '.'
+                          + ed.referenced_entity_name,
+       ColumnName = c.name,
+       ReferencedObjectType = o2.type,
+       ReferencingObjecType = o1.type
+FROM   AdventureWorks2012.sys.sql_expression_dependencies ed
+       INNER JOIN AdventureWorks2012.sys.objects o1
+               ON ed.referencing_id = o1.object_id
+       INNER JOIN AdventureWorks2012.sys.objects o2
+               ON ed.referenced_id = o2.object_id
+       INNER JOIN AdventureWorks2012.sys.sql_dependencies d
+               ON ed.referencing_id = d.object_id
+                  AND d.referenced_major_id = ed.referenced_id
+       INNER JOIN sys.columns c
+               ON c.object_id = ed.referenced_id
+                  AND d.referenced_minor_id = c.column_id
+WHERE  SCHEMA_NAME(o1.schema_id) + '.' + o1.name = 'HumanResources.vEmployee'
+ORDER  BY ReferencedObject,
+          c.column_id; 
+
+-- SQL Server 2008 object dependency query - listing object dependencies
+SELECT ReferencingObjectType = o1.type,
+       ReferencingObject = SCHEMA_NAME(o1.schema_id)+'.'+o1.name,
+       ReferencedObject = SCHEMA_NAME(o2.schema_id)+'.'+ed.referenced_entity_name,
+       ReferencedObjectType = o2.type
+FROM   AdventureWorks2008.sys.sql_expression_dependencies ed
+       INNER JOIN  AdventureWorks2008.sys.objects o1
+         ON ed.referencing_id = o1.object_id
+       INNER JOIN AdventureWorks2008.sys.objects o2
+         ON ed.referenced_id = o2.object_id
+WHERE o1.type in ('P','TR','V', 'TF')
+ORDER BY ReferencingObjectType, ReferencingObject
