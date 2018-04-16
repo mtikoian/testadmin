@@ -1,0 +1,18 @@
+# ---------------------------------------------------------
+#
+# Scripts are executed from the %ROOTDIR%\CmdScripts folder
+#
+# Blank lines and lines starting with a 
+# pound sign (#) are skipped.
+# ---------------------------------------------------------
+#
+cds.PendingTransactionPayment.Table.sql
+cds.PendingTransaction.Table.sql
+cds.FundInvestor.Table.Alter.AddFK.sql
+cds.FundInvestor.Table.Alter.FundId.Part1.sql
+cds.FundInvestor.Table.Alter.FundId.Part2.sql
+cds.TransactionStatusType.Table.sql
+cds.ClientFund.Table.sql
+cds.Fund.Table.sql
+cds.FundType.Table.sql
+cds.InvestorContact.Table.Alter.AddColumn.sql

@@ -1,0 +1,17 @@
+//now use SQLBulk Copy to get the data into the server, instead of RBAR:
+//note my connection string is based on String.Replace of this:
+//Private Const SqlConnectionFormat As String = "data source={0};initial catalog={1};user id={2};password={3};Trusted_Connection=False;Application Name=ReportGrid.exe;"
+//Private Const SqlTrustedConnectionFormat As String = "data source={0};initial catalog={1};Trusted_Connection=True;Application Name=ReportGrid.exe;"
+
+{
+	try {
+		SqlConnection myConn = new SqlConnection(this.ConnectionString);
+		myConn.Open();
+		using (SqlBulkCopy myBulkCopy = new SqlBulkCopy(myConn)) {
+			myBulkCopy.DestinationTableName = "[" + DestinationTable + "]";
+			myBulkCopy.WriteToServer(dt);
+		}
+	} catch (Exception ex) {
+		Debug.Print(ex.Message);
+	}
+}

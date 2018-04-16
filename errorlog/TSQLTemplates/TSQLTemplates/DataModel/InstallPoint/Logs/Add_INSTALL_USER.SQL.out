@@ -1,0 +1,3 @@
+Creating stub procedure "dbo.Add_INSTALL_USER".
+The module 'Add_INSTALL_USER' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+Altered procedure "dbo.Add_INSTALL_USER".

@@ -1,0 +1,577 @@
+DBBuild starting on 20130116_081459 
+ 
+ALLUSERSPROFILE=C:\ProgramData
+APPDATA=C:\Users\pobrien\AppData\Roaming
+CLASSPATH=C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\providerutil.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\com.ibm.mqjms.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\ldap.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\jta.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\jndi.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\jms.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\connector.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\fscontext.jar;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib\com.ibm.mq.jar
+CommonProgramFiles=C:\Program Files\Common Files
+CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+CommonProgramW6432=C:\Program Files\Common Files
+COMPUTERNAME=PWOBRIEN
+ComSpec=C:\Windows\system32\cmd.exe
+CURRENT_DT=20130116_081459
+DBBuild_Server_List=D:\ODR\InstallPoint\Docs\DBBuild_Server_List.txt
+ErrMsg="Invalid Input_File_List variable"
+FP_NO_HOST_CHECK=NO
+HOMEDRIVE=C:
+HOMEPATH=\Users\pobrien
+include=C:\Program Files (x86)\IBM\WebSphere MQ\tools\c\include;C:\Program Files (x86)\IBM\WebSphere MQ\tools\cplus\include
+Input_File_List=D:\ODR\InstallPoint\Docs\DBBuild_Input_File_List.Txt
+lib=C:\Program Files (x86)\IBM\WebSphere MQ\tools\lib
+LOCALAPPDATA=C:\Users\pobrien\AppData\Local
+LogDir=D:\ODR\InstallPoint\Logs
+LogFile=D:\ODR\InstallPoint\Logs\DBBuild_20130116_081459.log
+LOGONSERVER=\\POLARIS
+MQ_JAVA_DATA_PATH=C:\Program Files (x86)\IBM\WebSphere MQ
+MQ_JAVA_INSTALL_PATH=C:\Program Files (x86)\IBM\WebSphere MQ\Java
+MQ_JAVA_LIB_PATH=C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib
+mydate=20130116
+mytime=081459
+NUMBER_OF_PROCESSORS=8
+OS=Windows_NT
+Path=C:\Program Files (x86)\CollabNet;C:\Program Files (x86)\Embarcadero\RAD Studio\9.0\bin;C:\Users\Public\Documents\RAD Studio\9.0\Bpl;C:\Program Files (x86)\Embarcadero\RAD Studio\9.0\bin64;C:\Users\Public\Documents\RAD Studio\9.0\Bpl\Win64;D:\Oracle\product\11.2.0\dbhome\bin;C:\Program Files (x86)\IBM\WebSphere MQ\Java\lib;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files (x86)\ActiveState Komodo IDE 7\;C:\Perl\site\bin;C:\Perl\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;D:\Batch;C:\Program Files\Microsoft SQL Server\110\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\110\Tools\Binn\ManagementStudio\;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\PrivateAssemblies\;C:\Program Files (x86)\Microsoft SQL Server\110\DTS\Binn\;C:\Program Files (x86)\Borland\StarTeam SDK 10.4\Lib;C:\Program Files (x86)\Borland\StarTeam SDK 10.4\Bin;C:\Program Files\TortoiseSVN\bin;C:\Program Files\7-Zip;C:\Program Files (x86)\E!PC\;C:\Program Files (x86)\IBM\WebSphere MQ\bin;C:\Program Files (x86)\IBM\WebSphere MQ\bin64
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.PL
+PROCESSOR_ARCHITECTURE=AMD64
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 58 Stepping 9, GenuineIntel
+PROCESSOR_LEVEL=6
+PROCESSOR_REVISION=3a09
+ProgramData=C:\ProgramData
+ProgramFiles=C:\Program Files
+ProgramFiles(x86)=C:\Program Files (x86)
+ProgramW6432=C:\Program Files
+PROMPT=$P$G
+PSModulePath=C:\Windows\system32\WindowsPowerShell\v1.0\Modules\;C:\Program Files (x86)\Microsoft SQL Server\110\Tools\PowerShell\Modules\
+PUBLIC=C:\Users\Public
+Rollback_Input_File_List=D:\ODR\InstallPoint\Docs\Rollback_Input_File_List.Txt
+ROOTDIR=D:\ODR\InstallPoint
+Script=EMPTY
+SVN_File_List=D:\ODR\InstallPoint\Docs\SVN_Input_File_List.txt
+SVN_Rollback_List=D:\ODR\InstallPoint\Docs\SVN_Rollback_File_List.txt
+SystemDrive=C:
+SystemRoot=C:\Windows
+TEMP=C:\Users\pobrien\AppData\Local\Temp
+TMP=C:\Users\pobrien\AppData\Local\Temp
+USERDNSDOMAIN=CORP.SEIC.COM
+USERDOMAIN=SEI-DOMAIN-1
+USERNAME=POBrien
+USERPROFILE=C:\Users\pobrien
+VS100COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\Tools\
+windir=C:\Windows
+windows_tracing_flags=3
+windows_tracing_logfile=C:\BVTBin\Tests\installpackage\csilogfile.log
+ 
+Server is pwobrien,  Database is InstallPoint, Schema is dbo 
+Connection to pwobrien.InstallPoint succeeded
+Executing D:\ODR\InstallPoint\sqlscripts\Add_ADDRESS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_ADDRESS_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_ALLOWABLE_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_AUDIT_TRAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_COMPONENT_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_COMPONENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_CONTACT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_CONTACT_METHOD.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_CONTACT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_CREDENTIAL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_CREDENTIAL_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_DATA_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_DB_CONTROL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_DB_CONTROL_HISTORY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_ENVIRONMENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_GENERATE_NAME.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_INSTALL_STATE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_INSTALL_USER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_JOB.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_JOB_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_LICENSE_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_ORGANIZATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PARAMETER_USAGE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PARM_DOMAIN.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PEOPLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT_COMPATIBLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT_COMPONENT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT_ELIGIBILITY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT_INSTALLATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_PRODUCT_VERSION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_RELATED_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_SCHEDULE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_SCHEDULE_DETAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_SERVER_RELATIONSHIP.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_TASK.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_TASK_INSTANCE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_TASK_LOG.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_TASK_STATUS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Add_TASK_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_ADDRESS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_ADDRESS_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_ALLOWABLE_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_AUDIT_TRAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_COMPONENT_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_COMPONENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_CONTACT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_CONTACT_METHOD.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_CONTACT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_CREDENTIAL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_CREDENTIAL_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_DATA_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_DB_CONTROL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_DB_CONTROL_HISTORY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_ENVIRONMENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_GENERATE_NAME.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_INSTALL_STATE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_INSTALL_USER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_JOB.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_JOB_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_LICENSE_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_ORGANIZATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PARAMETER_USAGE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PARM_DOMAIN.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PEOPLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT_COMPATIBLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT_COMPONENT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT_ELIGIBILITY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT_INSTALLATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_PRODUCT_VERSION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_RELATED_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_SCHEDULE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_SCHEDULE_DETAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_SERVER_RELATIONSHIP.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_TASK.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_TASK_INSTANCE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_TASK_LOG.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_TASK_STATUS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Del_TASK_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_ADDRESS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_ADDRESS_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_ALLOWABLE_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_AUDIT_TRAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_COMPONENT_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_COMPONENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_CONTACT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_CONTACT_METHOD.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_CONTACT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_CREDENTIAL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_CREDENTIAL_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_DATA_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_DB_CONTROL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_DB_CONTROL_HISTORY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_ENVIRONMENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_GENERATE_NAME.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_INSTALL_STATE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_INSTALL_USER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_JOB.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_JOB_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_LICENSE_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_ORGANIZATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PARAMETER_USAGE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PARM_DOMAIN.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PEOPLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT_COMPATIBLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT_COMPONENT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT_ELIGIBILITY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT_INSTALLATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_PRODUCT_VERSION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_RELATED_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_SCHEDULE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_SCHEDULE_DETAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_SERVER_RELATIONSHIP.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_TASK.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_TASK_INSTANCE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_TASK_LOG.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_TASK_STATUS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Get_TASK_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_ADDRESS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_ADDRESS_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_ALLOWABLE_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_AUDIT_TRAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_COMPONENT_PARAMETER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_COMPONENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_CONTACT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_CONTACT_METHOD.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_CONTACT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_CREDENTIAL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_CREDENTIAL_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_DATA_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_DB_CONTROL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_DB_CONTROL_HISTORY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_ENVIRONMENT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_GENERATE_NAME.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_INSTALL_STATE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_INSTALL_USER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_JOB.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_JOB_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_LICENSE_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_ORGANIZATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PARAMETER_USAGE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PARM_DOMAIN.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PEOPLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT_COMPATIBLE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT_COMPONENT.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT_ELIGIBILITY.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT_INSTALLATION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_PRODUCT_VERSION.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_RELATED_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_SCHEDULE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_SCHEDULE_DETAIL.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_SERVER.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_SERVER_RELATIONSHIP.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_TASK.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_TASK_INSTANCE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_TASK_LOG.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_TASK_STATUS.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\Upd_TASK_TYPE.SQL 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\DropAuditTriggers.sql 
+ERRORLEVEL=0 
+ 
+Executing D:\ODR\InstallPoint\sqlscripts\CreateAuditTriggers.sql 
+ERRORLEVEL=0 
+ 
+DBBuild_SQLCmd finished on 20130116_081459 
+ERRORLEVEL=0 
+ 
+DBBuild finished on 20130116_081459 

@@ -1,0 +1,11 @@
+# ------------------------------------------
+#
+# Scripts are executed from the %ROOTDIR%\
+#
+# Blank lines and lines starting with a 
+# pound sign (#) are skipped.
+# ------------------------------------------
+Create_Table_Corporation_Type.sql
+Create_Table_Transaction_Status.sql
+Create_Table_Verification_Type.sql
+Create_Table_Investor_Transaction_Workflow_Status.sql

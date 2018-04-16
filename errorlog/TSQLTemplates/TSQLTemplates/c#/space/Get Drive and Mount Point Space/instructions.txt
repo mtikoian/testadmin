@@ -1,0 +1,9 @@
+--created by Kristi Saeger, last update 9/14/2010
+1. extract all files into a directory
+2. enter server names, 1 per line, into file called Servers.txt. You will only be able to run against servers you have access to.
+3. open Windows Powershell - may be located in Accessories
+4. enter:
+	set-executionpolicy remotesigned
+5. enter:
+	[path to directory where files are at]\get_drivespace.ps1
+6. after completes, you should have a file in the directory named drivespaceinfo.csv with info for all servers in servers.txt file

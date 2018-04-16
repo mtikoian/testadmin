@@ -1,0 +1,6 @@
+
+	
+exec p_MDB_MOB_Inquiry_Delete 14556, 'ADMIN' , null  , null, null
+exec p_MDB_MOB_Inquiry_Delete 14855, 'ADMIN' , null  , null, null
+exec p_MDB_MOB_Inquiry_Delete 15091, 'ADMIN' , null  , null, null
+exec p_MDB_MOB_Inquiry_Delete 15236, 'ADMIN' , null  , null, null

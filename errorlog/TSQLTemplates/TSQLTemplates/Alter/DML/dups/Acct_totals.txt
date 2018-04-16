@@ -1,0 +1,69 @@
+with cte as (
+select  
+			  T.ORG_ID,
+			  T.BK_ID,
+			  T.ACCT_ID,
+			  T.AT_INSTRUCT_ID,
+			  T.END_TMS,
+			  T.END_ADJUST_TMS,
+			  T.INQ_BASIS_NUM,
+			  --max(at_num) as max_at_num,
+			  --count(1) as cnt
+			  row_number() over (partition by   T.ORG_ID,
+			  T.BK_ID,
+			  T.ACCT_ID,
+			  T.AT_INSTRUCT_ID,
+			  T.END_TMS,
+			  T.END_ADJUST_TMS,
+			  T.INQ_BASIS_NUM
+			  order by  
+			  T.ORG_ID,
+			  T.BK_ID,
+			  T.ACCT_ID,
+			  T.AT_INSTRUCT_ID,
+			  T.END_TMS,
+			  T.END_ADJUST_TMS,
+			  T.INQ_BASIS_NUM) as rownum
+			 FROM dbo.ACCT_TOTALS t
+		
+			
+			  
+)
+select * from cte 
+	  where rownum >1
+
+
+select a.*
+	from dbo.ACCT_TOTALS a
+	join 
+	(
+			 select  
+			  T.ORG_ID,
+			  T.BK_ID,
+			  T.ACCT_ID,
+			  T.AT_INSTRUCT_ID,
+			  T.END_TMS,
+			  T.END_ADJUST_TMS,
+			  T.INQ_BASIS_NUM,
+			  max(at_num) as max_at_num,
+			  count(1) as cnt
+			 FROM dbo.ACCT_TOTALS t
+			 group by  
+			  T.ORG_ID,
+			  T.BK_ID,
+			  T.ACCT_ID,
+			  T.AT_INSTRUCT_ID,
+			  T.END_TMS,
+			  T.END_ADJUST_TMS,
+			  T.INQ_BASIS_NUM
+			  having  count(1) > 1
+	)tbl
+	 on
+ 			  tbl.ORG_ID = a.ORG_ID
+			  and tbl.BK_ID = a.BK_ID
+			  and tbl.ACCT_ID = a.ACCT_ID
+			  and tbl.AT_INSTRUCT_ID = a.AT_INSTRUCT_ID
+			  and isnull( tbl.END_TMS,'')  = isnull(a.END_TMS,'')
+			  and isnull(tbl.END_ADJUST_TMS,'') = isnull(a.END_ADJUST_TMS,'')
+			  and tbl.INQ_BASIS_NUM = a.INQ_BASIS_NUM 
+			 and tbl.max_at_num <> a.at_num

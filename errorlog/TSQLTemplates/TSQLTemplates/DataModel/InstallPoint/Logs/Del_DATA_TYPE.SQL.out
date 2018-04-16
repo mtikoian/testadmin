@@ -1,0 +1,3 @@
+Creating stub procedure "dbo.Del_DATA_TYPE".
+The module 'Del_DATA_TYPE' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+Altered procedure "dbo.Del_DATA_TYPE".

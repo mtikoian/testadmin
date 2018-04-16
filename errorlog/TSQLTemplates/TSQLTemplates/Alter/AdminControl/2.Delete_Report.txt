@@ -1,0 +1,5 @@
+	exec dw_InquiryTaskCount_Get 17008
+
+	exec sp_Inquiry 'DELETE',17008-- INQ_DEF has a trigger that deletes from all the look up tables.
+
+	exec sp_FldInInq 'DELETE',17008

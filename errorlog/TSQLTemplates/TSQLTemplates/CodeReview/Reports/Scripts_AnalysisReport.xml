@@ -1,0 +1,723 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SqlEnlightReport Version="1.9" FullVersion="1.9" DateCreated="9/29/2014 3:07:50 PM">
+  <Targets>
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\AccountTotalView.sql" Type="File" />
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\AcctTotalsView.sql" Type="File" />
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\ExtendedAccountView.sql" Type="File" />
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\PositionView.sql" Type="File" />
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\SEI_AcctTotalsAcctCharView.sql" Type="File" />
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\UserAcctTotalsView.sql" Type="File" />
+    <Target Name="\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.9.1_MDB_ReviewSet10\Database\sqlscripts\scripts\UserExtendedAccountView.sql" Type="File" />
+  </Targets>
+  <Rules>
+    <Rule>
+      <Name>sa0014</Name>
+      <Description>This rule checks for user defined scalar functions with 'fn_'. 
+Though this practice is supported, it is recommended that the prefixes not be used to avoid name clashes with Microsoft shipped objects.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0015</Name>
+      <Description>This rule checks for creation of stored procedure with names starting with "sp_".The prefix sp_ is reserved for system stored procedure that ship with SQL Server.
+Whenever SQL Server encounters a procedure name starting with sp_, it first tries to locate the procedure in the master database, then it looks for any qualifiers (database, owner) provided, then it tries dbo as the owner. So you can really save time in locating the stored procedure by avoiding the "sp_" prefix.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0042b</Name>
+      <Description>The rule checks the T-SQL code for creation of database objects with special characters in the name. 
+
+Naming a database object by using any special character (space, tab, newline, left square bracket, right square bracket, single quotation mark and double quotation mark) will make it more difficult not only to reference that object, but also to read code that contains the name of that object.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0043b</Name>
+      <Description>The rule checks the T-SQL code for creation of user defined types using a reserved word as a type name.
+
+You should avoid using a reserved word as the name of a user-defined type because readers will have a harder time understanding your database code. You can use reserved words in SQL Server as identifiers and object names only if you use delimited identifiers. </Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0001</Name>
+      <Description>This rule scans stored procedures, views, functions and triggers to flag use of equality and inequality comparisons involving a NULL constant. 
+These comparisons are undefined when ANSI_NULLS option is set to ON.
+It is recommended to set ANSI_NULLS to ON and use the IS keyword to compare against NULL constants.
+Care must be taken when comparing null values. The behavior of the comparison depends on the setting of the SET ANSI_NULLS option.
+When SET ANSI_NULLS is ON, a comparison in which one or more of the expressions is NULL does not yield either TRUE or FALSE; it yields UNKNOWN. 
+This is because a value that is unknown cannot be compared logically against any other value. This occurs if either an expression is compared to the literal NULL, 
+or if two expressions are compared and one of them evaluates to NULL.
+For example, the following comparison always yields UNKNOWN when ANSI_NULLS is ON:
+ytd_sales &gt; NULL
+The following comparison also yields UNKNOWN any time the variable contains the value NULL:
+ytd_sales &gt; @MyVariable</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0002</Name>
+      <Description>This rule checks for declared variables which are neither assigned nor used.
+A variable is considered to be unused if it has been only declared, but never referenced in any following statement.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0003</Name>
+      <Description>This rule checks for use of not initialized variables.
+A variable is considered to be used, but no initialized if it has no value assigned to it before the statement where it is referenced.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0005</Name>
+      <Description>This rule checks for the use of non-ANSI outer joins (*= and =* syntax).
+It is recommended that outer joins use the ANSI specified syntax, for example:
+SELECT     tab1.c1,
+           tab3.c2
+FROM       tab1
+LEFT OUTER JOIN tab2
+ON         tab1.c3 = tab2.c3
+RIGHT JOIN tab3
+           LEFT OUTER JOIN tab4
+           ON         tab3.c1 = tab4.c1
+ON         tab2.c3 = tab4.c3
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0006</Name>
+      <Description>This rule checks for the use of non-ANSI inner join syntax.
+It is recommended to use the more readable ANSI-Standard JOIN clauses instead of the old style joins. The WHERE clause is used only for filtering data with the ANSI joins, but with older style joins, the WHERE clause handles both the join condition and filtering data.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0008</Name>
+      <Description>This rule checks T-SQL script for use of column aliasing where the name of the expression uses a string value. The syntax is deprecated and it is recommended to use quoted identifiers instead. 
+The following syntax is deprecated:
+SELECT 'alias_for_col' = au_id + au_id
+FROM dbo.authors
+Recommended alternatives are: 
+expression [AS] column_alias 
+expression [AS] [column_alias]
+expression [AS] "column_alias"
+expression [AS] 'column_alias'
+column_alias = expression
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0011</Name>
+      <Description>This rule checks stored procedures, functions, views and triggers for use of '*' in column lists of SELECT statements. 
+Though use of '*' is convenient, it may lead to less maintainable applications. Changes to table or view definitions may cause errors or performance decrease. 
+Using the proper column names takes less load on the database, decreases network traffic and hence can greatly improve performance.
+As an example, the following syntax is not recommended:
+SELECT     *
+FROM       dbo.Books
+It is recommended to have an explicit list whenever the column to retrieve is known to the application. 
+SELECT     b.b_id ,
+           b.b_title
+FROM       dbo.Books AS b
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0012</Name>
+      <Description>The rule checks for use of @@IDENTITY server variable. It is recommended to use SCOPE_IDENTITY() instead. @@IDENTITY is not limited to a specific scope and is not a reliable indicator of the most recent user-created identity if the column is part of a replication article.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0018</Name>
+      <Description>This rule checks for use of ORDER BY clause specifying constants as sort columns. Support for this syntax has been deprecated.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0019</Name>
+      <Description>This rule checks for usages of TOP in queries without an ORDER BY clause.
+It is generally recommended to specify sort criteria when using TOP clause. Otherwise, the results produced will be plan dependent and may lead to undesired behavior.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0020</Name>
+      <Description>This rule checks objects for use of INSERT statements without explicit specification of target column list. 
+
+When inserting into a table or view, it is recommended that the target column_list be explicitly specified. This results in more maintainable code and helps in avoiding problems when the table structure changes (like adding or dropping a column).</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0021</Name>
+      <Description>This rule checks stored for use of table hints without the WITH keyword.
+
+It is recommended that hints be specified using the WITH keyword. SQL Server 2005 does not support the use of more than one hints in a T-SQL statement unless the WITH keyword is specified.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0022</Name>
+      <Description>This rule checks that creation of indexes is done with explicit specification of  index type. 
+It is recommended that the CLUSTERED or NONCLUSTERED specifications be used (as appropriate) when creating an index.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0029</Name>
+      <Description>This rule checks for not used stored procedure or function input parameters. Unused parameters not necessarily negatively affect the performance, but they just add bloat to your stored procedures and functions.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0031</Name>
+      <Description>Use of the GOTO statement is generally considered to be poor programming practice and is not recommended. 
+Extensive use of GOTO tends to lead to unreadable code especially when procedures grow long. In most of the cases use of the GOTO statement is not necessary because there are better statements available to control the execution path. There are no specific situations that require the use of GOTO; instead it is more often used for convenience.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0034</Name>
+      <Description>When more than one logical operator is used in a statement, NOT is evaluated first, then AND, and finally OR. The Arithmetic (and bitwise) operators are handled before logical operators.
+The use of parentheses, even when not required, can improve the readability of queries and reduce the chance of making a subtle mistake because of operator precedence. There is no significant performance penalty in using parentheses.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0035</Name>
+      <Description>This rule checks comments for one of TODO,HACK and UNDONE phrases. Consider checking this comments and completing the unfinished tasks.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0036</Name>
+      <Description>The rule looks for DELETE statements not having neither WHERE nor JOIN clauses.
+Consider reviewing your code to avoid unintentionally losing all the rows in the table.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0037</Name>
+      <Description>The rule looks for UPDATE statements not having WHERE and JOIN clauses.
+Consider reviewing your code to avoid unintentionally updating all the records in the table.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0038</Name>
+      <Description>The rule checks for comparison expressions whcih will always evaluate to TRUE.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0039</Name>
+      <Description>The rule checks for comparison expressions whcih will always evaluate to FALSE.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0052</Name>
+      <Description>The rule checks the T-SQL code for calls to deprecated or undocumented sotored procedures.
+Deprecated procedures can be removed in a future version of Microsoft SQL Server while undocumented ones can be removed or changed even in the next release of update or service pack.
+
+Avoid using this procedures in new development work, and plan to modify applications that currently use them.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0053b</Name>
+      <Description>The data types ntext, text, and image will be removed in a future version of Microsoft SQL Server.
+ Avoid using these data types in new development work, and plan to modify applications that currently use them. Use nvarchar(max), varchar(max), and varbinary(max) instead.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0057</Name>
+      <Description>The rule check T-SQL code for IN predicate using a sub-query as they can be replaced by EXISTS prediacate.
+Using EXISTS predicate is often considered better than IN predicate, especially when NOT IN predicate is used.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0060</Name>
+      <Description>The rule checks for not sp_xml_preparedocument procedure calls which are not followed by a call to the sp_xml_removedocument procedure.
+The prepared and  parsed document is stored in the internal cache of SQL Server. The MSXML parser (Msxmlsql.dll) uses one-eighth the total memory available for SQL Server.
+To avoid running out of memory, run sp_xml_removedocument to free up the memory.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0077</Name>
+      <Description>The rule checks for EXECUTE statements which use dynamically generated SQL code.
+To execute a string, it is recommend the use of sp_executesql stored procedure instead of the EXECUTE statement.
+Because this stored procedure supports parameter substitution, sp_executesql is more versatile than EXECUTE; and because sp_executesql generates execution plans that are more likely to be reused by SQL Server, sp_executesql is more efficient than EXECUTE.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0078</Name>
+      <Description>The rule checks for statements not terminated with semicolon.
+Consider terminating all statements with semicolon to improve readability and compatability with future versions of SQL Server. 
+As more and more keywords, and statements are added to Transact-SQL, there will appear more cases where the semicolon terminatro will be required.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0079</Name>
+      <Description>The rule checks for ORDER BY clauses which reference select list column using the column number instead of the column name.
+The column numbers in the ORDER BY clause as it impairs the readability of the SQL statement. Further, changing the order of columns in the SELECT list has no impact on the ORDER BY when the columns are referred by names instead of numbers. Consider the following example, in which the second query is more readable than the first one:
+SELECT OrderID, OrderDate FROM Orders
+ORDER BY 2
+SELECT OrderID, OrderDate FROM Orders
+ORDER BY OrderDate
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0080</Name>
+      <Description>The rule checks  the T-SQL code for use VARCHAR or NVARCHAR data types without specifying length.
+Do not define columns, variables and parameters using VARCHAR, and NVARCHAR data types without specifying length attribute. This will not produce a dynamic length string data, but will make SQL Server choose default length of 1 (NOTE: In some scenarios it the length can be 30).</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0081</Name>
+      <Description>The rule checks the T-SQL code for use DECIMAL or NUMERIC data types without specifying length.
+Avoid defining columns, variables and parameters using DECIMAL or NUMERIC data types without specifying precision, and scale. If no precision and scale are provided, SQL Server will use its own default values - (18, 0).</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0091</Name>
+      <Description>The rule checks the usage of SET statement for QUOTED_IDENTIFIERS or ANSI_NULLS inside stored procedure body. 
+These options are ignored when set inside the body of stored proceudures, trigger or functions.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0097</Name>
+      <Description>The rule calculates the cyclomatic complexity of each stored procedure, trigger and function and reports if it is above a threshold value.
+Studies show a correlation between a program's cyclomatic complexity and its error frequency.
+A low cyclomatic complexity contributes to a program's understandability and indicates it is amenable to modification at lower risk than a more complex program.
+A module's cyclomatic complexity is also a strong indicator of its testability. 
+    CC Range Type Risk 
+    1-4      A simple procedure Low 
+    5-10     A well structured and stable procedure Low
+    11-20    A more complex procedure Moderate 
+    21-50    A complex procedure, alarming High 
+    50       An error-prone, extremely troublesome, untestable procedure Very high 
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0101</Name>
+      <Description>The rule checks for usage of query hints, table hints or join hints in the SELECT, UPDATE, DELETE, MERGE and INSERT statements.
+Because the SQL Server query optimizer typically selects the best execution plan for a query, it is recommended to be use hints only as a last resort by experienced developers and database administrators.
+The rule does not report when a NOLOCK hint is found, as it is done by rule SA0108.
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0103</Name>
+      <Description>The rule checks the script and reports if the ISNUMERIC funciton is used.
+A common use case is to convert character strings to integers and join to other tables on the integer value. However, in some cases a character string column contains non-integral values suchs as 'ACCT', which error on the attempted join. 
+A first though would be to try ISNUMERIC(), but that also accepts floating point and monetary number formats which would still error. 
+Instead, it is better to use LIKE to verify the validity of the text before attempting to convert it to an integer and guarantee that the query will not fail. 
+
+DECLARE @i INT, @str VARCHAR(100)
+SET @str = '1234'
+-- Unsigned
+SET @i = CASE WHEN LTRIM(RTRIM(@str)) NOT LIKE '%[^0-9]%'
+    THEN CAST(@str AS INT) ELSE NULL END
+-- Signed
+SET @I = CASE WHEN LTRIM(@str) LIKE '[-0-9]%'
+        AND SUBSTRING(LTRIM(RTRIM(@str)), 2, 8000) NOT LIKE '%[^0-9]%'
+    THEN CAST(@str AS INT) ELSE NULL END
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0105</Name>
+      <Description>The rule checks code for usage of the CHARINDEX in SELECT, UPDATE and DELETE statements.
+Searching using CHARINDEX forces a scan because all SQL Server can do is brute force evaluate the CHARINDEX function for every row.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0106</Name>
+      <Description>The rule checks SELECT, UPDATE and DELETE statements for use of the OR operator in their filtering clauses.
+Often, the OR operator can confuse SQL Server and prevent it from coming up with a good query plan. 
+Check the Query Plan and look for undesirable behavior such as index scans or table spools. 
+If a seek is performed, check to make sure that is it seeking on all of the intended columns, rather than performing a WHERE filter on columns that should otherwise be seekable. 
+The most common case of expensive OR-s comes from queries with optional search parameters, of the form:
+WHERE (Col1 = @Param1 AND @Param1 IS NOT NULL) OR 
+      (Col2 = @Param2 AND @Param2 != ) OR 
+      (Col3 = @Param3 AND @Param3 != 0) 
+
+The best solution for this sort of query is to dynamically construct a SQL string based on whichever input parameters apply, and pass the SQL string to sp_executesql with a set of parameters.
+It is preferable to avoid putting parameters as literals into a string which will cause a recompile for each parameter value. 
+Example:
+-- Using dynamic SQL
+CREATE TABLE #Tbl
+(
+    ID INT NOT NULL,
+    Col1 VARCHAR(50) NOT NULL,
+    Col2 VARCHAR(50) NOT NULL,
+    PRIMARY KEY CLUSTERED (ID)
+)
+INSERT INTO #Tbl VALUES (1, 'abcd', '')
+INSERT INTO #Tbl VALUES (2, '123', 'abc')
+DECLARE @Sql NVARCHAR(1000), @Param1 VARCHAR(50), @Param2 VARCHAR(50)
+SELECT @Param1 = '', @Param2 = 'abc'
+SET @Sql = N'SELECT ID FROM #Tbl WHERE 1=1' + 
+    CASE WHEN @Param1 != '' THEN ' AND Col1 = @Param1' ELSE '' END +
+    CASE WHEN @Param2 != '' THEN ' AND Col2 = @Param2' ELSE '' END
+EXEC dbo.sp_executesql @Sql, N'@Param1 VARCHAR(50), @Param2 VARCHAR(50)', @Param1, @Param2
+--DROP TABLE #Tbl
+
+Less common forms of expensive OR-s can sometimes be dealt with UNIONS, multiple LEFT JOINs, and various other SQL techniques available. 
+Example:
+
+SELECT ID FROM #Tbl WHERE Col1 = @Param1
+UNION ALL
+SELECT ID FROM #Tbl WHERE Col2 = @Param2
+
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0107</Name>
+      <Description>The rule identifies CURSOR usage inside the code and notifies for cursor declarations.
+Review your code and consider using a set-based solution instad of the cursor/iterative solution for the given task.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0108</Name>
+      <Description>The rule checks for NOLOCK hints are found within SQL code.
+Consider changing the isolation level instead of using the NOLOCK hint.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0109</Name>
+      <Description>The rule checks for joined subqueries which return a limited by TOP clause number of rows.
+Consider rewriting the query and joining directly with table sources of the subquery as it will let the SQL Server to use more optimal plan
+than the one when a subquery was joined. Note that when the subquery table sources are joined, you sould ensured that the exact number of records are joined as 
+when a subquery with TOP is used.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0111</Name>
+      <Description>The rule checks for WAITFOR statement with DELAY or TIME being used inside stored procedure, function or trigger.
+The WAITFOR statement blocks the execution of the batch, stored procedure, or transaction until a specified time or time interval is reached. This is not tipically wanted in a OLTP system unless for a very specific reason.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0113</Name>
+      <Description>The rule checks for usage of the SET ROWCOUNT setting.
+It is recommended to use the TOP clause or the new in SQL 2012 FETCH keyword instead of SET ROWCOUNT as it will not be supported in the future versions of SQL Server for INSERT,UPDATE and DELETE statements.
+In addition to that is being phased out, the SET ROWCOUNT has another problem - when a ROWCOUNT is set and there is INSERT, UPDATE, DELETE or MERGE statements which  fire a trigger, all the statements in the trigger will have the same row limit applied.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0116</Name>
+      <Description>The rule chacks for comparison to a result form a subquery which returns more than one column.
+Performing a comparison to a subquery like '= (SELECT [Name] FROM Table)' is generally a risky pattern to use. If the subquery ever returns more than one column then an exception will be generated. 
+Consider using an IN, EXISTS, OR JOIN pattern instead.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0119</Name>
+      <Description>The rule alerts for not aliased table sources in the FROM calsue of SELECT, UPADTE and DELETE statements.
+Consider aliasing all table soruces in the query.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0120</Name>
+      <Description>The rule check T-SQL code for NOT IN predicate with a subquery as it can be replaced by EXISTS subquery, EXCEPT or LEFT JOIN.
+Consider reviewing the code as if the result list of the subquery provided to the NOT INT predicate produces a NULL, then all rows will be filtered and no rows will be returned because of the NULL comparison rules which require the use of IS NULL instead of = NULL  for NULL comparison.
+Verify the SELECT statement in the NOT IN subquery is filtering out the NULL results or consider transition to use a NOT EXISTS, EXCEPT, or LEFT JOIN pattern instead.
+The ability to comare to null using = NULL depends on the ANSI_NULLS setting.
+When SET ANSI_NULLS is ON, a SELECT statement that uses WHERE column_name = NULL returns zero rows even if there are null values in column_name. 
+A SELECT statement that uses WHERE column_name != NULL returns zero rows even if there are nonnull values in column_name.
+In a future version of SQL Server, ANSI_NULLS will always be ON and any applications that explicitly set the option to OFF will generate an error. Avoid using this feature in new development work, and plan to modify applications that currently use this feature.
+Using NOT IN:
+SELECT * 
+FROM sys.database_principals p 
+WHERE p.principal_id NOT IN (SELECT o.principal_id 
+							 FROM sys.objects o)
+Using NOT EXISTS:
+SELECT * 
+FROM sys.database_principals p 
+WHERE NOT EXISTS (SELECT * 
+		          FROM sys.objects o 
+				  WHERE o.principal_id = p.principal_id)
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0121</Name>
+      <Description>The rule checks stored procedures and functions, and reports if there are output parameters which are not populated in one, or more code paths.
+This rule identifies and report in which path(s) the output parameter should be set.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0125</Name>
+      <Description>The rule checks for SELECT INTO statement being used.
+Consider replacing the SELECT INTO statement with explicit table creation and then use the INSERT INTO statement.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0133</Name>
+      <Description>The rule checks for direct usage of the system date-time functions which return the current date and time inside SELECT, INSERT, UPDATE, DELETE and MERGE statements.
+Consider extracting the function call and storing its result into a local variable and this way ensure that one and the same current time is used for all queries in the script.
+The rule looks for these date functions: 
+GetDate
+    GetUtcDate
+    SysDateTime
+    SysDateTimeOffset
+    SysUtcDatetime
+    Current_Timestamp
+
+Example:
+DECLARE @Now AS DateTime = GetDate()
+-- later in the script
+SELECT * FROM dbo.Log WHERE DateCreated &lt; @Now - 5
+-- something time consuming happens here
+WAITFOR DELAY '01:30:15';
+--- 
+DELETE FROM dbo.Log WHERE DateCreated &lt; @Now - 5
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0134</Name>
+      <Description>The rule checks stored procedures, triggers and functions for having a DDL statements placed between DML statements.
+If DDL operations are performed within a procedure or batch, the procedure or batch is recompiled when it encounters the first subsequent DML operation affecting the table involved in the DDL.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0136</Name>
+      <Description>The rule enforces usage of fully qualified object names in SELECT,UPDATE,DELETE or INSERT and EXECUTE statements.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0144</Name>
+      <Description>The rule detects and reports dead code which will never be executed.
+The rule checks stored procedures, function and views for statemetns which appear after RETURN statement or after RAISERROR with severity &gt; 10 and inside BEGIN/END TRY block.
+CREATE PROCEDURE [dbo].[test_DeadCode_Rule]
+(
+    @Value1 BIGINT
+) 
+AS 
+IF (@Value1 = 0)
+BEGIN
+   RETURN 0
+END
+ELSE
+BEGIN
+    RETURN @Value1 + 1
+END
+RETURN -1;
+PRINT 'This message will never be printed'
+
+            </Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0145</Name>
+      <Description>The rule checks the SQL code for appearance of EOL character sequence different than the {CR}{LF}.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0146</Name>
+      <Description>The rule checks RAISERROR statements for having severity above 18 and not havina a WITH LOG clause.
+Error severity levels greater than 18 can only be specified by members of the sysadmin role, using the WITH LOG option.
+Severity levels from 0 through 18 can be specified by any user.
+Severity levels from 19 through 25 can only be specified by members of the sysadmin fixed server role or users with ALTER TRACE permissions. 
+For severity levels from 19 through 25, the WITH LOG option is required.
+RAISERROR('Invalid Type ''%s''',19, 22, 'type');
+
+Should be:
+
+RAISERROR('Invalid Type ''%s''',19, 22, 'type') WITH LOG;
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0147</Name>
+      <Description>The rule calculates the complexity of each SELECT,INSERT,UPDATE,DELETE and MERGE statement and reports if it is above a threshold value.
+The rule gives a way to measure the complexity of a single SQL statement based on the existance of specific elements in it.
+The following query elements are considered when the quey compelxity is calculated:
+    Each jonied table source
+    Each table, query and join hint
+    Existance of GROUP BY clause
+    Existance of ORDER BY clause
+    Existance of HAVING clause
+    Existance of COMPUTE or COMPUTE BY clause
+    Each UNION clauses
+    Each Common Table Expression
+    Each boolean expression in WHERE,JOIN and HAVING clauses
+    The target table in INSERT,UPDATE,DELETE and MERGE statements
+You can set the complexity for each of the above elemetns using the rule parameters.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0004</Name>
+      <Description>This rule checks for values assigned to a variable that are either not referenced afterwards or overwritten before being used.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0007</Name>
+      <Description>This rule checks for usage of wildcard characters at the beginning of a word while searching using the LIKE keyword.
+Usage of wildcard characters at the beginning of a LIKE pattern results in an index scan, which defeats the purpose of an index.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0013</Name>
+      <Description>This rule scans triggers to ensure they do not send data back to the caller.
+Applications that modify tables or views with triggers do not necessarily expect results to be returned as part of the modification operation. For this reason it is not recommended to return results from within triggers.
+This rule flags as not recommended the use of the following statements within a trigger:
+PRINT statement
+SELECT (without assignment or INTO clause)
+FETCH (without assignment)
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0016</Name>
+      <Description>This rule checks for use of very small variable length type (ith size of 1 or 2).
+It is recommended to use fixed length data type when size is less than 3. Variable length type with size less than 3 consumes more space than the same fixed length type.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0017</Name>
+      <Description>This rule scans triggers and stored procedures to ensure they SET NOCOUNT to ON at the beginning.
+Use SET NOCOUNT ON at the beginning of your SQL batches, stored procedures and triggers in production environments, as this prevents the sending of DONE_IN_PROC messages and suppresses messages like '(1 row(s) affected)' to the client for each statement in a stored procedure. 
+For stored procedures that contain several statements that do not return much actual data, setting SET NOCOUNT to ON can provide a significant performance boost, because network traffic is greatly reduced.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0024</Name>
+      <Description>The rule checks if any local cursor is closed until the end of the batch. 
+Because when open, the cursor still holds locks on referred-to-tables or views, you should explicitly close it as soon as it is no longer needed.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0025</Name>
+      <Description>The rule checks if cursor name is deallocated before the end of the batch using the DEALLOCATE statement.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0026</Name>
+      <Description>The rule checks if cursor variable is deallocated before the end of the batch using the DEALLOCATE statement.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0027</Name>
+      <Description>When a filtering WHERE clause column is wrapped inside a function, the query optimizer does not see the column and if an index exists on the column, the index most likely will not to be used.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0030</Name>
+      <Description>The rule checks for not used stored procedure output parameters. Unused parameters not necessarily negatively affect the performance, but they just add bloat to your stored procedures and functions.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0032</Name>
+      <Description>Using NOT IN predicate in the WHERE clause generally performs badly, because the SQL Server optimizer has to use a TABLE SCAN instead of an INDEX SEEK even the filtering columns are covered by index.
+Consider using one of the following options instead all of which offer better performance: 
+
+- EXISTS or NOT EXISTS 
+- IN 
+- Perform LEFT OUTER JOIN and check for a NULL
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0054</Name>
+      <Description>For best query performance, in some situations you'll need to avoid assigning a new value to a parameter of a stored procedure within the procedure body, and then using the parameter value in a query. The stored procedure and all queries in it are initially compiled with the parameter value first passed in as a parameter to the query.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0127</Name>
+      <Description>The rule checks the query filtering clauses for funciton call which has filtering columns as parameter values.
+When a filtering column is wrapped inside a function, the query optimizer does not see the column and if an index exists on the column, the index most likely will not to be used.
+The rule is similar to SA0027, but reports only when system functions are found.
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0135</Name>
+      <Description>The rule checks the query filtering clauses for user-defined funciton call which has filtering columns as parameter values.
+When a filtering column is wrapped inside a function, the query optimizer does not see the column and if an index exists on the column, the index most likely will not to be used.
+ Consider reviewing the execution plan of the query.
+The rule is similar to SA0027, but reports only when user-defined functions are found.
+</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Warning</Severity>
+    </Rule>
+    <Rule>
+      <Name>sa0089</Name>
+      <Description>This rule checks the stored procedures for use of SET statements setting certen options to not recommended value.
+The following options are recommended to be ON:
+ARITHABORT
+ANSI_NULL_DFLT_ON 
+ANSI_DEFAULTS 
+ANSI_WARNINGS 
+ANSI_PADDING 
+CONCAT_NULL_YIELDS_NULL 
+The following option is recommended to be OFF:
+NUMERIC_ROUNDABOUT OFF
+If you change the value of any of the above options inside the body of a stored procedure, it will cause the procedure to be recompiled every time it runs.
+Changing these options triggers a recompilation, becase the it may affect the query results.
+A SET statement that sets one of the above options to a not recommended value is flagged by this rule.</Description>
+      <Type>XsltExpression</Type>
+      <Severity>Error</Severity>
+    </Rule>
+  </Rules>
+  <ExtendedProperties>
+    <ExtendedProperty Name="ObjectsCount" Description="Count of analyzed objects" Value="7" />
+    <ExtendedProperty Name="IssuesCount" Description="Count of rule violations" Value="0" />
+    <ExtendedProperty Name="TimeElapsed" Description="Elapsed time" Value="00:00:22.3152313" />
+  </ExtendedProperties>
+</SqlEnlightReport>

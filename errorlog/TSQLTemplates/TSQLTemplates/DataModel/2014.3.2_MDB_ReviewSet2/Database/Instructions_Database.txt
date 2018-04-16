@@ -1,0 +1,38 @@
+README  	:  The Deployment Package has been created for the Netik Box Position Release
+
+
+================================================================================ 
+
+Prerequisites-
+1. DBA Should at least have DB_OWNER rights on NetikIP and NetikDP DB.
+================================================================================
+----------------- Steps to be executed on Database server -------------------
+================================================================================
+The DML database scripts should be applied in the following order :
+
+1. Execution steps for script
+
+       1.1 Please refer <Build_root>\Database\sqlscripts\README.txt
+      
+
+================================================================================
+----------------- Steps to be executed for Database rollback -------------------
+================================================================================
+
+
+       1.1 Please refer <Build_root>\Database\Rollback\README.txt
+      
+	   
+--------------End of Steps to be executed for database rollback ----------------
+================================================================================
+================================================================================
+ 
+Release Contents - 
+
+1. SQL Script -  All Scripts in the attached folder.
+
+
+
+============================================================================================================= 
+------------------------------  End of Readme file  ----------------------------
+============================================================================================================= 

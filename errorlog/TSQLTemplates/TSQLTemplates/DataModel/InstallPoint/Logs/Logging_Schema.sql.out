@@ -1,0 +1,18 @@
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+The module 'AddLogSpec' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+<<< CREATED PROCEDURE dbo.AddLogSpec >>>
+The module 'UpdLogSpec' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+<<< CREATED PROCEDURE dbo.UpdLogSpec >>>
+The module 'DelLogSpec' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+<<< CREATED PROCEDURE dbo.DelLogSpec >>>
+The module 'InsertLogDetail' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+<<< CREATED PROCEDURE dbo.InsertLogDetail >>>
+<<< CREATED PROCEDURE dbo.LogEntry >>>
+<<< CREATED PROCEDURE dbo.PurgeLogDetail >>>

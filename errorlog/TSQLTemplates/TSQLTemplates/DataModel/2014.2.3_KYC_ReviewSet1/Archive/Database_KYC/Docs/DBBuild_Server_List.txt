@@ -1,0 +1,14 @@
+# ---------------------------------------------------------
+#
+# Scripts are executed from the %ROOTDIR%\CmdScripts folder
+#
+# Blank lines and lines starting with a 
+# pound sign (#) are skipped.
+# Server Database Schema (space separated)
+# ---------------------------------------------------------
+#
+#localhost NetikIP dbo
+#localhost\CDS NetikIP dbo
+seinetikqadb02 NetikIP dbo
+#seivmedevdb11 NetikIP dbo
+

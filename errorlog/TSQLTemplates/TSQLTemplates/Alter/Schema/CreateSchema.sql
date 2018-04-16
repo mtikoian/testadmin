@@ -1,0 +1,11 @@
+--   Project: BIS Account Restriction Facility (BARF)
+
+-- Schema
+CREATE SCHEMA $(BIS_SECURITY_SCHEMA) AUTHORIZATION dbo;
+GO
+
+IF EXISTS (SELECT 1 FROM sys.schemas WHERE  name = N'$(BIS_SECURITY_SCHEMA)')
+BEGIN
+    PRINT '<<< CREATED SCHEMA $(BIS_SECURITY_SCHEMA) >>>';
+END;
+GO

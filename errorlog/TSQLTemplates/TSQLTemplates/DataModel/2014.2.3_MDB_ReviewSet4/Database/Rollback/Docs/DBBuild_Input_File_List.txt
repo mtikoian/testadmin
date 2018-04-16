@@ -1,0 +1,10 @@
+# ------------------------------------------
+#
+# Scripts are executed from the %ROOTDIR%\
+#
+# Blank lines and lines starting with a 
+# pound sign (#) are skipped.
+# ------------------------------------------
+Create_Table_RegulatoryReporting_Firm.sql
+P_mdb_formpf_GetQ16PrefillValues.sql
+p_mdb_CPO_GetRatesOfReturns.sql

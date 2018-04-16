@@ -1,0 +1,4 @@
+Creating stub procedure "dbo.Get_SERVER".
+The module 'Get_SERVER' depends on the missing object 'dbo.p_admPrintError'. The module will still be created; however, it cannot run successfully until the object exists.
+The module 'Get_SERVER' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
+Altered procedure "dbo.Get_SERVER".

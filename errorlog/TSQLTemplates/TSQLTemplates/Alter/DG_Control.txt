@@ -1,0 +1,17 @@
+/*Deletes records from DG_Control and underline tables position_dg, holding_dg, lot_dg, sei_lot_dg, position_pl_total, tranevent_dg*/
+
+select count(1) FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-00350' AND DATA_GRP_CTL_NUM = 22482271
+select count(1)  FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-00400' AND DATA_GRP_CTL_NUM = 22482245
+select count(1)  FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-00450' AND DATA_GRP_CTL_NUM = 22482371
+select count(1)  FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-00500' AND DATA_GRP_CTL_NUM = 22482239
+select count(1)  FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-00700' AND DATA_GRP_CTL_NUM = 22482240
+select count(1)  FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-00750' AND DATA_GRP_CTL_NUM = 22482229
+select count(1)  FROM DBO.DG_CONTROL WHERE ACCT_ID = '1164-1-01100' AND DATA_GRP_CTL_NUM = 22445460
+
+
+select count(*) from position_dg		where DATA_GRP_CTL_NUM = 22482235
+select count(*) from holding_dg		where DATA_GRP_CTL_NUM = 22482235
+select count(*) from lot_dg			where DATA_GRP_CTL_NUM = 22482235
+select count(*) from sei_lot_dg		where DATA_GRP_CTL_NUM = 22482235
+select count(*) from position_pl_total	where DATA_GRP_CTL_NUM = 22482235
+select count(*) from tranevent_dg		where DATA_GRP_CTL_NUM = 22482235

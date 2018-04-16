@@ -1,0 +1,5 @@
+exec sp_FldInInq 'INSERT',17008,70,51,2,'end_acc_bk + ending_market_value_book','Total Market Value',0,12,default,default,'ntk_Var(PER_TOT_ROR_REL, BM_PER_TOT_ROR_REL)',3,default,'0.00%',0,default,3,default,default,0,default,0,0,0,0,0,0,0,1
+	exec sp_FldInInq 'INSERT',17008,70,1001,3,'(case when rtn_typ in (1,2) then rtn_typ_nme when rtn_typ in (10,11,12) then benchmark_name else key_descr end)','Segment Name',0,12,default,default,'ntk_Var(PER_TOT_ROR_REL, BM_PER_TOT_ROR_REL)',3,0,default,-1,default,1,default,default,0,default,0,0,0,0,0,0,0,1
+	exec sp_FldInInq 'INSERT',17008,70,41,4,'(isnull(rtrim(one_year),0))','1 Year Return',default,12,default,default,'ntk_Var(PER_TOT_ROR_REL, BM_PER_TOT_ROR_REL)',0,default,'''',0,default,3,default,default,0,default,0,0,0,0,0,0,0,1
+	exec sp_QueryParam_Create 17008,17008
+	exec sp_MenuFunction_Generate 'FNI_017007',17008,'GENEVAPERF',default,default,default,default,default,default,default,default,default,default,default,default,default,'U',default,default,default,default,default

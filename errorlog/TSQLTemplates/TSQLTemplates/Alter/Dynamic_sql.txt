@@ -1,0 +1,80 @@
+DECLARE @ErrorNumber INT
+	,@Key_Descr_Cash VARCHAR(30)
+	,@Key_Descr_TotalFund VARCHAR(30)
+	,@rtn_typ_nme VARCHAR(30)
+	,@EndDt_75_Days DATETIME
+	,@beg_mkt_val_bk FLOAT
+	,@irr_bk FLOAT;
+
+SET @Key_Descr_Cash = 'Cash';
+SET @Key_Descr_TotalFund = 'Total Fund';
+SET @rtn_typ_nme = 'Portfolio Gross'
+SET @EndDt_75_Days = (getdate() - 75);
+SET @ErrorNumber = 0;
+SET @irr_bk = 0.0;
+SET @beg_mkt_val_bk = 150000;
+
+DECLARE @sql NVARCHAR(max)
+
+SET @sql = 
+	'SELECT p1.acct_id  
+	,p1.key_descr  
+	,p1.rtn_typ_nme  
+	,p1.end_dte  
+	,p1.ending_market_value_book 
+	,p1.irr_bk  
+	,p2.ending_market_value_book  
+	,p2.irr_bk  
+FROM dbo.portfolio_performance p1
+
+INNER JOIN dbo.portfolio_performance p2 ON p1.acct_id = p2.acct_id
+	AND p2.key_descr = ''@Key_Descr_Cash''
+	AND p1.start_dte = p2.start_dte
+	AND p1.end_dte = p2.end_dte
+	AND p1.ending_market_value_book <> p2.ending_market_value_book  
+	AND p1.irr_bk = @irr_bk --''0''  
+
+WHERE (
+		p1.acct_id LIKE ''1260%''
+		OR p1.acct_id LIKE ''1272%''
+		OR p1.acct_id LIKE ''1193%''
+		OR p1.acct_id LIKE ''1022%''
+		OR p1.acct_id LIKE ''1295%''
+		OR p1.acct_id LIKE ''1300%''
+		OR p1.acct_id LIKE ''1245%''
+		OR p1.acct_id LIKE ''1190%''
+		OR p1.acct_id LIKE ''1316%''
+		OR p1.acct_id LIKE ''1166%''
+		OR p1.acct_id LIKE ''1315%''
+		OR p1.acct_id LIKE ''1162%''
+		OR p1.acct_id LIKE ''1317%''
+		OR p1.acct_id LIKE ''1318%''
+		OR p1.acct_id LIKE ''1083%''
+		)
+	AND p1.key_descr = ''@Key_Descr_TotalFund''
+	AND p1.rtn_typ_nme = ''@rtn_typ_nme'' --in( ''Portfolio Gross'')   
+	AND p1.beg_mkt_val_bk > ''@beg_mkt_val_bk'' 
+	AND datepart(weekday, p2.end_dte) IN (
+		2
+		,3
+		,4
+		,5
+		,6
+		)  
+	AND p1.end_dte >= ''@EndDt_75_Days'' --(getdate()-75)   
+ORDER BY p1.acct_id  
+'
+
+SELECT @sql
+
+SET @sql = REPLACE(@sql, '@Key_Descr_Cash', @Key_Descr_Cash)
+SET @sql = REPLACE(@sql, '@irr_bk', @irr_bk)
+SET @sql = REPLACE(@sql, '@irr_bk', @Key_Descr_TotalFund)
+SET @sql = REPLACE(@sql, '@Key_Descr_TotalFund', @Key_Descr_TotalFund)
+SET @SQL = REPLACE(@sql, '@rtn_typ_nme', @rtn_typ_nme)
+SET @SQL = REPLACE(@sql, '@beg_mkt_val_bk', @beg_mkt_val_bk)
+SET @SQL = REPLACE(@sql, '@EndDt_75_Days', @EndDt_75_Days)
+
+SELECT @sql
+
+EXEC (@sql)

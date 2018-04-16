@@ -1,0 +1,101 @@
+Calculating aggregate values can be simplified by using derived tables. In this article I show you how to use derived tables to calculate two independent aggregate values in a single SELECT statement.
+
+Derived Table Basics
+
+A derived table is one that is created on-the-fly using the SELECT statement, and referenced just like a regular table or view. Derived tables exist in memory and can only be referenced by the outer SELECT in which they are created. A simple use of a derived table is shown here.
+
+SELECT *
+FROM (SELECT *
+      FROM Sales) AS a
+The inner SELECT produces a derived table and replaces a regular table or view. The key thing to remember when using derived tables is that you must always use an alias (e.g., AS a). The following shows the error produced when the alias is omitted.
+
+SELECT *
+FROM (SELECT *
+      FROM Sales)
+
+-- Results --
+
+Server: Msg 170, Level 15, State 1, Line 3
+Line 3: Incorrect syntax near ')'.
+Referencing Multiple Derived Tables
+
+You can add as many derived tables as needed to a single outer SELECT to produce the desired resultset. The code starts to get a little convoluted after the second inner SELECT is added, but if you focus on the columns returned by each SELECT it all makes sense.
+
+The following script creates Stores/Sales information and shows how to calculate current month and year-to-date sales count and amounts by Store.
+
+USE tempdb
+go
+SET NOCOUNT ON
+
+CREATE TABLE Stores
+(
+ Sto_ID smallint IDENTITY PRIMARY KEY NOT NULL,
+ Sto_Name varchar(20) NOT NULL
+)
+go
+INSERT Stores VALUES ('Store 1')
+INSERT Stores VALUES ('Store 2')
+INSERT Stores VALUES ('Store 3')
+go
+
+CREATE TABLE Sales
+(
+ Sal_ID int IDENTITY NOT NULL PRIMARY KEY,
+ Sto_ID smallint NOT NULL FOREIGN KEY REFERENCES Stores(Sto_ID),
+ Sal_Date smalldatetime NOT NULL,
+ Sal_Amt money NOT NULL
+)
+go
+INSERT Sales VALUES (1,'5/15/01 14:00:00',500)
+INSERT Sales VALUES (1,'5/16/01 11:00:00',200)
+INSERT Sales VALUES (1,'6/15/01 14:00:00',200)
+INSERT Sales VALUES (1,'7/15/01 08:00:00',500)
+INSERT Sales VALUES (1,'8/16/01 10:00:00',100)
+INSERT Sales VALUES (1,'8/17/01 10:00:00',125)
+
+INSERT Sales VALUES (2,'5/1/01 08:00:00',100)
+INSERT Sales VALUES (2,'6/16/01 14:00:00',200)
+INSERT Sales VALUES (2,'7/16/01 09:00:00',500)
+INSERT Sales VALUES (2,'8/17/01 10:00:00',100)
+
+INSERT Sales VALUES (3,'5/25/01 15:00:00',250)
+INSERT Sales VALUES (3,'6/17/01 14:00:00',100)
+INSERT Sales VALUES (3,'7/16/01 09:00:00',600)
+INSERT Sales VALUES (3,'8/18/01 16:00:00',150)
+go
+
+DECLARE @RunDate datetime
+Set @RunDate = '9/01/01'
+
+SELECT a1.Sto_Name,
+       CM_Count,
+       CM_Sales,
+       YTD_Count,
+       YTD_Sales
+FROM (SELECT b.Sto_Name,
+             COUNT(*) AS CM_Count,
+             SUM(Sal_Amt) AS CM_Sales
+      FROM Sales a
+      JOIN Stores b ON a.Sto_ID = b.Sto_ID
+      WHERE DATEPART(yy,Sal_Date) = DATEPART(yy,@RunDate) AND
+            DATEPART(mm,Sal_Date) = (DATEPART(mm,@RunDate)-1)
+      GROUP BY b.Sto_Name) AS a1
+JOIN (SELECT Sto_Name,
+             COUNT(*) AS YTD_Count,
+             SUM(Sal_Amt) AS YTD_Sales
+      FROM Sales a
+      JOIN Stores b ON a.Sto_ID = b.Sto_ID
+      WHERE DATEPART(yy,Sal_Date) = DATEPART(yy,@RunDate)
+      GROUP BY b.Sto_Name) AS b1 ON a1.Sto_Name = b1.Sto_Name
+GO
+
+-- Results --
+
+Sto_Name             CM_Count    CM_Sales              YTD_Count   YTD_Sales
+-------------------- ----------- --------------------- ----------- -------------
+Store 1              2           225.0000              6           1625.0000
+Store 2              1           100.0000              4           900.0000
+Store 3              1           150.0000              4           1100.0000
+The first inner SELECT calculates August's sales by comparing the month and year of @RunDate to the month and year of Sal_Date. Notice that I subtracted one month from @RunDate, because the assumption is the code is executed after the previous month has closed. You should also notice that the outer SELECT uses "a1." to specify which Sto_Name is returned. The column needs to be qualified because it exists in both the a1 and b1 derived tables.
+
+The second inner SELECT calculates year-to-date totals by comparing the year of @RunDate to the year of Sal_Date. Once this table has been derived it can be joined to a1 on Sto_Name so the two independent aggregate values can be combined in the same resultset.

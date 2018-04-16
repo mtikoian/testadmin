@@ -1,0 +1,5 @@
+--   Project: BIS Account Restriction Facility (BARF)
+
+-- Create the user
+CREATE USER $(BIS_SECURITY_USER) WITHOUT LOGIN WITH DEFAULT_SCHEMA=$(BIS_SECURITY_SCHEMA);
+GO

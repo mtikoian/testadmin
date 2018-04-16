@@ -1,0 +1,172 @@
+
+LiteSpeedMessage
+LiteSpeed appears to be installed and licensed.  The backups will be setup using LiteSpeed.
+
+
+-- 0) identify the current and new paths
+-- current paths
+data: I:\SQLSystemDB\SQL01\MSSQL10.SQL01\MSSQL\DATA
+logs: I:\SQLSystemDB\SQL01\MSSQL10.SQL01\MSSQL\DATA
+error: I:\SQLSystemDB\SQL01\MSSQL10.SQL01\MSSQL\Log
+
+-- new paths - I:\SQLSystemDB\SQL01 and F:\SQLTlogs
+data: I:\SQLSystemDB\SQL01
+logs: I:\SQLSystemDB\SQL01
+error: K:\SQLErrorLogs\SQL01
+--
+-- 1) tell SQL Server where the new locations are
+-- master db
+-- start sql server configuration manager - in the left pane highlight sql server services in the right pane right click sql server(SQL01) choose 
+properties - click the advanced tab - click on the drop down next to 'startup parameters' - select and copy the values and 
+past into notepad twice and edit the second entry to have the desired file locations
+-- Here are the new paths:
+-- 
+-dI:\SQLSystemDB\SQL01\master.mdf;-eK:\SQLErrorLogs\SQL01\ERRORLOG;-lI:\SQLSystemDB\SQL01\mastlog.ldf
+--
+-- other system DBs
+-- ALTER DATABASE database_name MODIFY FILE ( NAME = logical_name , FILENAME = 'new_path\os_file_name' )
+-- Get logical_name by looking properties for each respective DB in management studio
+-- Get new_path and os_file_name from windows explorer
+USE MASTER
+-- model db
+ALTER DATABASE model MODIFY FILE ( NAME = modeldev , FILENAME = 'I:\SQLSystemDB\SQL01\model.mdf' )
+GO
+ALTER DATABASE model MODIFY FILE ( NAME = modellog , FILENAME = 'I:\SQLSystemDB\SQL01\modellog.ldf' )
+GO
+-- msdb db
+ALTER DATABASE msdb MODIFY FILE ( NAME = MSDBData , FILENAME = 'I:\SQLSystemDB\SQL01\msdbdata.mdf' )
+GO
+ALTER DATABASE msdb MODIFY FILE ( NAME = MSDBLog , FILENAME = 'I:\SQLSystemDB\SQL01\msdblog.ldf' )
+GO
+--tempdb db -set at install for this RFS
+-- ALTER DATABASE tempdb MODIFY FILE ( NAME = tempdev , FILENAME = 'J:\SQLTempDB\SQL01\tempdb.mdf' )
+-- GO
+-- ALTER DATABASE tempdb MODIFY FILE ( NAME = templog , FILENAME = 'J:\SQLTempDB\SQL01\templog.ldf' )
+-- GO
+--
+-- 2) stop sql server - (use failover cluster management)
+--
+-- 3) (prior to completing this step create a folder called 'old system DBs' and copy the files to it (system db files and errorlog files.)
+-- move the mdf and ldf files from the current path to the new paths for master, model, and msdb databases. Also move the ERRORLOG files to their new location.
+--
+-- 4) Process the move for the resource database
+-- Note - For sql server 2008 is is not necessary to keep the resource DB and the master database files in the same location. 
+-- Note - For sql server 2008 the install puts the resource DB in the install path ie BINN folder. 
+-- Note - For sql server 2008 up to this point I have chosen not to move the resource DB files to the other system DB files location.
+
+
+-- 5) start sql server - using failover cluster management
+--
+-- 6) remove the old tempdb files
+
+
+
+------------------------------------------------------------------------
+
+
+here is one that does not assume cluster
+-- 0) identify the current and new paths
+-- current paths
+data: I:\SQLSystemDB\SQL01\MSSQL10.SQL01\MSSQL\DATA
+logs: I:\SQLSystemDB\SQL01\MSSQL10.SQL01\MSSQL\DATA
+error: I:\SQLSystemDB\SQL01\MSSQL10.SQL01\MSSQL\Log
+
+-- new paths - I:\SQLSystemDB\SQL01 
+data: I:\SQLSystemDB\SQL01
+logs: I:\SQLSystemDB\SQL01
+error: K:\SQLErrorLogs\SQL01
+--
+-- 1) tell SQL Server where the new locations are:
+
+-- master db
+-- start sql server configuration manager - in the left pane highlight sql server services, in the right pane right click sql server(MSSQLSERVER) choose 
+properties - click the advanced tab - click on the drop down next to 'startup parameters' - select and copy the values and 
+past into notepad twice and edit the second entry to have the desired file locations then copy the new paths back to configuration manager
+--
+-- other system DBs
+-- ALTER DATABASE database_name MODIFY FILE ( NAME = logical_name , FILENAME = 'new_path\os_file_name' )
+-- Get logical_name by looking properties for each respective DB in management studio
+-- Get new_path and os_file_name from windows explorer
+-- model db
+ALTER DATABASE model MODIFY FILE ( NAME = modeldev , FILENAME = 'N:\SQLDATA\VA10DWPSQL01\model.mdf' )
+GO
+ALTER DATABASE model MODIFY FILE ( NAME = modellog , FILENAME = 'N:\SQLDATA\VA10DWPSQL01\modellog.ldf' )
+GO
+-- msdb db
+ALTER DATABASE msdb MODIFY FILE ( NAME = MSDBData , FILENAME = 'N:\SQLDATA\VA10DWPSQL01\msdbdata.mdf' )
+GO
+ALTER DATABASE msdb MODIFY FILE ( NAME = MSDBLog , FILENAME = 'N:\SQLDATA\VA10DWPSQL01\msdblog.ldf' )
+GO
+--tempdb db
+ALTER DATABASE tempdb MODIFY FILE ( NAME = tempdev , FILENAME = 'L:\SQLTDB\VA10TWPCSC001\tempdb.mdf' )
+GO
+ALTER DATABASE tempdb MODIFY FILE ( NAME = templog , FILENAME = 'L:\SQLTDB\VA10TWPCSC001\templog.ldf' )
+GO
+--
+-- 2) stop sql server (use either sql server configuration manager or NET STOP MSSQLSERVER or if cluster use cluster admin/failover cluster management)
+--
+-- 3) move the mdf and ldf files from the current path to the new paths for master, model, and msdb databases. Also move the ERRORLOG files to their new location.
+--
+
+If SQL Server 2008 then go to step 7
+
+-- 4) Process the move for the resource database
+-- Note - For sql server 2008 it is not necessary to keep the resource DB and the master database files in the same location.
+
+-- For SQL Server 2005 the Resource database depends on the location of the master database. The Resource data and log files must reside together and must be in the same location as the master data file (master.mdf). 
+-- put SQL Server in minimal configuration mode by adding -f and -T3608 startup parameters and then start SQL Server 
+-- for example -dF:\SQLData\VA10PWPBIX003\master.mdf;-eF:\SQLErrorLogs\VA10PWPBIX003\ERRORLOG;-lG:\SQLTlogs\VA10PWPBIX003\mastlog.ldf;-f;-T3608
+-- start management studio but do not login - instead click on cancel then click on new query - if management studio is already started from the ALTER statements above then just click on new query.
+--
+ALTER DATABASE mssqlsystemresource MODIFY FILE (NAME=data, FILENAME= 'G:\SQLData\VA10TWPCSC001\mssqlsystemresource.mdf');
+GO
+ALTER DATABASE mssqlsystemresource MODIFY FILE (NAME=log, FILENAME= 'G:\SQLData\VA10TWPCSC001\mssqlsystemresource.ldf');
+GO
+--
+-- move mssqlsystemresource.mdf and mssqlsystemresource.ldf files from the current path to the new path. (both must be moved 
+-- to the same folder)
+-- 
+ALTER DATABASE mssqlsystemresource SET READ_ONLY;
+GO
+--
+-- 5) stop sql server
+--
+-- 6) remove the startup options -f and /T3608
+--
+-- 7) start sql server
+--
+-- 8) if you have not done so already then remove the system DB files from their original location
+
+
+----------------------litespeed -----------------------------
+
+
+EXECUTE [master].dbo.xp_restore_database 
+                              @database = N'<database_name>'
+                              ,@filename = N'<litespeed_backupfile.bak>'
+                               -- IF BACKUP WAS STRIPED ADD ADDIITONAL @filename
+                              ,@filename = N'<litespeed_backupfile.bak>' -- IF BACKUP WAS STRIPPED
+                              ,@with = 'FILE = 1'  -- USUALLY 1, UNLESS MULTIPLE BACKUPS IN A FILE THEN SPECIFY CORRECT FILE NBR.
+                               -- IF RESTORING MULTIPLE THEN ADD ADDITIONAL MOVES
+                              ,@with = 'MOVE N''<logical_data_name>'' TO N''<data_filename_location>'''
+                              ,@with = 'MOVE N''<logical_log_name>'' TO N''<log_filename_location>'''
+                              ,@with = 'REPLACE' 
+                              ,@with = 'STATS = 10' 
+                              ,@with = 'RECOVERY'  -- SET NORECOVERY IF RESTORING LOGS
+
+
+
+For Transaction Log Backps
+
+
+EXECUTE [master].dbo.xp_restore_log 
+                              @database = N'<database_name'
+                              ,@filename = N'<tran_logfile>'
+                              ,@filename = N'<tran_logfile>' -- ONLY NEEDED IF BACKUPS WERE STRIPPED
+                              ,@with = 'FILE = 1'  -- USUALLY 1, UNLESS MULTIPLE BACKUPS IN A FILE THEN SPECIFY CORRECT FILE NBR.
+                              ,@with = 'STATS = 10' 
+                              ,@with = 'NORECOVERY' -- SET TO RECOVERY IF LAST LOG
+
+
+
+
