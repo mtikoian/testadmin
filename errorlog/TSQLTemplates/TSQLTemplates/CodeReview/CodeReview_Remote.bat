@@ -1,1 +1,0 @@
- enlight.exe  analyze /targettype:files /inputpath:"\\seipvcsv1\m_GoldCode\Build\imsdw\CodeReview\2014.12.20_KYC_ReviewSet24\Database\sqlscripts\*.sql";-"C:\2014.12.1_MDB_ReviewSet3\Database\SQLScripts\b*.sql" /report: "C:\Scripts_AnalysisReport.html" /reportstylesheet: "C:\Program Files (x86)\Ubitsoft\SQL Enlight\Xslt\SqlEnlightReport.xslt"

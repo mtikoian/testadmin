@@ -1,8 +1,0 @@
-# ---------------------------------------------------------
-#
-# Scripts are executed from the %ROOTDIR%\CmdScripts folder
-#
-# Blank lines and lines starting with a 
-# pound sign (#) are skipped.
-# ---------------------------------------------------------
-SampleRollbackScript.sql

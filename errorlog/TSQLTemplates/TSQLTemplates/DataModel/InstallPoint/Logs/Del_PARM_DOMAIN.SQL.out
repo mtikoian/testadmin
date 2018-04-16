@@ -1,3 +1,0 @@
-Creating stub procedure "dbo.Del_PARM_DOMAIN".
-The module 'Del_PARM_DOMAIN' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
-Altered procedure "dbo.Del_PARM_DOMAIN".

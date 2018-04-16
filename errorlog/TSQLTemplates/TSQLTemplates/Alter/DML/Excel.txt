@@ -1,2 +1,0 @@
-="INSERT INTO STUDENT ("&B2 &",'"&C2 &"','"&D2 &"')"
-="Insert into Users (userid,first,last) VALUES ("& A2 & ","& CONCATENATE("'",B2,"'") &", "& CONCATENATE("'",C2,"'") &");"

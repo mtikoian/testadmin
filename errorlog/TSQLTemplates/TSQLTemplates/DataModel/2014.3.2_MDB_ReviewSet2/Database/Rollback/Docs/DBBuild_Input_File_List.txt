@@ -1,9 +1,0 @@
-# ------------------------------------------
-#
-# Scripts are executed from the %ROOTDIR%\
-#
-# Blank lines and lines starting with a 
-# pound sign (#) are skipped.
-# ------------------------------------------
-Create_Table_RegulatoryReporting_Firm_Mapping.sql
-Create_Table_RegulatoryReporting_Firm.sql

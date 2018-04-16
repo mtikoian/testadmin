@@ -1,3 +1,0 @@
-Creating stub procedure "dbo.Del_CONTACT".
-The module 'Del_CONTACT' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
-Altered procedure "dbo.Del_CONTACT".

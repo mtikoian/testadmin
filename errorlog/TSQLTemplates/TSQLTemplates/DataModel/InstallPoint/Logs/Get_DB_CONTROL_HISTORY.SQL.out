@@ -1,4 +1,0 @@
-Creating stub procedure "dbo.Get_DB_CONTROL_HISTORY".
-The module 'Get_DB_CONTROL_HISTORY' depends on the missing object 'dbo.p_admPrintError'. The module will still be created; however, it cannot run successfully until the object exists.
-The module 'Get_DB_CONTROL_HISTORY' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
-Altered procedure "dbo.Get_DB_CONTROL_HISTORY".

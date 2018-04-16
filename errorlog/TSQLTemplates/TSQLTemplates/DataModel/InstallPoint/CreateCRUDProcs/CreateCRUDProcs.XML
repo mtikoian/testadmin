@@ -1,7 +1,0 @@
-<?xml version = "1.0"?>
-<Options>
-	<Server>pwobrien</Server>
-	<Database>InstallPoint</Database>
-	<Schema>dbo</Schema>
-    <OutputStoredProcDir>D:\ODR\InstallPoint\CreateCRUDProcs\StoredProcs</OutputStoredProcDir>
-</Options>

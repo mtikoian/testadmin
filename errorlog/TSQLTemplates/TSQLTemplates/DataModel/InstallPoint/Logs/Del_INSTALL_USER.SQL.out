@@ -1,3 +1,0 @@
-Creating stub procedure "dbo.Del_INSTALL_USER".
-The module 'Del_INSTALL_USER' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
-Altered procedure "dbo.Del_INSTALL_USER".

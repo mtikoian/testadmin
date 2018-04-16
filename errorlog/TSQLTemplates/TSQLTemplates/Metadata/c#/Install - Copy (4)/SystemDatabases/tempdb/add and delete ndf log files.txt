@@ -1,8 +1,0 @@
-
-DBCC SHRINKFILE with emptyfile option will move the data in the specified data file to another
- data file and empties it. But for Transaction Log files you can not move the data to another file.
- So you have to cleanup the Log by truncating it or by taking a Log Backup. 
-Then try the ALTER DATABASE DB REMOVE FILE (file) to remove it.
-
-
-http://msdn.microsoft.com/en-us/library/ms191433.aspx

@@ -1,3 +1,0 @@
-Creating stub procedure "dbo.Add_PARM_DOMAIN".
-The module 'Add_PARM_DOMAIN' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
-Altered procedure "dbo.Add_PARM_DOMAIN".

@@ -1,4 +1,0 @@
-Creating stub procedure "dbo.Upd_AUDIT_TRAIL".
-The module 'Upd_AUDIT_TRAIL' depends on the missing object 'dbo.p_admPrintError'. The module will still be created; however, it cannot run successfully until the object exists.
-The module 'Upd_AUDIT_TRAIL' depends on the missing object 'dbo.LogEntry'. The module will still be created; however, it cannot run successfully until the object exists.
-Altered procedure "dbo.Upd_AUDIT_TRAIL".
